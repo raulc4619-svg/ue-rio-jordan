@@ -1293,21 +1293,66 @@ td.hora-col { font-size: 11px; font-weight: 600; color: var(--text-secondary); w
 }
 
 /* ============================================================
+   SIDEBAR OVERLAY (móvil)
+   ============================================================ */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 199;
+  backdrop-filter: blur(2px);
+  animation: fadeIn .2s ease both;
+}
+.sidebar-overlay.active { display: block; }
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 768px) {
-  .sidebar { transform: translateX(-100%); box-shadow: none; }
+  /* Sidebar se oculta fuera de pantalla */
+  .sidebar {
+    transform: translateX(-100%);
+    box-shadow: none;
+    z-index: 200;
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+  }
   .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-xl); }
+
+  /* Mostrar botón hamburguesa */
+  #menu-btn { display: flex !important; align-items: center; justify-content: center; }
+
   .main-content { margin-left: 0; }
-  .page-content { padding: 14px; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .page-content { padding: 12px; }
+
+  /* Tablas horizontales en móvil */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 520px; }
+
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .form-row { grid-template-columns: 1fr; }
-  .welcome-banner { flex-direction: column; align-items: flex-start; }
+  .welcome-banner { flex-direction: column; align-items: flex-start; gap: 12px; }
   .welcome-meta { text-align: left; }
+
+  /* Topbar más compacto */
+  .topbar { padding: 0 12px; gap: 8px; }
+  .topbar-title { font-size: 15px; }
+
+  /* Modales full-width */
+  .modal-box { width: 96vw; max-width: 96vw; margin: 12px; padding: 20px 16px; max-height: 90vh; overflow-y: auto; }
+
+  /* Toolbar botones */
+  .toolbar { flex-wrap: wrap; gap: 8px; }
+  .btn { font-size: 13px; padding: 8px 14px; }
+
+  /* Cards de actividades */
+  .act-card-header { flex-direction: column; }
 }
 
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr; }
+  .page-content { padding: 8px; }
+  .modal-box { padding: 16px 12px; }
 }
 
 /* ============================================================

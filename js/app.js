@@ -2,17 +2,21 @@
 
 // Sidebar toggle para móvil
 function toggleSidebar() {
-  document.querySelector('.sidebar').classList.toggle('open');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (!sidebar) return;
+  const isOpen = sidebar.classList.toggle('open');
+  if (overlay) overlay.classList.toggle('active', isOpen);
+  document.body.style.overflow = isOpen ? 'hidden' : '';
 }
 
-// Cerrar sidebar al hacer click fuera en móvil
-document.addEventListener('click', function(e) {
-  const sidebar = document.querySelector('.sidebar');
-  const btn = document.querySelector('.btn-menu');
-  if (sidebar && !sidebar.contains(e.target) && (!btn || !btn.contains(e.target))) {
-    sidebar.classList.remove('open');
-  }
-});
+function closeSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (sidebar) sidebar.classList.remove('open');
+  if (overlay) overlay.classList.remove('active');
+  document.body.style.overflow = '';
+}
 
 // Modal helpers
 function openModal(id) {
