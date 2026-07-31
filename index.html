@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>U.E. Rio Jordan â€“ Bienvenidos</title>
+  <title>U.E. Rio Jordan – Bienvenidos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -33,7 +33,7 @@
 
     h1,h2,h3 { font-family: 'Poppins', sans-serif; }
 
-    /* â”€â”€ NAV â”€â”€ */
+    /* ── NAV ── */
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       background: rgba(255,255,255,.95);
@@ -54,7 +54,7 @@
     .nav-cta:hover { background: var(--primary-dk); }
     .nav-menu-btn { display: none; background: none; border: none; font-size: 22px; cursor: pointer; }
 
-    /* â”€â”€ HERO â”€â”€ */
+    /* ── HERO ── */
     .hero {
       min-height: 100vh;
       background: linear-gradient(135deg, var(--dark-2) 0%, var(--dark) 60%, #1a3a5c 100%);
@@ -87,7 +87,7 @@
     .hero-card .num { font-family: 'Poppins', sans-serif; font-size: 26px; font-weight: 800; color: var(--primary); }
     .hero-card .lbl { font-size: 12px; color: rgba(255,255,255,.6); margin-top: 2px; }
 
-    /* â”€â”€ SECCIÃ“N GENÃ‰RICA â”€â”€ */
+    /* ── SECCIÓN GENÉRICA ── */
     section { padding: 80px 5%; }
     .section-label { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: var(--primary); text-transform: uppercase; margin-bottom: 10px; }
     .section-title { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 800; color: var(--dark); margin-bottom: 16px; }
@@ -95,7 +95,7 @@
     .section-title-center { text-align: center; }
     .section-sub-center { text-align: center; margin: 0 auto; }
 
-    /* â”€â”€ VMO (VisiÃ³n MisiÃ³n Objetivo) â”€â”€ */
+    /* ── VMO (Visión Misión Objetivo) ── */
     .vmo { background: #F8FAFC; }
     .vmo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 48px; }
     .vmo-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; position: relative; overflow: hidden; transition: box-shadow .2s, transform .2s; animation: fadeInUp .5s ease both; }
@@ -110,14 +110,14 @@
     .vmo-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: var(--dark); }
     .vmo-card p { font-size: 14px; color: var(--text-muted); line-height: 1.75; }
 
-    /* â”€â”€ VALORES â”€â”€ */
+    /* ── VALORES ── */
     .valores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-top: 48px; }
     .valor-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 16px; text-align: center; transition: all .2s; animation: fadeInUp .5s ease both; }
     .valor-item:hover { border-color: var(--primary); box-shadow: 0 4px 20px rgba(245,158,11,.15); }
     .valor-item .vi { font-size: 32px; margin-bottom: 10px; }
     .valor-item p { font-size: 13px; font-weight: 600; color: var(--dark); }
 
-    /* â”€â”€ GALERÃA â”€â”€ */
+    /* ── GALERÍA ── */
     .galeria { background: var(--dark); }
     .galeria .section-title, .galeria .section-label { color: #fff; }
     .galeria .section-sub { color: rgba(255,255,255,.6); }
@@ -145,26 +145,26 @@
     .gallery-item:hover .gallery-overlay { opacity: 1; }
     .gallery-overlay span { color: #fff; font-size: 13px; font-weight: 600; }
 
-    /* â”€â”€ ESTADÃSTICAS â”€â”€ */
+    /* ── ESTADÍSTICAS ── */
     .stats-banner { background: var(--primary); padding: 60px 5%; }
     .stats-inner { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 32px; max-width: 900px; margin: 0 auto; text-align: center; }
     .stat-b .num { font-family: 'Poppins', sans-serif; font-size: 42px; font-weight: 800; color: #fff; }
     .stat-b .lbl { font-size: 13px; color: rgba(255,255,255,.8); margin-top: 4px; font-weight: 500; }
 
-    /* â”€â”€ CTA FINAL â”€â”€ */
+    /* ── CTA FINAL ── */
     .cta-final { background: var(--dark-2); padding: 80px 5%; text-align: center; }
     .cta-final h2 { color: #fff; font-size: clamp(1.6rem, 3vw, 2.4rem); margin-bottom: 16px; }
     .cta-final p { color: rgba(255,255,255,.6); font-size: 16px; margin-bottom: 36px; }
 
-    /* â”€â”€ FOOTER â”€â”€ */
+    /* ── FOOTER ── */
     footer { background: #0a0f1a; padding: 32px 5%; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
     footer p { font-size: 13px; color: rgba(255,255,255,.4); }
     footer a { color: var(--primary); text-decoration: none; font-size: 13px; }
 
-    /* â”€â”€ ANIMATIONS â”€â”€ */
+    /* ── ANIMATIONS ── */
     @keyframes fadeInUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
 
-    /* â”€â”€ RESPONSIVE â”€â”€ */
+    /* ── RESPONSIVE ── */
     @media (max-width: 900px) {
       .hero-image { display: none; }
       .gallery-grid { grid-template-columns: repeat(2, 1fr); }
@@ -180,120 +180,120 @@
 </head>
 <body>
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â• NAV â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- ══════════════ NAV ══════════════ -->
 <nav>
   <a href="#" class="nav-brand">
-    <div class="brand-icon">ðŸ«</div>
-    <div class="brand-name">U.E. Rio Jordan <small>Formando lÃ­deres del maÃ±ana</small></div>
+    <div class="brand-icon">🏫</div>
+    <div class="brand-name">U.E. Rio Jordan <small>Formando líderes del mañana</small></div>
   </a>
   <ul class="nav-links">
-    <li><a href="#mision">MisiÃ³n & VisiÃ³n</a></li>
+    <li><a href="#mision">Misión & Visión</a></li>
     <li><a href="#valores">Valores</a></li>
-    <li><a href="#galeria">GalerÃ­a</a></li>
+    <li><a href="#galeria">Galería</a></li>
     <li><a href="#contacto">Contacto</a></li>
   </ul>
-  <a href="login.html" class="nav-cta">Acceso al Sistema â†’</a>
-  <button class="nav-menu-btn" onclick="toggleMobileNav()">â˜°</button>
+  <a href="login.html" class="nav-cta">Acceso al Sistema →</a>
+  <button class="nav-menu-btn" onclick="toggleMobileNav()">☰</button>
 </nav>
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â• HERO â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- ══════════════ HERO ══════════════ -->
 <section class="hero">
   <div class="hero-content">
-    <div class="hero-badge">ðŸŽ“ AÃ±o Escolar 2024</div>
+    <div class="hero-badge">🎓 Año Escolar 2024</div>
     <h1>Bienvenidos a<br><span>U.E. Rio Jordan</span></h1>
-    <p>Formamos personas Ã­ntegras, con valores sÃ³lidos y conocimientos que les permiten enfrentar los desafÃ­os del mundo moderno. Juntos construimos el futuro.</p>
+    <p>Formamos personas íntegras, con valores sólidos y conocimientos que les permiten enfrentar los desafíos del mundo moderno. Juntos construimos el futuro.</p>
     <div class="hero-btns">
-      <a href="#mision" class="btn-primary">Conocer mÃ¡s â†“</a>
+      <a href="#mision" class="btn-primary">Conocer más ↓</a>
       <a href="login.html" class="btn-outline">Acceso docentes / alumnos</a>
     </div>
   </div>
   <div class="hero-image">
-    <div class="hero-card"><div class="icon">ðŸ‘¨â€ðŸŽ“</div><div class="num" id="cnt-alumnos">â€”</div><div class="lbl">Estudiantes</div></div>
-    <div class="hero-card"><div class="icon">ðŸ‘¨â€ðŸ«</div><div class="num" id="cnt-docentes">â€”</div><div class="lbl">Docentes</div></div>
-    <div class="hero-card"><div class="icon">ðŸ“š</div><div class="num">7</div><div class="lbl">Grados</div></div>
-    <div class="hero-card"><div class="icon">ðŸ†</div><div class="num">+10</div><div class="lbl">AÃ±os de trayectoria</div></div>
+    <div class="hero-card"><div class="icon">👨‍🎓</div><div class="num" id="cnt-alumnos">—</div><div class="lbl">Estudiantes</div></div>
+    <div class="hero-card"><div class="icon">👨‍🏫</div><div class="num" id="cnt-docentes">—</div><div class="lbl">Docentes</div></div>
+    <div class="hero-card"><div class="icon">📚</div><div class="num">7</div><div class="lbl">Grados</div></div>
+    <div class="hero-card"><div class="icon">🏆</div><div class="num">+10</div><div class="lbl">Años de trayectoria</div></div>
   </div>
 </section>
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â• VISIÃ“N MISIÃ“N OBJETIVO â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- ══════════════ VISIÓN MISIÓN OBJETIVO ══════════════ -->
 <section class="vmo" id="mision">
   <div style="text-align:center">
     <div class="section-label">Nuestra identidad</div>
-    <h2 class="section-title section-title-center">VisiÃ³n, MisiÃ³n y Objetivo</h2>
-    <p class="section-sub section-sub-center">Los pilares que guÃ­an cada acciÃ³n y decisiÃ³n dentro de nuestra comunidad educativa.</p>
+    <h2 class="section-title section-title-center">Visión, Misión y Objetivo</h2>
+    <p class="section-sub section-sub-center">Los pilares que guían cada acción y decisión dentro de nuestra comunidad educativa.</p>
   </div>
   <div class="vmo-grid">
 
     <div class="vmo-card" style="animation-delay:.05s">
-      <div class="vmo-icon amber">ðŸ”­</div>
-      <h3>VisiÃ³n</h3>
-      <p>Ser una instituciÃ³n educativa lÃ­der y de referencia regional, reconocida por la excelencia acadÃ©mica, la formaciÃ³n en valores y el compromiso con el desarrollo integral de cada estudiante. Aspiramos a que nuestros egresados sean ciudadanos crÃ­ticos, creativos y con plena capacidad de transformar su entorno social y profesional.</p>
+      <div class="vmo-icon amber">🔭</div>
+      <h3>Visión</h3>
+      <p>Ser una institución educativa líder y de referencia regional, reconocida por la excelencia académica, la formación en valores y el compromiso con el desarrollo integral de cada estudiante. Aspiramos a que nuestros egresados sean ciudadanos críticos, creativos y con plena capacidad de transformar su entorno social y profesional.</p>
     </div>
 
     <div class="vmo-card" style="animation-delay:.15s">
-      <div class="vmo-icon blue">ðŸŽ¯</div>
-      <h3>MisiÃ³n</h3>
-      <p>Brindar una educaciÃ³n de calidad, inclusiva y humanista, que desarrolle las competencias cognitivas, sociales y emocionales de nuestros estudiantes. Trabajamos con docentes altamente capacitados, metodologÃ­as innovadoras y un ambiente escolar seguro y motivador, en alianza permanente con las familias y la comunidad.</p>
+      <div class="vmo-icon blue">🎯</div>
+      <h3>Misión</h3>
+      <p>Brindar una educación de calidad, inclusiva y humanista, que desarrolle las competencias cognitivas, sociales y emocionales de nuestros estudiantes. Trabajamos con docentes altamente capacitados, metodologías innovadoras y un ambiente escolar seguro y motivador, en alianza permanente con las familias y la comunidad.</p>
     </div>
 
     <div class="vmo-card" style="animation-delay:.25s">
-      <div class="vmo-icon green">âœ…</div>
+      <div class="vmo-icon green">✅</div>
       <h3>Objetivo General</h3>
-      <p>Garantizar el aprendizaje significativo de todos los estudiantes desde 1ro hasta 7mo grado, fortaleciendo su identidad cultural, pensamiento crÃ­tico y habilidades para la vida. Promovemos una formaciÃ³n integral que combina la excelencia acadÃ©mica con el desarrollo personal, Ã©tico y ciudadano de cada alumno.</p>
+      <p>Garantizar el aprendizaje significativo de todos los estudiantes desde 1ro hasta 7mo grado, fortaleciendo su identidad cultural, pensamiento crítico y habilidades para la vida. Promovemos una formación integral que combina la excelencia académica con el desarrollo personal, ético y ciudadano de cada alumno.</p>
     </div>
 
   </div>
 </section>
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â• ESTADÃSTICAS â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- ══════════════ ESTADÍSTICAS ══════════════ -->
 <div class="stats-banner">
   <div class="stats-inner">
     <div class="stat-b"><div class="num">7</div><div class="lbl">Grados educativos</div></div>
     <div class="stat-b"><div class="num">3</div><div class="lbl">Secciones por grado</div></div>
     <div class="stat-b"><div class="num">100%</div><div class="lbl">Compromiso docente</div></div>
-    <div class="stat-b"><div class="num">+10</div><div class="lbl">AÃ±os formando lÃ­deres</div></div>
+    <div class="stat-b"><div class="num">+10</div><div class="lbl">Años formando líderes</div></div>
   </div>
 </div>
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â• VALORES â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- ══════════════ VALORES ══════════════ -->
 <section id="valores">
   <div style="text-align:center">
     <div class="section-label">Lo que nos define</div>
     <h2 class="section-title section-title-center">Nuestros Valores</h2>
-    <p class="section-sub section-sub-center">Los valores que cultivamos cada dÃ­a en el aula, en el recreo y en la vida.</p>
+    <p class="section-sub section-sub-center">Los valores que cultivamos cada día en el aula, en el recreo y en la vida.</p>
   </div>
   <div class="valores-grid">
-    <div class="valor-item" style="animation-delay:.05s"><div class="vi">ðŸ¤</div><p>Respeto</p></div>
-    <div class="valor-item" style="animation-delay:.1s"><div class="vi">ðŸ’¡</div><p>InnovaciÃ³n</p></div>
-    <div class="valor-item" style="animation-delay:.15s"><div class="vi">âš–ï¸</div><p>Honestidad</p></div>
-    <div class="valor-item" style="animation-delay:.2s"><div class="vi">ðŸŒ±</div><p>Responsabilidad</p></div>
-    <div class="valor-item" style="animation-delay:.25s"><div class="vi">ðŸ¤²</div><p>Solidaridad</p></div>
-    <div class="valor-item" style="animation-delay:.3s"><div class="vi">ðŸ…</div><p>Excelencia</p></div>
-    <div class="valor-item" style="animation-delay:.35s"><div class="vi">ðŸŒ</div><p>InclusiÃ³n</p></div>
-    <div class="valor-item" style="animation-delay:.4s"><div class="vi">â¤ï¸</div><p>VocaciÃ³n</p></div>
+    <div class="valor-item" style="animation-delay:.05s"><div class="vi">🤝</div><p>Respeto</p></div>
+    <div class="valor-item" style="animation-delay:.1s"><div class="vi">💡</div><p>Innovación</p></div>
+    <div class="valor-item" style="animation-delay:.15s"><div class="vi">⚖️</div><p>Honestidad</p></div>
+    <div class="valor-item" style="animation-delay:.2s"><div class="vi">🌱</div><p>Responsabilidad</p></div>
+    <div class="valor-item" style="animation-delay:.25s"><div class="vi">🤲</div><p>Solidaridad</p></div>
+    <div class="valor-item" style="animation-delay:.3s"><div class="vi">🏅</div><p>Excelencia</p></div>
+    <div class="valor-item" style="animation-delay:.35s"><div class="vi">🌍</div><p>Inclusión</p></div>
+    <div class="valor-item" style="animation-delay:.4s"><div class="vi">❤️</div><p>Vocación</p></div>
   </div>
 </section>
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â• GALERÃA â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- ══════════════ GALERÍA ══════════════ -->
 <section class="galeria" id="galeria">
   <div style="text-align:center">
     <div class="section-label">Nuestra vida escolar</div>
-    <h2 class="section-title section-title-center">GalerÃ­a</h2>
+    <h2 class="section-title section-title-center">Galería</h2>
     <p class="section-sub section-sub-center">Momentos que hacen grande a nuestra comunidad educativa.</p>
   </div>
   <div class="gallery-grid">
 
     <div class="gallery-item large">
       <div class="gallery-ph g1" style="min-height:320px">
-        <div class="ph-icon">ðŸ«</div>
+        <div class="ph-icon">🏫</div>
         <div class="ph-label">Instalaciones principales</div>
       </div>
-      <div class="gallery-overlay"><span>Nuestra instituciÃ³n</span></div>
+      <div class="gallery-overlay"><span>Nuestra institución</span></div>
     </div>
 
     <div class="gallery-item">
       <div class="gallery-ph g2" style="min-height:154px">
-        <div class="ph-icon">ðŸŽ¨</div>
+        <div class="ph-icon">🎨</div>
         <div class="ph-label">Arte y cultura</div>
       </div>
       <div class="gallery-overlay"><span>Actividades culturales</span></div>
@@ -301,7 +301,7 @@
 
     <div class="gallery-item">
       <div class="gallery-ph g3" style="min-height:154px">
-        <div class="ph-icon">âš½</div>
+        <div class="ph-icon">⚽</div>
         <div class="ph-label">Deportes</div>
       </div>
       <div class="gallery-overlay"><span>Olimpiadas escolares</span></div>
@@ -309,7 +309,7 @@
 
     <div class="gallery-item tall">
       <div class="gallery-ph g4" style="min-height:320px">
-        <div class="ph-icon">ðŸ”¬</div>
+        <div class="ph-icon">🔬</div>
         <div class="ph-label">Laboratorio de Ciencias</div>
       </div>
       <div class="gallery-overlay"><span>Feria de ciencias</span></div>
@@ -317,7 +317,7 @@
 
     <div class="gallery-item">
       <div class="gallery-ph g5" style="min-height:154px">
-        <div class="ph-icon">ðŸ“š</div>
+        <div class="ph-icon">📚</div>
         <div class="ph-label">Biblioteca</div>
       </div>
       <div class="gallery-overlay"><span>Espacio de lectura</span></div>
@@ -325,50 +325,50 @@
 
     <div class="gallery-item">
       <div class="gallery-ph g6" style="min-height:154px">
-        <div class="ph-icon">ðŸ’»</div>
-        <div class="ph-label">Sala de CÃ³mputo</div>
+        <div class="ph-icon">💻</div>
+        <div class="ph-label">Sala de Cómputo</div>
       </div>
-      <div class="gallery-overlay"><span>TecnologÃ­a educativa</span></div>
+      <div class="gallery-overlay"><span>Tecnología educativa</span></div>
     </div>
 
     <div class="gallery-item">
       <div class="gallery-ph g7" style="min-height:154px">
-        <div class="ph-icon">ðŸŽ“</div>
+        <div class="ph-icon">🎓</div>
         <div class="ph-label">Clausura 2023</div>
       </div>
-      <div class="gallery-overlay"><span>Ceremonia de graduaciÃ³n</span></div>
+      <div class="gallery-overlay"><span>Ceremonia de graduación</span></div>
     </div>
 
   </div>
 </section>
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â• CTA â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- ══════════════ CTA ══════════════ -->
 <section class="cta-final" id="contacto">
-  <h2>Â¿Listo para ser parte de<br>nuestra comunidad?</h2>
-  <p>Accede al sistema escolar para consultar calificaciones,<br>asistencias, horarios y mÃ¡s.</p>
+  <h2>¿Listo para ser parte de<br>nuestra comunidad?</h2>
+  <p>Accede al sistema escolar para consultar calificaciones,<br>asistencias, horarios y más.</p>
   <a href="login.html" class="btn-primary" style="display:inline-flex;margin:0 auto">
-    Ingresar al sistema escolar â†’
+    Ingresar al sistema escolar →
   </a>
   <div style="margin-top:48px;display:flex;gap:32px;justify-content:center;flex-wrap:wrap">
     <div style="text-align:center;color:rgba(255,255,255,.5)">
-      <div style="font-size:20px;margin-bottom:4px">ðŸ“</div>
-      <div style="font-size:13px">DirecciÃ³n institucional</div>
+      <div style="font-size:20px;margin-bottom:4px">📍</div>
+      <div style="font-size:13px">Dirección institucional</div>
     </div>
     <div style="text-align:center;color:rgba(255,255,255,.5)">
-      <div style="font-size:20px;margin-bottom:4px">ðŸ“ž</div>
-      <div style="font-size:13px">TelÃ©fono de contacto</div>
+      <div style="font-size:20px;margin-bottom:4px">📞</div>
+      <div style="font-size:13px">Teléfono de contacto</div>
     </div>
     <div style="text-align:center;color:rgba(255,255,255,.5)">
-      <div style="font-size:20px;margin-bottom:4px">âœ‰ï¸</div>
+      <div style="font-size:20px;margin-bottom:4px">✉️</div>
       <div style="font-size:13px">correo@ueriojordan.edu</div>
     </div>
   </div>
 </section>
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â• FOOTER â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- ══════════════ FOOTER ══════════════ -->
 <footer>
-  <p>Â© 2024 U.E. Rio Jordan â€” Todos los derechos reservados.</p>
-  <a href="login.html">Acceso al sistema escolar â†’</a>
+  <p>© 2024 U.E. Rio Jordan — Todos los derechos reservados.</p>
+  <a href="login.html">Acceso al sistema escolar →</a>
 </footer>
 
 <script>
