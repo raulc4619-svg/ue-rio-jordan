@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tareas – U.E. Rio Jordan</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .tarea-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; transition:box-shadow .15s; }
+    .tarea-card:hover { box-shadow:var(--shadow-md); }
+    .tarea-header { padding:14px 16px 10px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+    .tarea-body { padding:12px 16px; }
+    .tarea-footer { padding:10px 16px; border-top:1px solid var(--border); background:var(--surface-1); display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+    .archivo-chip { display:inline-flex; align-items:center; gap:6px; background:var(--surface-1); border:1px solid var(--border); border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer; transition:background .15s; text-decoration:none; color:var(--text-primary); }
+    .archivo-chip:hover { background:var(--primary-bg); border-color:var(--primary); }
+    .drop-zone { border:2px dashed var(--border); border-radius:var(--radius); padding:28px; text-align:center; cursor:pointer; transition:all .2s; background:var(--surface-1); }
+    .drop-zone.drag-over, .drop-zone:hover { border-color:var(--primary); background:var(--primary-bg); }
+    .drop-zone .dz-icon { font-size:36px; margin-bottom:8px; }
+    .drop-zone p { font-size:13px; color:var(--text-muted); }
+    .file-list { display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+    .file-item { display:flex; align-items:center; gap:10px; background:var(--surface-1); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:13px; }
+    .file-item .fi-name { flex:1; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .file-item .fi-size { color:var(--text-muted); font-size:11px; flex-shrink:0; }
+    .file-item .fi-del { cursor:pointer; color:var(--danger); font-size:16px; flex-shrink:0; }
+    .entrega-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .entrega-row:last-child { border-bottom:none; }
+    .nota-input { width:80px; text-align:center; }
+    .vencida-badge { background:#fee2e2; color:#dc2626; font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; }
+    .pendiente-badge { background:#fef3c7; color:#d97706; font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; }
+    .entregada-badge { background:#dcfce7; color:#16a34a; font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; }
+    .calificada-badge { background:#dbeafe; color:#2563eb; font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; }
+    .progress-bar-wrap { background:var(--border); border-radius:4px; height:6px; flex:1; }
+    .progress-bar-fill { height:6px; border-radius:4px; background:var(--primary); transition:width .4s; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><div class="logo-icon">🏫</div><div class="logo-text">U.E. Rio Jordan<small>Sistema Escolar 2024</small></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Inicio</a>
+      <div class="nav-section-label">Gestión Académica</div>
+      <a href="alumnos.html" class="nav-item"><span class="nav-icon">👨‍🎓</span> Alumnos</a>
+      <a href="docentes.html" class="nav-item"><span class="nav-icon">👨‍🏫</span> Docentes</a>
+      <a href="calificaciones.html" class="nav-item"><span class="nav-icon">📊</span> Calificaciones</a>
+      <a href="asistencias.html" class="nav-item"><span class="nav-icon">✅</span> Asistencias</a>
+      <a href="horarios.html" class="nav-item"><span class="nav-icon">🕐</span> Horarios</a>
+      <a href="actividades.html" class="nav-item"><span class="nav-icon">📅</span> Actividades y Tareas</a>
+      <div class="nav-section-label">Administración</div>
+      <a href="matriculas.html" class="nav-item"><span class="nav-icon">📋</span> Matrículas</a>
+      <a href="finanzas.html" class="nav-item"><span class="nav-icon">💰</span> Finanzas</a>
+      
+      
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info" onclick="logout()">
+        <div class="user-avatar" id="sidebar-user-avatar">AD</div>
+        <div class="user-details"><div class="user-name" id="sidebar-user-name"></div><div class="user-role" id="sidebar-user-role"></div></div>
+        <span style="font-size:14px;opacity:.5">↩</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">📝 Tareas y Actividades</div>
+    </div>
+    <div class="page-content">
+
+      <div class="tabs" id="tabs-principales">
+        <button class="tab-btn active" onclick="switchTab('docente',this)" data-role="admin,docente">Gestión de tareas</button>
+        <button class="tab-btn" onclick="switchTab('alumno',this)" data-role="alumno">Mis tareas</button>
+        <button class="tab-btn" onclick="switchTab('docente',this)" data-role="alumno" style="display:none"></button>
+      </div>
+
+      <!-- ══ TAB DOCENTE: lista de tareas creadas ══ -->
+      <div id="tab-docente">
+        <div class="toolbar">
+          <div class="toolbar-start" style="flex-wrap:wrap;gap:10px">
+            <div class="search-bar" style="min-width:220px">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="search-tarea" placeholder="Buscar tarea..." oninput="renderTareas()">
+            </div>
+            <select class="form-control" id="f-grado-t" onchange="renderTareas()" style="width:120px">
+              <option value="">Todos los grados</option>
+              <option>1ro</option><option>2do</option><option>3ro</option><option>4to</option><option>5to</option><option>6to</option><option>7mo</option>
+            </select>
+            <select class="form-control" id="f-estado-t" onchange="renderTareas()" style="width:130px">
+              <option value="">Todos</option>
+              <option value="activa">Activa</option>
+              <option value="vencida">Vencida</option>
+              <option value="cerrada">Cerrada</option>
+            </select>
+          </div>
+          <div class="toolbar-end" data-role="admin,docente">
+            <button class="btn btn-primary" onclick="abrirModalTarea()">+ Nueva tarea</button>
+          </div>
+        </div>
+
+        <div id="tareas-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px"></div>
+        <div id="tareas-empty" class="empty-state" style="display:none">
+          <div class="empty-icon">📝</div>
+          <h3>Sin tareas</h3>
+          <p>No hay tareas que coincidan con los filtros.</p>
+        </div>
+      </div>
+
+      <!-- ══ TAB ALUMNO: mis tareas asignadas ══ -->
+      <div id="tab-alumno" style="display:none">
+        <div class="toolbar">
+          <div class="toolbar-start">
+            <select class="form-control" id="f-estado-al" onchange="renderTareasAlumno()" style="width:150px">
+              <option value="">Todas</option>
+              <option value="pendiente">Pendientes</option>
+              <option value="entregada">Entregadas</option>
+              <option value="calificada">Calificadas</option>
+            </select>
+          </div>
+        </div>
+        <div id="tareas-alumno-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px"></div>
+        <div id="tareas-alumno-empty" class="empty-state" style="display:none">
+          <div class="empty-icon">✅</div>
+          <h3>No hay tareas asignadas</h3>
+          <p>El docente aún no ha publicado tareas para tu grado.</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ══ MODAL NUEVA / EDITAR TAREA ══ -->
+<div class="modal-overlay" id="modal-tarea" style="display:none">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <h2 id="mt-titulo">Nueva tarea</h2>
+      <button class="btn-icon" onclick="closeModal('modal-tarea')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="t-id">
+      <div class="form-group">
+        <label class="form-label">Título *</label>
+        <input type="text" id="t-titulo" class="form-control" placeholder="Ej: Ejercicios de álgebra – Capítulo 3">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción / Instrucciones</label>
+        <textarea id="t-desc" class="form-control" rows="3" placeholder="Describe qué deben hacer los estudiantes..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Materia *</label>
+          <select id="t-materia" class="form-control">
+            <option>Matemáticas</option><option>Lenguaje</option><option>Ciencias Naturales</option>
+            <option>Historia</option><option>Inglés</option><option>Arte</option>
+            <option>Educación Física</option><option>Computación</option><option>Otra</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Grado *</label>
+          <select id="t-grado" class="form-control">
+            <option>1ro</option><option>2do</option><option>3ro</option><option>4to</option><option>5to</option><option>6to</option><option>7mo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sección</label>
+          <select id="t-seccion" class="form-control">
+            <option value="">Todas</option><option>A</option><option>B</option><option>C</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Fecha de entrega *</label>
+          <input type="datetime-local" id="t-entrega" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nota máxima</label>
+          <input type="number" id="t-nota-max" class="form-control" value="20" min="1" max="100">
+        </div>
+      </div>
+
+      <!-- Archivos adjuntos del docente -->
+      <div class="form-group">
+        <label class="form-label">Archivos adjuntos (PDF, Word, Excel, imágenes)</label>
+        <div class="drop-zone" id="dz-tarea" onclick="document.getElementById('inp-tarea-files').click()">
+          <div class="dz-icon">📎</div>
+          <p>Haz clic o arrastra archivos aquí<br><small>PDF · DOC · DOCX · XLS · XLSX · PNG · JPG · JPEG</small></p>
+        </div>
+        <input type="file" id="inp-tarea-files" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" style="display:none" onchange="agregarArchivosTarea(this.files)">
+        <div class="file-list" id="list-tarea-files"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-tarea')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarTarea()">Publicar tarea</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL VER ENTREGAS (docente) ══ -->
+<div class="modal-overlay" id="modal-entregas" style="display:none">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-header">
+      <h2 id="me-titulo">Entregas</h2>
+      <button class="btn-icon" onclick="closeModal('modal-entregas')">✕</button>
+    </div>
+    <div class="modal-body" id="me-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-entregas')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL ENTREGAR TAREA (alumno) ══ -->
+<div class="modal-overlay" id="modal-entregar" style="display:none">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h2 id="men-titulo">Entregar tarea</h2>
+      <button class="btn-icon" onclick="closeModal('modal-entregar')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="en-tarea-id">
+      <div id="en-info" style="background:var(--surface-1);border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;color:var(--text-muted)"></div>
+      <div class="form-group">
+        <label class="form-label">Comentario (opcional)</label>
+        <textarea id="en-comentario" class="form-control" rows="2" placeholder="Agrega un comentario a tu entrega..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Archivo(s) de entrega *</label>
+        <div class="drop-zone" id="dz-entrega" onclick="document.getElementById('inp-entrega-files').click()">
+          <div class="dz-icon">📤</div>
+          <p>Haz clic o arrastra tus archivos aquí<br><small>PDF · DOC · DOCX · XLS · XLSX · PNG · JPG · JPEG</small></p>
+        </div>
+        <input type="file" id="inp-entrega-files" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" style="display:none" onchange="agregarArchivosEntrega(this.files)">
+        <div class="file-list" id="list-entrega-files"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-entregar')">Cancelar</button>
+      <button class="btn btn-primary" onclick="enviarEntrega()">📤 Enviar entrega</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script>
+initDB(); requireAuth(); renderUserBar(); applyRoleVisibility();
+
+const USER = JSON.parse(sessionStorage.getItem('user') || '{}');
+const ROL  = USER.role || '';
+
+// ── Drag & drop ──────────────────────────────────────
+['dz-tarea','dz-entrega'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('dragover',  e => { e.preventDefault(); el.classList.add('drag-over'); });
+  el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+  el.addEventListener('drop', e => {
+    e.preventDefault(); el.classList.remove('drag-over');
+    const inputId = id === 'dz-tarea' ? 'inp-tarea-files' : 'inp-entrega-files';
+    const fn      = id === 'dz-tarea' ? agregarArchivosTarea : agregarArchivosEntrega;
+    fn(e.dataTransfer.files);
+  });
+});
+
+// ── Archivos pendientes en memoria ───────────────────
+let archivosTarea   = [];
+let archivosEntrega = [];
+
+const TIPOS_ICON = {
+  'pdf':'📄', 'doc':'📝', 'docx':'📝',
+  'xls':'📊', 'xlsx':'📊',
+  'png':'🖼️', 'jpg':'🖼️', 'jpeg':'🖼️'
+};
+
+function iconArchivo(nombre) {
+  const ext = nombre.split('.').pop().toLowerCase();
+  return TIPOS_ICON[ext] || '📎';
+}
+
+function fmtSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
+
+function leerArchivo(file) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => resolve({ nombre: file.name, tipo: file.type, datos: e.target.result, size: file.size });
+    reader.readAsDataURL(file);
+  });
+}
+
+async function agregarArchivosTarea(files) {
+  for (const f of files) {
+    if (archivosTarea.find(x => x.nombre === f.name)) continue;
+    const arch = await leerArchivo(f);
+    archivosTarea.push(arch);
+  }
+  renderListaArchivos('list-tarea-files', archivosTarea, idx => { archivosTarea.splice(idx,1); renderListaArchivos('list-tarea-files', archivosTarea, null); });
+  document.getElementById('inp-tarea-files').value = '';
+}
+
+async function agregarArchivosEntrega(files) {
+  for (const f of files) {
+    if (archivosEntrega.find(x => x.nombre === f.name)) continue;
+    const arch = await leerArchivo(f);
+    archivosEntrega.push(arch);
+  }
+  renderListaArchivos('list-entrega-files', archivosEntrega, idx => { archivosEntrega.splice(idx,1); renderListaArchivos('list-entrega-files', archivosEntrega, null); });
+  document.getElementById('inp-entrega-files').value = '';
+}
+
+function renderListaArchivos(containerId, lista, onDel) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = lista.map((a, i) => `
+    <div class="file-item">
+      <span style="font-size:18px">${iconArchivo(a.nombre)}</span>
+      <span class="fi-name">${a.nombre}</span>
+      <span class="fi-size">${fmtSize(a.size||0)}</span>
+      ${onDel ? `<span class="fi-del" onclick="(${onDel.toString()})(${i})">✕</span>` : ''}
+    </div>`).join('');
+}
+
+// ── Chips descargables ────────────────────────────────
+function chipsArchivos(archivos) {
+  if (!archivos || !archivos.length) return '<span style="font-size:12px;color:var(--text-muted)">Sin archivos</span>';
+  return archivos.map(a => `
+    <a class="archivo-chip" href="${a.datos}" download="${a.nombre}" title="Descargar ${a.nombre}">
+      ${iconArchivo(a.nombre)} ${a.nombre}
+    </a>`).join('');
+}
+
+// ── Tabs ─────────────────────────────────────────────
+function switchTab(tab, btn) {
+  document.getElementById('tab-docente').style.display = tab === 'docente' ? '' : 'none';
+  document.getElementById('tab-alumno').style.display  = tab === 'alumno'  ? '' : 'none';
+  document.querySelectorAll('.tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (tab === 'alumno') renderTareasAlumno();
+  else renderTareas();
+}
+
+// ── Estado de tarea ───────────────────────────────────
+function estadoTarea(t) {
+  if (t.estado === 'cerrada') return 'cerrada';
+  return new Date(t.fechaEntrega) < new Date() ? 'vencida' : 'activa';
+}
+
+function badgeTarea(est) {
+  const m = { activa:'entregada-badge', vencida:'vencida-badge', cerrada:'calificada-badge' };
+  return `<span class="${m[est]||'pendiente-badge'}">${est}</span>`;
+}
+
+// ── Render DOCENTE ────────────────────────────────────
+function renderTareas() {
+  const db     = getDB();
+  const busq   = document.getElementById('search-tarea').value.toLowerCase();
+  const gradoF = document.getElementById('f-grado-t').value;
+  const estF   = document.getElementById('f-estado-t').value;
+
+  let lista = db.tareas || [];
+  if (ROL === 'docente') lista = lista.filter(t => t.docenteId === USER.docenteId);
+  if (busq)   lista = lista.filter(t => t.titulo.toLowerCase().includes(busq) || (t.descripcion||'').toLowerCase().includes(busq));
+  if (gradoF) lista = lista.filter(t => t.grado === gradoF);
+  if (estF)   lista = lista.filter(t => estadoTarea(t) === estF);
+
+  const grid  = document.getElementById('tareas-grid');
+  const empty = document.getElementById('tareas-empty');
+
+  if (!lista.length) { grid.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+
+  grid.innerHTML = lista.map(t => {
+    const entregas  = (db.entregas || []).filter(e => e.tareaId === t.id);
+    const alumnos   = (db.alumnos  || []).filter(a => a.grado === t.grado && (!t.seccion || a.seccion === t.seccion) && a.estado === 'activo');
+    const pct       = alumnos.length ? Math.round((entregas.length / alumnos.length) * 100) : 0;
+    const est       = estadoTarea(t);
+    const docente   = (db.docentes||[]).find(d => d.id === t.docenteId);
+    const fechaEnt  = new Date(t.fechaEntrega).toLocaleString('es-PE', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+    return `<div class="tarea-card">
+      <div class="tarea-header">
+        <div>
+          <div style="font-weight:700;font-size:15px;margin-bottom:4px">${t.titulo}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${t.materia} &nbsp;·&nbsp; ${t.grado}° ${t.seccion||'Todas las secciones'}</div>
+        </div>
+        ${badgeTarea(est)}
+      </div>
+      <div class="tarea-body">
+        ${t.descripcion ? `<p style="font-size:13px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">${t.descripcion}</p>` : ''}
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">📅 Entrega: <b style="color:var(--text-primary)">${fechaEnt}</b> &nbsp;·&nbsp; Nota máx: <b>${t.notaMax||20}</b></div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">👨‍🏫 ${docente ? docente.nombre : '—'}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:12px;color:var(--text-muted);flex-shrink:0">Entregas ${entregas.length}/${alumnos.length}</span>
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+          <span style="font-size:12px;font-weight:600;flex-shrink:0">${pct}%</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${chipsArchivos(t.archivos)}</div>
+      </div>
+      <div class="tarea-footer">
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary btn-sm" onclick="verEntregas(${t.id})">👁 Ver entregas (${entregas.length})</button>
+          <button class="btn btn-secondary btn-sm" data-role="admin,docente" onclick="editarTarea(${t.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" data-role="admin,docente" onclick="eliminarTarea(${t.id})">✕</button>
+        </div>
+        ${est==='activa'?`<button class="btn btn-sm" style="background:var(--surface-2)" onclick="cerrarTarea(${t.id})">🔒 Cerrar</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  applyRoleVisibility();
+}
+
+// ── Ver entregas (docente califica) ──────────────────
+function verEntregas(tareaId) {
+  const db      = getDB();
+  const tarea   = (db.tareas||[]).find(t => t.id === tareaId); if (!tarea) return;
+  const alumnos = (db.alumnos||[]).filter(a => a.grado === tarea.grado && (!tarea.seccion || a.seccion === tarea.seccion) && a.estado === 'activo');
+  const entregas= (db.entregas||[]).filter(e => e.tareaId === tareaId);
+
+  document.getElementById('me-titulo').textContent = `Entregas — ${tarea.titulo}`;
+
+  let html = `<div style="margin-bottom:12px;font-size:13px;color:var(--text-muted)">${tarea.materia} · ${tarea.grado}° ${tarea.seccion||''} · Nota máx: ${tarea.notaMax||20}</div>`;
+
+  if (!alumnos.length) { html += '<p style="color:var(--text-muted)">No hay alumnos en este grado/sección.</p>'; }
+
+  alumnos.forEach(a => {
+    const entrega = entregas.find(e => e.alumnoId === a.id);
+    const ini     = a.nombre.split(' ').map(w=>w[0]).join('').slice(0,2);
+    const fechaEnt= entrega ? new Date(entrega.fecha).toLocaleString('es-PE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : null;
+
+    html += `<div class="entrega-row">
+      <div class="avatar" style="background:var(--primary-bg);color:var(--primary);flex-shrink:0">${ini}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:13px">${a.nombre}</div>
+        ${entrega
+          ? `<div style="font-size:11px;color:var(--text-muted)">Enviado: ${fechaEnt}</div>
+             ${entrega.comentario ? `<div style="font-size:11px;color:var(--text-muted);font-style:italic">"${entrega.comentario}"</div>` : ''}
+             <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${chipsArchivos(entrega.archivos)}</div>`
+          : `<div style="font-size:11px;color:var(--text-muted)">Sin entrega</div>`}
+      </div>
+      <div style="flex-shrink:0;text-align:right">
+        ${entrega
+          ? `<div style="display:flex;align-items:center;gap:6px">
+               <input type="number" class="form-control nota-input" id="nota-${a.id}" value="${entrega.calificacion ?? ''}" min="0" max="${tarea.notaMax||20}" placeholder="—">
+               <button class="btn btn-primary btn-sm" onclick="calificarEntrega(${tareaId},${a.id})">✓</button>
+             </div>
+             ${entrega.calificacion != null ? `<div style="font-size:11px;color:var(--secondary);margin-top:4px;text-align:right">Nota: ${entrega.calificacion}/${tarea.notaMax||20}</div>` : ''}`
+          : `<span class="pendiente-badge">Sin entregar</span>`}
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('me-body').innerHTML = html;
+  openModal('modal-entregas');
+}
+
+function calificarEntrega(tareaId, alumnoId) {
+  const db    = getDB();
+  const nota  = parseFloat(document.getElementById(`nota-${alumnoId}`).value);
+  const tarea = (db.tareas||[]).find(t=>t.id===tareaId);
+  if (isNaN(nota) || nota < 0 || nota > (tarea?.notaMax||20)) { showToast('Nota inválida','error'); return; }
+  const idx = db.entregas.findIndex(e => e.tareaId===tareaId && e.alumnoId===alumnoId);
+  if (idx === -1) { showToast('El alumno aún no entregó','error'); return; }
+  db.entregas[idx].calificacion = nota;
+  db.entregas[idx].calificadoEn = new Date().toISOString();
+  saveDB(db);
+  showToast(`Nota ${nota} guardada`);
+  verEntregas(tareaId);
+}
+
+// ── Render ALUMNO ─────────────────────────────────────
+function renderTareasAlumno() {
+  const db      = getDB();
+  const alumnoId= USER.alumnoId;
+  const alumno  = (db.alumnos||[]).find(a => a.id === alumnoId);
+  if (!alumno) { document.getElementById('tareas-alumno-grid').innerHTML='<p style="color:var(--text-muted);padding:20px">Perfil de alumno no encontrado.</p>'; return; }
+
+  const estF  = document.getElementById('f-estado-al').value;
+  const entregas = db.entregas || [];
+
+  let tareas = (db.tareas||[]).filter(t =>
+    t.grado === alumno.grado && (!t.seccion || t.seccion === alumno.seccion)
+  );
+
+  const conEstado = tareas.map(t => {
+    const entrega = entregas.find(e => e.tareaId === t.id && e.alumnoId === alumnoId);
+    let estAl = 'pendiente';
+    if (entrega) estAl = entrega.calificacion != null ? 'calificada' : 'entregada';
+    return { ...t, entrega, estAl };
+  });
+
+  let lista = conEstado;
+  if (estF) lista = lista.filter(t => t.estAl === estF);
+
+  const grid  = document.getElementById('tareas-alumno-grid');
+  const empty = document.getElementById('tareas-alumno-empty');
+
+  if (!lista.length) { grid.innerHTML=''; empty.style.display=''; return; }
+  empty.style.display = 'none';
+
+  const badgeAl = { pendiente:'pendiente-badge', entregada:'entregada-badge', calificada:'calificada-badge' };
+
+  grid.innerHTML = lista.map(t => {
+    const fechaEnt = new Date(t.fechaEntrega).toLocaleString('es-PE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    const vencida  = new Date(t.fechaEntrega) < new Date();
+    const docente  = (db.docentes||[]).find(d=>d.id===t.docenteId);
+
+    let footerBtn = '';
+    if (t.estAl === 'pendiente' && !vencida) {
+      footerBtn = `<button class="btn btn-primary btn-sm" onclick="abrirModalEntregar(${t.id})">📤 Entregar</button>`;
+    } else if (t.estAl === 'pendiente' && vencida) {
+      footerBtn = `<span class="vencida-badge">Plazo vencido</span>`;
+    } else if (t.estAl === 'entregada') {
+      footerBtn = `<button class="btn btn-secondary btn-sm" onclick="abrirModalEntregar(${t.id})">🔄 Reenviar</button>`;
+    }
+
+    return `<div class="tarea-card">
+      <div class="tarea-header">
+        <div>
+          <div style="font-weight:700;font-size:15px;margin-bottom:4px">${t.titulo}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${t.materia} &nbsp;·&nbsp; 👨‍🏫 ${docente?docente.nombre:'—'}</div>
+        </div>
+        <span class="${badgeAl[t.estAl]}">${t.estAl}</span>
+      </div>
+      <div class="tarea-body">
+        ${t.descripcion?`<p style="font-size:13px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">${t.descripcion}</p>`:''}
+        <div style="font-size:12px;color:${vencida&&t.estAl==='pendiente'?'var(--danger)':'var(--text-muted)'};margin-bottom:10px">
+          📅 Entrega: <b>${fechaEnt}</b> ${vencida&&t.estAl==='pendiente'?'⚠️ Vencida':''}
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Archivos del docente:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${chipsArchivos(t.archivos)}</div>
+        ${t.entrega ? `
+          <div style="background:var(--surface-1);border-radius:8px;padding:10px;margin-top:8px;font-size:12px">
+            <div style="font-weight:600;margin-bottom:6px">Tu entrega:</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">${chipsArchivos(t.entrega.archivos)}</div>
+            ${t.entrega.calificacion != null ? `<div style="color:var(--secondary);font-weight:700;font-size:14px">Nota: ${t.entrega.calificacion} / ${t.notaMax||20}</div>` : '<div style="color:var(--text-muted)">Aún sin calificar</div>'}
+          </div>` : ''}
+      </div>
+      <div class="tarea-footer">${footerBtn}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Modal entregar (alumno) ───────────────────────────
+function abrirModalEntregar(tareaId) {
+  const db    = getDB();
+  const tarea = (db.tareas||[]).find(t=>t.id===tareaId); if(!tarea) return;
+  const prev  = (db.entregas||[]).find(e=>e.tareaId===tareaId && e.alumnoId===USER.alumnoId);
+  archivosEntrega = [];
+  document.getElementById('en-tarea-id').value = tareaId;
+  document.getElementById('en-comentario').value = prev?.comentario||'';
+  document.getElementById('list-entrega-files').innerHTML = '';
+  document.getElementById('men-titulo').textContent = tarea.titulo;
+  document.getElementById('en-info').innerHTML =
+    `<b>${tarea.materia}</b> &nbsp;·&nbsp; Entrega: ${new Date(tarea.fechaEntrega).toLocaleString('es-PE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})} &nbsp;·&nbsp; Nota máx: ${tarea.notaMax||20}`;
+  openModal('modal-entregar');
+}
+
+async function enviarEntrega() {
+  const tareaId = parseInt(document.getElementById('en-tarea-id').value);
+  if (!archivosEntrega.length) { showToast('Debes adjuntar al menos un archivo','error'); return; }
+  const db = getDB();
+  const comentario = document.getElementById('en-comentario').value.trim();
+  const obj = {
+    tareaId, alumnoId: USER.alumnoId,
+    fecha: new Date().toISOString(),
+    archivos: archivosEntrega,
+    comentario,
+    calificacion: null,
+    calificadoEn: null,
+  };
+  const idx = (db.entregas||[]).findIndex(e=>e.tareaId===tareaId&&e.alumnoId===USER.alumnoId);
+  if (idx >= 0) { db.entregas[idx] = {...db.entregas[idx], ...obj}; }
+  else { obj.id = genId(db.entregas||[]); (db.entregas = db.entregas||[]).push(obj); }
+  saveDB(db);
+  closeModal('modal-entregar');
+  showToast('Tarea enviada correctamente');
+  renderTareasAlumno();
+}
+
+// ── Modal nueva/editar tarea (docente) ───────────────
+function abrirModalTarea() {
+  archivosTarea = [];
+  document.getElementById('t-id').value = '';
+  document.getElementById('t-titulo').value = '';
+  document.getElementById('t-desc').value = '';
+  document.getElementById('t-entrega').value = '';
+  document.getElementById('t-nota-max').value = 20;
+  document.getElementById('list-tarea-files').innerHTML = '';
+  document.getElementById('mt-titulo').textContent = 'Nueva tarea';
+  openModal('modal-tarea');
+}
+
+function editarTarea(id) {
+  const db = getDB();
+  const t  = (db.tareas||[]).find(x=>x.id===id); if(!t) return;
+  archivosTarea = [...(t.archivos||[])];
+  document.getElementById('t-id').value = t.id;
+  document.getElementById('t-titulo').value = t.titulo;
+  document.getElementById('t-desc').value = t.descripcion||'';
+  document.getElementById('t-materia').value = t.materia;
+  document.getElementById('t-grado').value = t.grado;
+  document.getElementById('t-seccion').value = t.seccion||'';
+  document.getElementById('t-entrega').value = t.fechaEntrega ? t.fechaEntrega.slice(0,16) : '';
+  document.getElementById('t-nota-max').value = t.notaMax||20;
+  document.getElementById('mt-titulo').textContent = 'Editar tarea';
+  renderListaArchivos('list-tarea-files', archivosTarea, idx => {
+    archivosTarea.splice(idx,1);
+    renderListaArchivos('list-tarea-files', archivosTarea, null);
+  });
+  openModal('modal-tarea');
+}
+
+function guardarTarea() {
+  const titulo = document.getElementById('t-titulo').value.trim();
+  const entrega= document.getElementById('t-entrega').value;
+  if (!titulo || !entrega) { showToast('Título y fecha de entrega son obligatorios','error'); return; }
+  const db  = getDB();
+  const obj = {
+    titulo,
+    descripcion:  document.getElementById('t-desc').value.trim(),
+    materia:      document.getElementById('t-materia').value,
+    grado:        document.getElementById('t-grado').value,
+    seccion:      document.getElementById('t-seccion').value,
+    fechaEntrega: new Date(entrega).toISOString(),
+    notaMax:      parseInt(document.getElementById('t-nota-max').value)||20,
+    docenteId:    USER.docenteId || null,
+    fechaCreacion:new Date().toISOString(),
+    archivos:     archivosTarea,
+    estado:       'activa',
+  };
+  const existId = parseInt(document.getElementById('t-id').value);
+  if (existId) {
+    const idx = (db.tareas||[]).findIndex(x=>x.id===existId);
+    db.tareas[idx] = {...db.tareas[idx], ...obj};
+    showToast('Tarea actualizada');
+  } else {
+    obj.id = genId(db.tareas||[]);
+    (db.tareas = db.tareas||[]).push(obj);
+    showToast('Tarea publicada');
+  }
+  saveDB(db); closeModal('modal-tarea'); renderTareas();
+}
+
+function cerrarTarea(id) {
+  confirmar('¿Cerrar esta tarea? Ya no se aceptarán entregas.', () => {
+    const db = getDB();
+    const idx = (db.tareas||[]).findIndex(x=>x.id===id);
+    if(idx>=0){ db.tareas[idx].estado='cerrada'; saveDB(db); renderTareas(); showToast('Tarea cerrada'); }
+  });
+}
+
+function eliminarTarea(id) {
+  confirmar('¿Eliminar esta tarea y todas sus entregas?', () => {
+    const db = getDB();
+    db.tareas   = (db.tareas||[]).filter(x=>x.id!==id);
+    db.entregas = (db.entregas||[]).filter(x=>x.tareaId!==id);
+    saveDB(db); renderTareas(); showToast('Tarea eliminada','warning');
+  });
+}
+
+// ── Init ─────────────────────────────────────────────
+if (ROL === 'alumno') {
+  switchTab('alumno', document.querySelector('.tab-btn'));
+} else {
+  renderTareas();
+}
+</script>
+</body>
+</html>

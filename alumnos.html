@@ -1,0 +1,354 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alumnos – U.E. Rio Jordan</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🏫</div>
+      <div class="logo-text">U.E. Rio Jordan<small>Sistema Escolar 2024</small></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Inicio</a>
+      <div class="nav-section-label">Gestión Académica</div>
+      <a href="alumnos.html" class="nav-item active"><span class="nav-icon">👨‍🎓</span> Alumnos</a>
+      <a href="docentes.html" class="nav-item"><span class="nav-icon">👨‍🏫</span> Docentes</a>
+      <a href="calificaciones.html" class="nav-item"><span class="nav-icon">📊</span> Calificaciones</a>
+      <a href="asistencias.html" class="nav-item"><span class="nav-icon">✅</span> Asistencias</a>
+      <a href="horarios.html" class="nav-item"><span class="nav-icon">🕐</span> Horarios</a>
+      <a href="actividades.html" class="nav-item"><span class="nav-icon">📅</span> Actividades y Tareas</a>
+      <div class="nav-section-label">Administración</div>
+      <a href="matriculas.html" class="nav-item"><span class="nav-icon">📋</span> Matrículas</a>
+      <a href="finanzas.html" class="nav-item"><span class="nav-icon">💰</span> Finanzas</a>
+      
+      
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info" onclick="logout()">
+        <div class="user-avatar" id="sidebar-user-avatar">AD</div>
+        <div class="user-details">
+          <div class="user-name" id="sidebar-user-name"></div>
+          <div class="user-role" id="sidebar-user-role"></div>
+        </div>
+        <span style="font-size:14px;opacity:.5">↩</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">👨‍🎓 Módulo de Alumnos</div>
+      <div class="topbar-actions">
+        <span id="result-count" style="font-size:12px;color:var(--text-muted)"></span>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="toolbar">
+        <div class="toolbar-start">
+          <div class="search-bar" style="min-width:260px">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search" placeholder="Buscar por nombre, código, DNI..." oninput="filterTable('search','tabla-alumnos')">
+          </div>
+          <select class="form-control" id="filtro-grado" onchange="renderTabla()" style="width:140px">
+            <option value="">Todos los grados</option>
+            <option>1ro</option><option>2do</option><option>3ro</option>
+            <option>4to</option><option>5to</option><option>6to</option><option>7mo</option>
+          </select>
+          <select class="form-control" id="filtro-estado" onchange="renderTabla()" style="width:130px">
+            <option value="">Todos los estados</option>
+            <option>activo</option><option>retirado</option><option>inactivo</option>
+          </select>
+        </div>
+        <div class="toolbar-end" data-role="admin,docente">
+          <button class="btn btn-secondary" onclick="exportCSV('tabla-alumnos','alumnos')">⬇ Exportar CSV</button>
+          <button class="btn btn-primary" onclick="openModal('modal-alumno'); modoEdicion=false; limpiarForm()">
+            + Nuevo alumno
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <div class="table-container">
+            <table id="tabla-alumnos">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Alumno</th>
+                  <th>DNI</th>
+                  <th>Grado / Sección</th>
+                  <th>Apoderado</th>
+                  <th>Teléfono</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-alumnos"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL ALUMNO -->
+<div class="modal-overlay" id="modal-alumno" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-titulo">Nuevo alumno</h2>
+      <button class="btn-icon" onclick="closeModal('modal-alumno')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="f-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre completo *</label>
+          <input type="text" id="f-nombre" class="form-control" placeholder="Apellidos y nombres">
+        </div>
+        <div class="form-group">
+          <label class="form-label">DNI *</label>
+          <input type="text" id="f-dni" class="form-control" maxlength="8" placeholder="12345678">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Fecha de nacimiento</label>
+          <input type="date" id="f-fechaNac" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Año de ingreso</label>
+          <input type="number" id="f-anioIngreso" class="form-control" min="2000" max="2030" placeholder="2024">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Grado *</label>
+          <select id="f-grado" class="form-control">
+            <option>1ro</option><option>2do</option><option>3ro</option>
+            <option>4to</option><option>5to</option><option>6to</option><option>7mo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sección *</label>
+          <select id="f-seccion" class="form-control">
+            <option>A</option><option>B</option><option>C</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select id="f-estado" class="form-control">
+            <option>activo</option><option>retirado</option><option>inactivo</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Apoderado *</label>
+          <input type="text" id="f-apoderado" class="form-control" placeholder="Nombre del apoderado">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Teléfono apoderado</label>
+          <input type="text" id="f-telefono" class="form-control" placeholder="999-999-999">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dirección</label>
+        <input type="text" id="f-direccion" class="form-control" placeholder="Dirección del domicilio">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Correo electrónico</label>
+        <input type="email" id="f-email" class="form-control" placeholder="alumno@escuela.edu">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-alumno')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarAlumno()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VER ALUMNO -->
+<div class="modal-overlay" id="modal-ver" style="display:none">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h2>Ficha del alumno</h2>
+      <button class="btn-icon" onclick="closeModal('modal-ver')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-ver-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-ver')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script>
+  initDB();
+  requireAuth();
+  renderUserBar();
+  applyRoleVisibility();
+
+  let modoEdicion = false;
+
+  function renderTabla() {
+    const db = getDB();
+    const gradoFiltro = document.getElementById('filtro-grado').value;
+    const estadoFiltro = document.getElementById('filtro-estado').value;
+    let alumnos = db.alumnos;
+    if (gradoFiltro) alumnos = alumnos.filter(a => a.grado === gradoFiltro);
+    if (estadoFiltro) alumnos = alumnos.filter(a => a.estado === estadoFiltro);
+
+    document.getElementById('result-count').textContent = alumnos.length + ' alumno(s)';
+    const tbody = document.getElementById('tbody-alumnos');
+    tbody.innerHTML = '';
+    alumnos.forEach(a => {
+      const initials = a.nombre.split(' ').map(w => w[0]).join('').slice(0, 2);
+      tbody.innerHTML += `
+        <tr>
+          <td><code style="font-size:12px;background:var(--surface-2);padding:2px 6px;border-radius:4px">${a.codigo}</code></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="avatar">${initials}</div>
+              <div>
+                <div style="font-weight:500">${a.nombre}</div>
+                <div style="font-size:11px;color:var(--text-muted)">${a.email}</div>
+              </div>
+            </div>
+          </td>
+          <td>${a.dni}</td>
+          <td>${a.grado} — Sec. ${a.seccion}</td>
+          <td>${a.apoderado}</td>
+          <td>${a.telefonoApod}</td>
+          <td><span class="badge ${badgeEstado(a.estado)}">${a.estado}</span></td>
+          <td>
+            <div style="display:flex;gap:4px">
+              <button class="btn btn-secondary btn-sm" onclick="verAlumno(${a.id})">Ver</button>
+              <button class="btn btn-secondary btn-sm" onclick="editarAlumno(${a.id})" data-role="admin">Editar</button>
+              <button class="btn btn-danger btn-sm" onclick="eliminarAlumno(${a.id})" data-role="admin">✕</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+    applyRoleVisibility();
+  }
+
+  function limpiarForm() {
+    ['f-id','f-nombre','f-dni','f-fechaNac','f-anioIngreso','f-apoderado','f-telefono','f-direccion','f-email'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('f-grado').value = '1ro';
+    document.getElementById('f-seccion').value = 'A';
+    document.getElementById('f-estado').value = 'activo';
+  }
+
+  function editarAlumno(id) {
+    const db = getDB();
+    const a = db.alumnos.find(x => x.id === id);
+    if (!a) return;
+    modoEdicion = true;
+    document.getElementById('modal-titulo').textContent = 'Editar alumno';
+    document.getElementById('f-id').value = a.id;
+    document.getElementById('f-nombre').value = a.nombre;
+    document.getElementById('f-dni').value = a.dni;
+    document.getElementById('f-fechaNac').value = a.fechaNac;
+    document.getElementById('f-anioIngreso').value = a.anioIngreso;
+    document.getElementById('f-grado').value = a.grado;
+    document.getElementById('f-seccion').value = a.seccion;
+    document.getElementById('f-estado').value = a.estado;
+    document.getElementById('f-apoderado').value = a.apoderado;
+    document.getElementById('f-telefono').value = a.telefonoApod;
+    document.getElementById('f-direccion').value = a.direccion;
+    document.getElementById('f-email').value = a.email;
+    openModal('modal-alumno');
+  }
+
+  function guardarAlumno() {
+    const nombre = document.getElementById('f-nombre').value.trim();
+    const dni = document.getElementById('f-dni').value.trim();
+    if (!nombre || !dni) { showToast('Nombre y DNI son obligatorios', 'error'); return; }
+
+    const db = getDB();
+    const obj = {
+      nombre, dni,
+      fechaNac: document.getElementById('f-fechaNac').value,
+      anioIngreso: parseInt(document.getElementById('f-anioIngreso').value) || 2024,
+      grado: document.getElementById('f-grado').value,
+      seccion: document.getElementById('f-seccion').value,
+      estado: document.getElementById('f-estado').value,
+      apoderado: document.getElementById('f-apoderado').value,
+      telefonoApod: document.getElementById('f-telefono').value,
+      direccion: document.getElementById('f-direccion').value,
+      email: document.getElementById('f-email').value,
+    };
+
+    if (modoEdicion) {
+      const id = parseInt(document.getElementById('f-id').value);
+      const idx = db.alumnos.findIndex(x => x.id === id);
+      db.alumnos[idx] = { ...db.alumnos[idx], ...obj };
+      showToast('Alumno actualizado correctamente');
+    } else {
+      const newId = genId(db.alumnos);
+      const codigo = 'ALU-' + String(newId).padStart(3, '0');
+      db.alumnos.push({ id: newId, codigo, ...obj });
+      showToast('Alumno registrado correctamente');
+    }
+
+    saveDB(db);
+    closeModal('modal-alumno');
+    renderTabla();
+  }
+
+  function eliminarAlumno(id) {
+    confirmar('¿Eliminar este alumno? Esta acción no se puede deshacer.', () => {
+      const db = getDB();
+      db.alumnos = db.alumnos.filter(x => x.id !== id);
+      saveDB(db);
+      renderTabla();
+      showToast('Alumno eliminado', 'warning');
+    });
+  }
+
+  function verAlumno(id) {
+    const db = getDB();
+    const a = db.alumnos.find(x => x.id === id);
+    if (!a) return;
+    const initials = a.nombre.split(' ').map(w => w[0]).join('').slice(0, 2);
+    document.getElementById('modal-ver-body').innerHTML = `
+      <div style="text-align:center;margin-bottom:20px">
+        <div class="avatar avatar-lg" style="margin:0 auto 10px;font-size:20px">${initials}</div>
+        <h3>${a.nombre}</h3>
+        <div style="margin-top:6px"><span class="badge ${badgeEstado(a.estado)}">${a.estado}</span></div>
+      </div>
+      <div class="divider"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13.5px">
+        <div><div class="section-title">Código</div>${a.codigo}</div>
+        <div><div class="section-title">DNI</div>${a.dni}</div>
+        <div><div class="section-title">Fecha de nacimiento</div>${formatFecha(a.fechaNac)}</div>
+        <div><div class="section-title">Edad</div>${calcEdad(a.fechaNac)} años</div>
+        <div><div class="section-title">Grado</div>${a.grado} grado</div>
+        <div><div class="section-title">Sección</div>${a.seccion}</div>
+        <div><div class="section-title">Año de ingreso</div>${a.anioIngreso}</div>
+        <div><div class="section-title">Correo</div>${a.email}</div>
+        <div><div class="section-title">Apoderado</div>${a.apoderado}</div>
+        <div><div class="section-title">Teléfono</div>${a.telefonoApod}</div>
+        <div style="grid-column:1/-1"><div class="section-title">Dirección</div>${a.direccion}</div>
+      </div>
+    `;
+    openModal('modal-ver');
+  }
+
+  renderTabla();
+</script>
+</body>
+</html>

@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Actividades y Tareas – U.E. Rio Jordan</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* ── Actividades ── */
+    .act-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; transition:box-shadow .15s; }
+    .act-card:hover { box-shadow:var(--shadow-md); }
+    .act-card-header { padding:14px 16px 10px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+    .act-card-body { padding:12px 16px 14px; }
+    .act-card-footer { padding:10px 16px; border-top:1px solid var(--border); background:var(--surface-1); display:flex; align-items:center; justify-content:space-between; }
+    .tipo-bar { width:4px; border-radius:2px; align-self:stretch; flex-shrink:0; }
+    .cal-nav { display:flex; align-items:center; gap:12px; }
+    .cal-nav button { background:none; border:1px solid var(--border); border-radius:6px; padding:4px 10px; cursor:pointer; font-size:14px; }
+    .cal-nav button:hover { background:var(--surface-1); }
+    .cal-month { font-weight:600; font-size:15px; min-width:160px; text-align:center; }
+    /* ── Tareas ── */
+    .tarea-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; transition:box-shadow .15s; }
+    .tarea-card:hover { box-shadow:var(--shadow-md); }
+    .tarea-header { padding:14px 16px 10px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+    .tarea-body { padding:12px 16px; }
+    .tarea-footer { padding:10px 16px; border-top:1px solid var(--border); background:var(--surface-1); display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+    .archivo-chip { display:inline-flex; align-items:center; gap:6px; background:var(--surface-1); border:1px solid var(--border); border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer; transition:background .15s; text-decoration:none; color:var(--text-primary); }
+    .archivo-chip:hover { background:var(--primary-bg); border-color:var(--primary); }
+    .drop-zone { border:2px dashed var(--border); border-radius:var(--radius); padding:28px; text-align:center; cursor:pointer; transition:all .2s; background:var(--surface-1); }
+    .drop-zone.drag-over,.drop-zone:hover { border-color:var(--primary); background:var(--primary-bg); }
+    .drop-zone .dz-icon { font-size:36px; margin-bottom:8px; }
+    .drop-zone p { font-size:13px; color:var(--text-muted); }
+    .file-list { display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+    .file-item { display:flex; align-items:center; gap:10px; background:var(--surface-1); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:13px; }
+    .file-item .fi-name { flex:1; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .file-item .fi-size { color:var(--text-muted); font-size:11px; flex-shrink:0; }
+    .file-item .fi-del { cursor:pointer; color:var(--danger); font-size:16px; flex-shrink:0; }
+    .entrega-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .entrega-row:last-child { border-bottom:none; }
+    .nota-input { width:80px; text-align:center; }
+    .progress-bar-wrap { background:var(--border); border-radius:4px; height:6px; flex:1; }
+    .progress-bar-fill { height:6px; border-radius:4px; background:var(--primary); transition:width .4s; }
+    .badge-vencida   { background:#fee2e2; color:#dc2626; font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; display:inline-block; }
+    .badge-pendiente { background:#fef3c7; color:#d97706; font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; display:inline-block; }
+    .badge-entregada { background:#dcfce7; color:#16a34a; font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; display:inline-block; }
+    .badge-calificada{ background:#dbeafe; color:#2563eb; font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; display:inline-block; }
+    .badge-activa    { background:#d1fae5; color:#065f46; font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; display:inline-block; }
+    .badge-cerrada   { background:#e5e7eb; color:#374151; font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; display:inline-block; }
+    /* sub-tabs */
+    .sub-tabs { display:flex; gap:4px; margin-bottom:16px; background:var(--surface-1); border:1px solid var(--border); border-radius:10px; padding:4px; width:fit-content; }
+    .sub-tab-btn { background:none; border:none; padding:7px 18px; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; color:var(--text-muted); transition:all .15s; }
+    .sub-tab-btn.active { background:var(--surface); color:var(--text-primary); box-shadow:0 1px 4px rgba(0,0,0,.1); font-weight:600; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><div class="logo-icon">🏫</div><div class="logo-text">U.E. Rio Jordan<small>Sistema Escolar 2024</small></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Inicio</a>
+      <div class="nav-section-label">Gestión Académica</div>
+      <a href="alumnos.html" class="nav-item"><span class="nav-icon">👨‍🎓</span> Alumnos</a>
+      <a href="docentes.html" class="nav-item"><span class="nav-icon">👨‍🏫</span> Docentes</a>
+      <a href="calificaciones.html" class="nav-item"><span class="nav-icon">📊</span> Calificaciones</a>
+      <a href="asistencias.html" class="nav-item"><span class="nav-icon">✅</span> Asistencias</a>
+      <a href="horarios.html" class="nav-item"><span class="nav-icon">🕐</span> Horarios</a>
+      <a href="actividades.html" class="nav-item active"><span class="nav-icon">📅</span> Actividades y Tareas</a>
+      <div class="nav-section-label">Administración</div>
+      <a href="matriculas.html" class="nav-item"><span class="nav-icon">📋</span> Matrículas</a>
+      <a href="finanzas.html" class="nav-item"><span class="nav-icon">💰</span> Finanzas</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info" onclick="logout()">
+        <div class="user-avatar" id="sidebar-user-avatar">AD</div>
+        <div class="user-details"><div class="user-name" id="sidebar-user-name"></div><div class="user-role" id="sidebar-user-role"></div></div>
+        <span style="font-size:14px;opacity:.5">↩</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">📅 Actividades y Tareas</div>
+    </div>
+    <div class="page-content">
+
+      <!-- TABS PRINCIPALES -->
+      <div class="tabs" style="margin-bottom:20px">
+        <button class="tab-btn active" onclick="switchMain('actividades',this)">📅 Actividades del año</button>
+        <button class="tab-btn" onclick="switchMain('tareas',this)" data-role="admin,docente">📝 Gestión de tareas</button>
+        <button class="tab-btn" onclick="switchMain('mis-tareas',this)" data-role="alumno">📝 Mis tareas</button>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           SECCIÓN ACTIVIDADES DEL AÑO
+           ════════════════════════════════════════ -->
+      <div id="sec-actividades">
+        <div class="sub-tabs">
+          <button class="sub-tab-btn active" onclick="switchSub('lista',this)">Lista</button>
+          <button class="sub-tab-btn" onclick="switchSub('calendario',this)">Calendario</button>
+        </div>
+
+        <!-- Sub-tab Lista -->
+        <div id="sub-lista">
+          <div class="toolbar">
+            <div class="toolbar-start" style="flex-wrap:wrap;gap:10px">
+              <div class="search-bar" style="min-width:220px">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-act" placeholder="Buscar actividad..." oninput="renderActividades()">
+              </div>
+              <select class="form-control" id="f-tipo-act" onchange="renderActividades()" style="width:140px">
+                <option value="">Todos los tipos</option>
+                <option>academico</option><option>cultural</option><option>deportivo</option>
+                <option>institucional</option><option>cívico</option><option>social</option>
+              </select>
+              <select class="form-control" id="f-estado-act" onchange="renderActividades()" style="width:140px">
+                <option value="">Todos los estados</option>
+                <option>programado</option><option>en progreso</option><option>realizado</option><option>cancelado</option>
+              </select>
+            </div>
+            <div class="toolbar-end" data-role="admin">
+              <button class="btn btn-primary" onclick="openModal('modal-act');limpiarFormA()">+ Nueva actividad</button>
+            </div>
+          </div>
+          <div id="actividades-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px"></div>
+          <div id="actividades-empty" class="empty-state" style="display:none">
+            <div class="empty-icon">📅</div><h3>Sin actividades</h3>
+            <p>No hay actividades que coincidan con los filtros seleccionados.</p>
+          </div>
+        </div>
+
+        <!-- Sub-tab Calendario -->
+        <div id="sub-calendario" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <div class="cal-nav">
+                <button onclick="cambiarMes(-1)">‹</button>
+                <div class="cal-month" id="cal-titulo"></div>
+                <button onclick="cambiarMes(1)">›</button>
+              </div>
+              <div style="display:flex;gap:10px;font-size:12px;flex-wrap:wrap">
+                <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1565c0;margin-right:4px"></span>Académico</span>
+                <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#2e7d32;margin-right:4px"></span>Cultural/Social</span>
+                <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e65100;margin-right:4px"></span>Deportivo</span>
+                <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f57f17;margin-right:4px"></span>Institucional</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="calendar-grid" id="cal-header"></div>
+              <div class="calendar-grid" id="cal-days" style="margin-top:4px;gap:4px"></div>
+            </div>
+            <div class="card-footer" id="cal-events-list" style="min-height:48px;background:var(--surface)">
+              <span style="color:var(--text-muted);font-size:13px">Selecciona un día para ver sus actividades</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           SECCIÓN TAREAS (DOCENTE / ADMIN)
+           ════════════════════════════════════════ -->
+      <div id="sec-tareas" style="display:none" data-role="admin,docente">
+        <div class="toolbar">
+          <div class="toolbar-start" style="flex-wrap:wrap;gap:10px">
+            <div class="search-bar" style="min-width:220px">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="search-tarea" placeholder="Buscar tarea..." oninput="renderTareas()">
+            </div>
+            <select class="form-control" id="f-grado-t" onchange="renderTareas()" style="width:120px">
+              <option value="">Todos los grados</option>
+              <option>1ro</option><option>2do</option><option>3ro</option><option>4to</option><option>5to</option><option>6to</option><option>7mo</option>
+            </select>
+            <select class="form-control" id="f-estado-t" onchange="renderTareas()" style="width:130px">
+              <option value="">Todos</option>
+              <option value="activa">Activa</option>
+              <option value="vencida">Vencida</option>
+              <option value="cerrada">Cerrada</option>
+            </select>
+          </div>
+          <div class="toolbar-end">
+            <button class="btn btn-primary" onclick="abrirModalTarea()">+ Nueva tarea</button>
+          </div>
+        </div>
+        <div id="tareas-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px"></div>
+        <div id="tareas-empty" class="empty-state" style="display:none">
+          <div class="empty-icon">📝</div><h3>Sin tareas publicadas</h3>
+          <p>Crea tu primera tarea con el botón + Nueva tarea.</p>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           SECCIÓN MIS TAREAS (ALUMNO)
+           ════════════════════════════════════════ -->
+      <div id="sec-mis-tareas" style="display:none" data-role="alumno">
+        <div class="toolbar">
+          <div class="toolbar-start">
+            <select class="form-control" id="f-estado-al" onchange="renderTareasAlumno()" style="width:150px">
+              <option value="">Todas</option>
+              <option value="pendiente">Pendientes</option>
+              <option value="entregada">Entregadas</option>
+              <option value="calificada">Calificadas</option>
+            </select>
+          </div>
+        </div>
+        <div id="tareas-alumno-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px"></div>
+        <div id="tareas-alumno-empty" class="empty-state" style="display:none">
+          <div class="empty-icon">✅</div><h3>No hay tareas asignadas</h3>
+          <p>El docente aún no ha publicado tareas para tu grado.</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ══ MODAL ACTIVIDAD ══ -->
+<div class="modal-overlay" id="modal-act" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-a-titulo">Nueva actividad</h2>
+      <button class="btn-icon" onclick="closeModal('modal-act')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="a-id">
+      <div class="form-group">
+        <label class="form-label">Título *</label>
+        <input type="text" id="a-titulo" class="form-control" placeholder="Nombre de la actividad">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Fecha *</label>
+          <input type="date" id="a-fecha" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select id="a-tipo" class="form-control">
+            <option>academico</option><option>cultural</option><option>deportivo</option>
+            <option>institucional</option><option>cívico</option><option>social</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select id="a-estado" class="form-control">
+            <option>programado</option><option>en progreso</option><option>realizado</option><option>cancelado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Lugar</label>
+          <input type="text" id="a-lugar" class="form-control" placeholder="Auditorio, Patio...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Responsable</label>
+        <input type="text" id="a-responsable" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción</label>
+        <textarea id="a-descripcion" class="form-control" rows="3"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-act')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarActividad()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL NUEVA / EDITAR TAREA ══ -->
+<div class="modal-overlay" id="modal-tarea" style="display:none">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <h2 id="mt-titulo">Nueva tarea</h2>
+      <button class="btn-icon" onclick="closeModal('modal-tarea')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="t-id">
+      <div class="form-group">
+        <label class="form-label">Título *</label>
+        <input type="text" id="t-titulo" class="form-control" placeholder="Ej: Ejercicios de álgebra – Cap. 3">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción / Instrucciones</label>
+        <textarea id="t-desc" class="form-control" rows="3" placeholder="Describe qué deben hacer los estudiantes..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Materia *</label>
+          <select id="t-materia" class="form-control">
+            <option>Matemáticas</option><option>Lenguaje</option><option>Ciencias Naturales</option>
+            <option>Historia</option><option>Inglés</option><option>Arte</option>
+            <option>Educación Física</option><option>Computación</option><option>Otra</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Grado *</label>
+          <select id="t-grado" class="form-control">
+            <option>1ro</option><option>2do</option><option>3ro</option><option>4to</option><option>5to</option><option>6to</option><option>7mo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sección</label>
+          <select id="t-seccion" class="form-control">
+            <option value="">Todas</option><option>A</option><option>B</option><option>C</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Fecha límite de entrega *</label>
+          <input type="datetime-local" id="t-entrega" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nota máxima</label>
+          <input type="number" id="t-nota-max" class="form-control" value="20" min="1" max="100">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Archivos adjuntos (PDF, Word, Excel, Imágenes)</label>
+        <div class="drop-zone" id="dz-tarea" onclick="document.getElementById('inp-tarea-files').click()">
+          <div class="dz-icon">📎</div>
+          <p>Haz clic o arrastra archivos aquí<br><small>PDF · DOC · DOCX · XLS · XLSX · PNG · JPG · JPEG</small></p>
+        </div>
+        <input type="file" id="inp-tarea-files" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" style="display:none" onchange="agregarArchivosTarea(this.files)">
+        <div class="file-list" id="list-tarea-files"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-tarea')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarTarea()">Publicar tarea</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL VER ENTREGAS (docente califica) ══ -->
+<div class="modal-overlay" id="modal-entregas" style="display:none">
+  <div class="modal" style="max-width:660px">
+    <div class="modal-header">
+      <h2 id="me-titulo">Entregas</h2>
+      <button class="btn-icon" onclick="closeModal('modal-entregas')">✕</button>
+    </div>
+    <div class="modal-body" id="me-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-entregas')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL ENTREGAR TAREA (alumno) ══ -->
+<div class="modal-overlay" id="modal-entregar" style="display:none">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h2 id="men-titulo">Entregar tarea</h2>
+      <button class="btn-icon" onclick="closeModal('modal-entregar')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="en-tarea-id">
+      <div id="en-info" style="background:var(--surface-1);border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;color:var(--text-muted)"></div>
+      <div class="form-group">
+        <label class="form-label">Comentario (opcional)</label>
+        <textarea id="en-comentario" class="form-control" rows="2" placeholder="Agrega un comentario a tu entrega..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Archivo(s) de entrega *</label>
+        <div class="drop-zone" id="dz-entrega" onclick="document.getElementById('inp-entrega-files').click()">
+          <div class="dz-icon">📤</div>
+          <p>Haz clic o arrastra tus archivos aquí<br><small>PDF · DOC · DOCX · XLS · XLSX · PNG · JPG · JPEG</small></p>
+        </div>
+        <input type="file" id="inp-entrega-files" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" style="display:none" onchange="agregarArchivosEntrega(this.files)">
+        <div class="file-list" id="list-entrega-files"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-entregar')">Cancelar</button>
+      <button class="btn btn-primary" onclick="enviarEntrega()">📤 Enviar entrega</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script>
+initDB(); requireAuth(); renderUserBar(); applyRoleVisibility();
+
+const USER = JSON.parse(sessionStorage.getItem('user') || '{}');
+const ROL  = USER.role || '';
+
+/* ══════════════════════════════════════════
+   NAVEGACIÓN PRINCIPAL
+══════════════════════════════════════════ */
+function switchMain(sec, btn) {
+  ['actividades','tareas','mis-tareas'].forEach(s =>
+    document.getElementById('sec-' + s).style.display = s === sec ? '' : 'none'
+  );
+  document.querySelectorAll('.tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (sec === 'actividades')  renderActividades();
+  if (sec === 'tareas')       renderTareas();
+  if (sec === 'mis-tareas')   renderTareasAlumno();
+}
+
+function switchSub(sub, btn) {
+  ['lista','calendario'].forEach(s =>
+    document.getElementById('sub-' + s).style.display = s === sub ? '' : 'none'
+  );
+  document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (sub === 'calendario') renderCalendario();
+}
+
+/* ══════════════════════════════════════════
+   ACTIVIDADES DEL AÑO
+══════════════════════════════════════════ */
+const TIPO_COLORES = { academico:'#1565c0', cultural:'#2e7d32', deportivo:'#e65100', institucional:'#f57f17', cívico:'#c62828', social:'#6a1b9a' };
+const TIPO_BG      = { academico:'#e3f2fd', cultural:'#e8f5e9', deportivo:'#fff3e0', institucional:'#fff8e1', cívico:'#ffebee', social:'#f3e5f5' };
+const ESTADO_ICONS = { programado:'🗓', 'en progreso':'🔄', realizado:'✅', cancelado:'❌' };
+
+function renderActividades() {
+  const db = getDB();
+  const search  = document.getElementById('search-act').value.toLowerCase();
+  const tipoF   = document.getElementById('f-tipo-act').value;
+  const estadoF = document.getElementById('f-estado-act').value;
+  let data = db.actividades || [];
+  if (tipoF)   data = data.filter(a => a.tipo   === tipoF);
+  if (estadoF) data = data.filter(a => a.estado === estadoF);
+  if (search)  data = data.filter(a => (a.titulo+a.descripcion+a.responsable).toLowerCase().includes(search));
+  data.sort((a,b) => a.fecha.localeCompare(b.fecha));
+
+  const grid  = document.getElementById('actividades-grid');
+  const empty = document.getElementById('actividades-empty');
+  grid.innerHTML = '';
+  if (!data.length) { grid.style.display='none'; empty.style.display='block'; return; }
+  grid.style.display = ''; empty.style.display = 'none';
+
+  data.forEach(a => {
+    const color = TIPO_COLORES[a.tipo] || '#888';
+    const bg    = TIPO_BG[a.tipo]     || '#f5f5f5';
+    const icon  = ESTADO_ICONS[a.estado] || '📅';
+    grid.innerHTML += `
+      <div class="act-card">
+        <div class="act-card-header">
+          <div style="display:flex;gap:10px;align-items:flex-start;flex:1">
+            <div class="tipo-bar" style="background:${color};min-height:40px"></div>
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:14px;margin-bottom:4px">${a.titulo}</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <span class="badge" style="background:${bg};color:${color}">${a.tipo}</span>
+                <span class="badge ${badgeEstado(a.estado)}">${icon} ${a.estado}</span>
+              </div>
+            </div>
+          </div>
+          <div data-role="admin" style="display:flex;gap:4px">
+            <button class="btn-icon" onclick="editarActividad(${a.id})">✏️</button>
+            <button class="btn-icon" onclick="eliminarActividad(${a.id})">🗑</button>
+          </div>
+        </div>
+        <div class="act-card-body">
+          <p style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px">${a.descripcion||''}</p>
+          <div style="font-size:12px;color:var(--text-muted);display:flex;flex-direction:column;gap:4px">
+            <span>📍 ${a.lugar||'—'}</span>
+            <span>👤 Responsable: ${a.responsable||'—'}</span>
+          </div>
+        </div>
+        <div class="act-card-footer">
+          <span style="font-size:13px;font-weight:600;color:var(--primary)">📅 ${formatFecha(a.fecha)}</span>
+          ${a.estado==='programado'?`<button class="btn btn-success btn-sm" onclick="marcarRealizado(${a.id})">✓ Marcar realizado</button>`:''}
+        </div>
+      </div>`;
+  });
+  applyRoleVisibility();
+}
+
+function marcarRealizado(id) {
+  const db=getDB(); const idx=db.actividades.findIndex(x=>x.id===id);
+  db.actividades[idx].estado='realizado'; saveDB(db); renderActividades(); showToast('Marcada como realizada');
+}
+
+function limpiarFormA() {
+  ['a-id','a-titulo','a-fecha','a-lugar','a-responsable','a-descripcion'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('a-tipo').value='academico';
+  document.getElementById('a-estado').value='programado';
+  document.getElementById('modal-a-titulo').textContent='Nueva actividad';
+}
+
+function editarActividad(id) {
+  const db=getDB(); const a=db.actividades.find(x=>x.id===id); if(!a) return;
+  document.getElementById('modal-a-titulo').textContent='Editar actividad';
+  ['a-id','a-titulo','a-fecha','a-tipo','a-estado','a-lugar','a-responsable','a-descripcion'].forEach(k=>{
+    const fld=k.replace('a-',''); document.getElementById(k).value=a[fld]||'';
+  });
+  document.getElementById('a-id').value = a.id;
+  openModal('modal-act');
+}
+
+function guardarActividad() {
+  const titulo=document.getElementById('a-titulo').value.trim();
+  const fecha=document.getElementById('a-fecha').value;
+  if(!titulo||!fecha){showToast('Título y fecha son obligatorios','error');return;}
+  const db=getDB();
+  const obj={titulo,fecha,tipo:document.getElementById('a-tipo').value,estado:document.getElementById('a-estado').value,
+    lugar:document.getElementById('a-lugar').value,responsable:document.getElementById('a-responsable').value,
+    descripcion:document.getElementById('a-descripcion').value};
+  const existId=parseInt(document.getElementById('a-id').value);
+  if(existId){const idx=db.actividades.findIndex(x=>x.id===existId);db.actividades[idx]={...db.actividades[idx],...obj};showToast('Actividad actualizada');}
+  else{db.actividades.push({id:genId(db.actividades),...obj});showToast('Actividad registrada');}
+  saveDB(db);closeModal('modal-act');renderActividades();
+}
+
+function eliminarActividad(id){
+  confirmar('¿Eliminar esta actividad?',()=>{const db=getDB();db.actividades=db.actividades.filter(x=>x.id!==id);saveDB(db);renderActividades();showToast('Eliminada','warning');});
+}
+
+/* ── Calendario ── */
+let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+
+function renderCalendario() {
+  const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-titulo').textContent=meses[calMonth]+' '+calYear;
+  const db=getDB(); const actsByDate={};
+  (db.actividades||[]).forEach(a=>{if(!actsByDate[a.fecha])actsByDate[a.fecha]=[];actsByDate[a.fecha].push(a);});
+  const header=document.getElementById('cal-header');
+  header.innerHTML='';['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'].forEach(d=>{header.innerHTML+=`<div class="cal-day-header">${d}</div>`;});
+  const daysEl=document.getElementById('cal-days'); daysEl.innerHTML='';
+  const first=new Date(calYear,calMonth,1).getDay();
+  const total=new Date(calYear,calMonth+1,0).getDate();
+  const hoy=new Date(); const esHoy=d=>d===hoy.getDate()&&calMonth===hoy.getMonth()&&calYear===hoy.getFullYear();
+  for(let i=0;i<first;i++) daysEl.innerHTML+=`<div></div>`;
+  for(let d=1;d<=total;d++){
+    const fechaStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const hasEv=!!actsByDate[fechaStr];
+    daysEl.innerHTML+=`<div class="cal-day${esHoy(d)?' today':''}${hasEv?' has-event':''}" onclick="mostrarEventosDia('${fechaStr}')">${d}</div>`;
+  }
+}
+
+function cambiarMes(dir){
+  calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}
+  renderCalendario();document.getElementById('cal-events-list').innerHTML='<span style="color:var(--text-muted);font-size:13px">Selecciona un día</span>';
+}
+
+function mostrarEventosDia(fecha){
+  const db=getDB(); const acts=(db.actividades||[]).filter(a=>a.fecha===fecha);
+  const el=document.getElementById('cal-events-list');
+  if(!acts.length){el.innerHTML=`<span style="color:var(--text-muted);font-size:13px">Sin actividades el ${formatFecha(fecha)}</span>`;return;}
+  el.innerHTML=`<div style="font-size:13px;font-weight:600;margin-bottom:8px">${formatFecha(fecha)}</div>`+
+    acts.map(a=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="width:8px;height:8px;border-radius:50%;background:${TIPO_COLORES[a.tipo]||'#888'};flex-shrink:0"></div>
+      <span style="font-weight:500;font-size:13px">${a.titulo}</span>
+      <span class="badge ${badgeEstado(a.estado)}" style="font-size:10px">${a.estado}</span>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════════
+   TAREAS – UTILIDADES
+══════════════════════════════════════════ */
+const TIPOS_ICON={ pdf:'📄',doc:'📝',docx:'📝',xls:'📊',xlsx:'📊',png:'🖼️',jpg:'🖼️',jpeg:'🖼️' };
+function iconArch(n){const e=n.split('.').pop().toLowerCase();return TIPOS_ICON[e]||'📎';}
+function fmtSize(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
+function leerArch(f){return new Promise(r=>{const rd=new FileReader();rd.onload=e=>r({nombre:f.name,tipo:f.type,datos:e.target.result,size:f.size});rd.readAsDataURL(f);});}
+
+let archivosTarea=[], archivosEntrega=[];
+
+function renderListaArch(containerId,lista,onDel){
+  document.getElementById(containerId).innerHTML=lista.map((a,i)=>`
+    <div class="file-item">
+      <span style="font-size:18px">${iconArch(a.nombre)}</span>
+      <span class="fi-name">${a.nombre}</span>
+      <span class="fi-size">${fmtSize(a.size||0)}</span>
+      ${onDel?`<span class="fi-del" onclick="(${onDel.toString()})(${i})">✕</span>`:''}
+    </div>`).join('');
+}
+
+async function agregarArchivosTarea(files){
+  for(const f of files){if(!archivosTarea.find(x=>x.nombre===f.name)){archivosTarea.push(await leerArch(f));}}
+  renderListaArch('list-tarea-files',archivosTarea,i=>{archivosTarea.splice(i,1);renderListaArch('list-tarea-files',archivosTarea,null);});
+  document.getElementById('inp-tarea-files').value='';
+}
+
+async function agregarArchivosEntrega(files){
+  for(const f of files){if(!archivosEntrega.find(x=>x.nombre===f.name)){archivosEntrega.push(await leerArch(f));}}
+  renderListaArch('list-entrega-files',archivosEntrega,i=>{archivosEntrega.splice(i,1);renderListaArch('list-entrega-files',archivosEntrega,null);});
+  document.getElementById('inp-entrega-files').value='';
+}
+
+function chipsArch(archivos){
+  if(!archivos||!archivos.length)return'<span style="font-size:12px;color:var(--text-muted)">Sin archivos</span>';
+  return archivos.map(a=>`<a class="archivo-chip" href="${a.datos}" download="${a.nombre}">${iconArch(a.nombre)} ${a.nombre}</a>`).join('');
+}
+
+function estadoTarea(t){if(t.estado==='cerrada')return'cerrada';return new Date(t.fechaEntrega)<new Date()?'vencida':'activa';}
+
+function badgeTarea(est){
+  const m={activa:'badge-activa',vencida:'badge-vencida',cerrada:'badge-cerrada'};
+  return`<span class="${m[est]||'badge-pendiente'}">${est}</span>`;
+}
+
+/* ── Drag & drop ── */
+['dz-tarea','dz-entrega'].forEach(id=>{
+  const el=document.getElementById(id); if(!el)return;
+  el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over');});
+  el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));
+  el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drag-over');
+    (id==='dz-tarea'?agregarArchivosTarea:agregarArchivosEntrega)(e.dataTransfer.files);});
+});
+
+/* ══════════════════════════════════════════
+   TAREAS – VISTA DOCENTE
+══════════════════════════════════════════ */
+function renderTareas(){
+  const db=getDB(); const busq=document.getElementById('search-tarea').value.toLowerCase();
+  const gradoF=document.getElementById('f-grado-t').value; const estF=document.getElementById('f-estado-t').value;
+  let lista=db.tareas||[];
+  if(ROL==='docente') lista=lista.filter(t=>t.docenteId===USER.docenteId);
+  if(busq) lista=lista.filter(t=>(t.titulo+' '+(t.descripcion||'')).toLowerCase().includes(busq));
+  if(gradoF) lista=lista.filter(t=>t.grado===gradoF);
+  if(estF) lista=lista.filter(t=>estadoTarea(t)===estF);
+
+  const grid=document.getElementById('tareas-grid'); const empty=document.getElementById('tareas-empty');
+  if(!lista.length){grid.innerHTML='';empty.style.display='';return;}
+  empty.style.display='none';
+
+  grid.innerHTML=lista.map(t=>{
+    const entregas=(db.entregas||[]).filter(e=>e.tareaId===t.id);
+    const alumnos=(db.alumnos||[]).filter(a=>a.grado===t.grado&&(!t.seccion||a.seccion===t.seccion)&&a.estado==='activo');
+    const pct=alumnos.length?Math.round(entregas.length/alumnos.length*100):0;
+    const est=estadoTarea(t);
+    const docente=(db.docentes||[]).find(d=>d.id===t.docenteId);
+    const fechaEnt=new Date(t.fechaEntrega).toLocaleString('es-PE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    return`<div class="tarea-card">
+      <div class="tarea-header">
+        <div><div style="font-weight:700;font-size:15px;margin-bottom:4px">${t.titulo}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${t.materia} · ${t.grado}° ${t.seccion||'Todas'}</div></div>
+        ${badgeTarea(est)}
+      </div>
+      <div class="tarea-body">
+        ${t.descripcion?`<p style="font-size:13px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">${t.descripcion}</p>`:''}
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">📅 Entrega: <b style="color:var(--text-primary)">${fechaEnt}</b> · Nota máx: <b>${t.notaMax||20}</b></div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">👨‍🏫 ${docente?docente.nombre:'—'}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:12px;color:var(--text-muted);flex-shrink:0">Entregas ${entregas.length}/${alumnos.length}</span>
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+          <span style="font-size:12px;font-weight:600;flex-shrink:0">${pct}%</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${chipsArch(t.archivos)}</div>
+      </div>
+      <div class="tarea-footer">
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary btn-sm" onclick="verEntregas(${t.id})">👁 Entregas (${entregas.length})</button>
+          <button class="btn btn-secondary btn-sm" onclick="editarTarea(${t.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarTarea(${t.id})">✕</button>
+        </div>
+        ${est==='activa'?`<button class="btn btn-sm" style="background:var(--surface-2);font-size:12px" onclick="cerrarTarea(${t.id})">🔒 Cerrar</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function verEntregas(tareaId){
+  const db=getDB(); const tarea=(db.tareas||[]).find(t=>t.id===tareaId); if(!tarea)return;
+  const alumnos=(db.alumnos||[]).filter(a=>a.grado===tarea.grado&&(!tarea.seccion||a.seccion===tarea.seccion)&&a.estado==='activo');
+  const entregas=(db.entregas||[]).filter(e=>e.tareaId===tareaId);
+  document.getElementById('me-titulo').textContent=`Entregas — ${tarea.titulo}`;
+  let html=`<div style="margin-bottom:12px;font-size:13px;color:var(--text-muted)">${tarea.materia} · ${tarea.grado}° ${tarea.seccion||''} · Nota máx: ${tarea.notaMax||20}</div>`;
+  if(!alumnos.length){html+='<p style="color:var(--text-muted)">No hay alumnos activos en este grado/sección.</p>';}
+  alumnos.forEach(a=>{
+    const e=entregas.find(x=>x.alumnoId===a.id);
+    const ini=a.nombre.split(' ').map(w=>w[0]).join('').slice(0,2);
+    const fechaE=e?new Date(e.fecha).toLocaleString('es-PE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):null;
+    html+=`<div class="entrega-row">
+      <div class="avatar" style="background:var(--primary-bg);color:var(--primary);flex-shrink:0">${ini}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:13px">${a.nombre}</div>
+        ${e?`<div style="font-size:11px;color:var(--text-muted)">Enviado: ${fechaE}</div>
+             ${e.comentario?`<div style="font-size:11px;color:var(--text-muted);font-style:italic">"${e.comentario}"</div>`:''}
+             <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${chipsArch(e.archivos)}</div>`
+          :`<div style="font-size:11px;color:var(--text-muted)">Sin entrega</div>`}
+      </div>
+      <div style="flex-shrink:0;text-align:right">
+        ${e?`<div style="display:flex;align-items:center;gap:6px">
+          <input type="number" class="form-control nota-input" id="nota-${a.id}" value="${e.calificacion??''}" min="0" max="${tarea.notaMax||20}" placeholder="—">
+          <button class="btn btn-primary btn-sm" onclick="calificarEntrega(${tareaId},${a.id})">✓</button>
+        </div>${e.calificacion!=null?`<div style="font-size:11px;color:var(--secondary);margin-top:4px">Nota: ${e.calificacion}/${tarea.notaMax||20}</div>`:''}`
+          :`<span class="badge-pendiente">Sin entregar</span>`}
+      </div>
+    </div>`;
+  });
+  document.getElementById('me-body').innerHTML=html;
+  openModal('modal-entregas');
+}
+
+function calificarEntrega(tareaId,alumnoId){
+  const db=getDB(); const nota=parseFloat(document.getElementById(`nota-${alumnoId}`).value);
+  const tarea=(db.tareas||[]).find(t=>t.id===tareaId);
+  if(isNaN(nota)||nota<0||nota>(tarea?.notaMax||20)){showToast('Nota inválida','error');return;}
+  const idx=db.entregas.findIndex(e=>e.tareaId===tareaId&&e.alumnoId===alumnoId);
+  if(idx===-1){showToast('El alumno aún no entregó','error');return;}
+  db.entregas[idx].calificacion=nota; db.entregas[idx].calificadoEn=new Date().toISOString();
+  saveDB(db); showToast(`Nota ${nota} guardada`); verEntregas(tareaId);
+}
+
+function abrirModalTarea(){
+  archivosTarea=[];
+  ['t-id','t-titulo','t-desc','t-entrega'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('t-nota-max').value=20;
+  document.getElementById('list-tarea-files').innerHTML='';
+  document.getElementById('mt-titulo').textContent='Nueva tarea';
+  openModal('modal-tarea');
+}
+
+function editarTarea(id){
+  const db=getDB(); const t=(db.tareas||[]).find(x=>x.id===id); if(!t)return;
+  archivosTarea=[...(t.archivos||[])];
+  document.getElementById('t-id').value=t.id;
+  document.getElementById('t-titulo').value=t.titulo;
+  document.getElementById('t-desc').value=t.descripcion||'';
+  document.getElementById('t-materia').value=t.materia;
+  document.getElementById('t-grado').value=t.grado;
+  document.getElementById('t-seccion').value=t.seccion||'';
+  document.getElementById('t-entrega').value=t.fechaEntrega?t.fechaEntrega.slice(0,16):'';
+  document.getElementById('t-nota-max').value=t.notaMax||20;
+  document.getElementById('mt-titulo').textContent='Editar tarea';
+  renderListaArch('list-tarea-files',archivosTarea,i=>{archivosTarea.splice(i,1);renderListaArch('list-tarea-files',archivosTarea,null);});
+  openModal('modal-tarea');
+}
+
+function guardarTarea(){
+  const titulo=document.getElementById('t-titulo').value.trim();
+  const entrega=document.getElementById('t-entrega').value;
+  if(!titulo||!entrega){showToast('Título y fecha de entrega son obligatorios','error');return;}
+  const db=getDB();
+  const obj={titulo,descripcion:document.getElementById('t-desc').value.trim(),materia:document.getElementById('t-materia').value,
+    grado:document.getElementById('t-grado').value,seccion:document.getElementById('t-seccion').value,
+    fechaEntrega:new Date(entrega).toISOString(),notaMax:parseInt(document.getElementById('t-nota-max').value)||20,
+    docenteId:USER.docenteId||null,archivos:archivosTarea,estado:'activa'};
+  const existId=parseInt(document.getElementById('t-id').value);
+  if(existId){const idx=(db.tareas||[]).findIndex(x=>x.id===existId);db.tareas[idx]={...db.tareas[idx],...obj};showToast('Tarea actualizada');}
+  else{obj.id=genId(db.tareas||[]);obj.fechaCreacion=new Date().toISOString();(db.tareas=db.tareas||[]).push(obj);showToast('Tarea publicada');}
+  saveDB(db);closeModal('modal-tarea');renderTareas();
+}
+
+function cerrarTarea(id){
+  confirmar('¿Cerrar esta tarea? Ya no se aceptarán nuevas entregas.',()=>{
+    const db=getDB();const idx=(db.tareas||[]).findIndex(x=>x.id===id);
+    if(idx>=0){db.tareas[idx].estado='cerrada';saveDB(db);renderTareas();showToast('Tarea cerrada');}
+  });
+}
+
+function eliminarTarea(id){
+  confirmar('¿Eliminar esta tarea y todas sus entregas?',()=>{
+    const db=getDB();db.tareas=(db.tareas||[]).filter(x=>x.id!==id);db.entregas=(db.entregas||[]).filter(x=>x.tareaId!==id);
+    saveDB(db);renderTareas();showToast('Tarea eliminada','warning');
+  });
+}
+
+/* ══════════════════════════════════════════
+   TAREAS – VISTA ALUMNO
+══════════════════════════════════════════ */
+function renderTareasAlumno(){
+  const db=getDB(); const alumnoId=USER.alumnoId;
+  const alumno=(db.alumnos||[]).find(a=>a.id===alumnoId);
+  const grid=document.getElementById('tareas-alumno-grid');
+  const empty=document.getElementById('tareas-alumno-empty');
+  if(!alumno){grid.innerHTML='<p style="padding:20px;color:var(--text-muted)">Perfil de alumno no encontrado.</p>';return;}
+  const estF=document.getElementById('f-estado-al').value;
+  const entregas=db.entregas||[];
+  const tareas=(db.tareas||[]).filter(t=>t.grado===alumno.grado&&(!t.seccion||t.seccion===alumno.seccion));
+  const lista=tareas.map(t=>{
+    const e=entregas.find(x=>x.tareaId===t.id&&x.alumnoId===alumnoId);
+    const estAl=e?(e.calificacion!=null?'calificada':'entregada'):'pendiente';
+    return{...t,entrega:e,estAl};
+  }).filter(t=>!estF||t.estAl===estF);
+
+  if(!lista.length){grid.innerHTML='';empty.style.display='';return;}
+  empty.style.display='none';
+  const badgeAl={pendiente:'badge-pendiente',entregada:'badge-entregada',calificada:'badge-calificada'};
+
+  grid.innerHTML=lista.map(t=>{
+    const fechaEnt=new Date(t.fechaEntrega).toLocaleString('es-PE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    const vencida=new Date(t.fechaEntrega)<new Date();
+    const docente=(db.docentes||[]).find(d=>d.id===t.docenteId);
+    let btn='';
+    if(t.estAl==='pendiente'&&!vencida) btn=`<button class="btn btn-primary btn-sm" onclick="abrirModalEntregar(${t.id})">📤 Entregar</button>`;
+    else if(t.estAl==='pendiente'&&vencida) btn=`<span class="badge-vencida">Plazo vencido</span>`;
+    else if(t.estAl==='entregada') btn=`<button class="btn btn-secondary btn-sm" onclick="abrirModalEntregar(${t.id})">🔄 Reenviar</button>`;
+    return`<div class="tarea-card">
+      <div class="tarea-header">
+        <div><div style="font-weight:700;font-size:15px;margin-bottom:4px">${t.titulo}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${t.materia} · 👨‍🏫 ${docente?docente.nombre:'—'}</div></div>
+        <span class="${badgeAl[t.estAl]}">${t.estAl}</span>
+      </div>
+      <div class="tarea-body">
+        ${t.descripcion?`<p style="font-size:13px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">${t.descripcion}</p>`:''}
+        <div style="font-size:12px;color:${vencida&&t.estAl==='pendiente'?'var(--danger)':'var(--text-muted)'};margin-bottom:10px">
+          📅 Entrega: <b>${fechaEnt}</b>${vencida&&t.estAl==='pendiente'?' ⚠️':''}
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Archivos del docente:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${chipsArch(t.archivos)}</div>
+        ${t.entrega?`<div style="background:var(--surface-1);border-radius:8px;padding:10px;margin-top:6px;font-size:12px">
+          <div style="font-weight:600;margin-bottom:6px">Tu entrega:</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">${chipsArch(t.entrega.archivos)}</div>
+          ${t.entrega.calificacion!=null?`<div style="color:var(--secondary);font-weight:700;font-size:15px">Nota: ${t.entrega.calificacion}/${t.notaMax||20}</div>`:'<div style="color:var(--text-muted)">Aún sin calificar</div>'}
+        </div>`:''}
+      </div>
+      <div class="tarea-footer">${btn}</div>
+    </div>`;
+  }).join('');
+}
+
+function abrirModalEntregar(tareaId){
+  const db=getDB(); const tarea=(db.tareas||[]).find(t=>t.id===tareaId); if(!tarea)return;
+  const prev=(db.entregas||[]).find(e=>e.tareaId===tareaId&&e.alumnoId===USER.alumnoId);
+  archivosEntrega=[];
+  document.getElementById('en-tarea-id').value=tareaId;
+  document.getElementById('en-comentario').value=prev?.comentario||'';
+  document.getElementById('list-entrega-files').innerHTML='';
+  document.getElementById('men-titulo').textContent=tarea.titulo;
+  document.getElementById('en-info').innerHTML=`<b>${tarea.materia}</b> · Entrega: ${new Date(tarea.fechaEntrega).toLocaleString('es-PE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})} · Nota máx: ${tarea.notaMax||20}`;
+  openModal('modal-entregar');
+}
+
+async function enviarEntrega(){
+  const tareaId=parseInt(document.getElementById('en-tarea-id').value);
+  if(!archivosEntrega.length){showToast('Debes adjuntar al menos un archivo','error');return;}
+  const db=getDB();
+  const obj={tareaId,alumnoId:USER.alumnoId,fecha:new Date().toISOString(),archivos:archivosEntrega,
+    comentario:document.getElementById('en-comentario').value.trim(),calificacion:null,calificadoEn:null};
+  const idx=(db.entregas||[]).findIndex(e=>e.tareaId===tareaId&&e.alumnoId===USER.alumnoId);
+  if(idx>=0){db.entregas[idx]={...db.entregas[idx],...obj};}
+  else{obj.id=genId(db.entregas||[]);(db.entregas=db.entregas||[]).push(obj);}
+  saveDB(db);closeModal('modal-entregar');showToast('Tarea enviada correctamente');renderTareasAlumno();
+}
+
+/* ── Init ── */
+if(ROL==='alumno'){
+  switchMain('mis-tareas', document.querySelectorAll('.tab-btn')[2]);
+} else {
+  renderActividades();
+}
+</script>
+</body>
+</html>

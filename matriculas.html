@@ -1,0 +1,316 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matrículas – U.E. Rio Jordan</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><div class="logo-icon">🏫</div><div class="logo-text">U.E. Rio Jordan<small>Sistema Escolar 2024</small></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Inicio</a>
+      <div class="nav-section-label">Gestión Académica</div>
+      <a href="alumnos.html" class="nav-item"><span class="nav-icon">👨‍🎓</span> Alumnos</a>
+      <a href="docentes.html" class="nav-item"><span class="nav-icon">👨‍🏫</span> Docentes</a>
+      <a href="calificaciones.html" class="nav-item"><span class="nav-icon">📊</span> Calificaciones</a>
+      <a href="asistencias.html" class="nav-item"><span class="nav-icon">✅</span> Asistencias</a>
+      <a href="horarios.html" class="nav-item"><span class="nav-icon">🕐</span> Horarios</a>
+      <a href="actividades.html" class="nav-item"><span class="nav-icon">📅</span> Actividades y Tareas</a>
+      <div class="nav-section-label">Administración</div>
+      <a href="matriculas.html" class="nav-item active"><span class="nav-icon">📋</span> Matrículas</a>
+      <a href="finanzas.html" class="nav-item"><span class="nav-icon">💰</span> Finanzas</a>
+      
+      
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info" onclick="logout()">
+        <div class="user-avatar" id="sidebar-user-avatar">AD</div>
+        <div class="user-details"><div class="user-name" id="sidebar-user-name"></div><div class="user-role" id="sidebar-user-role"></div></div>
+        <span style="font-size:14px;opacity:.5">↩</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">📋 Módulo de Matrículas</div>
+    </div>
+    <div class="page-content">
+
+      <!-- STATS -->
+      <div class="stats-grid" style="margin-bottom:24px" id="stats-mat"></div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('lista',this)">Lista de matrículas</button>
+        <button class="tab-btn" onclick="switchTab('nueva',this)" data-role="admin">Nueva matrícula</button>
+        <button class="tab-btn" onclick="switchTab('resumen',this)">Resumen por grado</button>
+      </div>
+
+      <!-- TAB LISTA -->
+      <div id="tab-lista">
+        <div class="toolbar">
+          <div class="toolbar-start" style="flex-wrap:wrap;gap:10px">
+            <div class="search-bar" style="min-width:240px">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="search-mat" placeholder="Buscar alumno..." oninput="filterTable('search-mat','tabla-mat')">
+            </div>
+            <select class="form-control" id="f-anio-mat" onchange="renderMatriculas()" style="width:100px">
+              <option value="2024">2024</option><option value="2023">2023</option>
+            </select>
+            <select class="form-control" id="f-grado-mat" onchange="renderMatriculas()" style="width:120px">
+              <option value="">Todos los grados</option>
+              <option>1ro</option><option>2do</option><option>3ro</option><option>4to</option><option>5to</option><option>6to</option><option>7mo</option>
+            </select>
+            <select class="form-control" id="f-estado-mat" onchange="renderMatriculas()" style="width:130px">
+              <option value="">Todos los estados</option>
+              <option>activo</option><option>retirado</option>
+            </select>
+          </div>
+          <div class="toolbar-end">
+            <span id="count-mat" style="font-size:12px;color:var(--text-muted)"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <table id="tabla-mat">
+              <thead>
+                <tr><th>#</th><th>Alumno</th><th>Grado / Sección</th><th>Año</th><th>Turno</th><th>Fecha matrícula</th><th>Estado</th><th>Observaciones</th><th data-role="admin">Acciones</th></tr>
+              </thead>
+              <tbody id="tbody-mat"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB NUEVA MATRICULA -->
+      <div id="tab-nueva" style="display:none" data-role="admin">
+        <div class="card" style="max-width:640px">
+          <div class="card-header"><h3>Registrar nueva matrícula</h3></div>
+          <div class="card-body">
+            <div class="alert alert-info">
+              <span>ℹ</span>
+              <span>Al registrar la matrícula el alumno queda oficialmente inscrito en el grado y sección seleccionados para el año escolar.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Alumno *</label>
+              <select id="nm-alumno" class="form-control">
+                <option value="">— Seleccionar alumno —</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Año escolar *</label>
+                <select id="nm-anio" class="form-control">
+                  <option>2024</option><option>2025</option><option>2023</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Grado *</label>
+                <select id="nm-grado" class="form-control">
+                  <option>1ro</option><option>2do</option><option>3ro</option><option>4to</option><option>5to</option><option>6to</option><option>7mo</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sección *</label>
+                <select id="nm-seccion" class="form-control">
+                  <option>A</option><option>B</option><option>C</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Turno</label>
+                <select id="nm-turno" class="form-control">
+                  <option>mañana</option><option>tarde</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Fecha de matrícula</label>
+                <input type="date" id="nm-fecha" class="form-control">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Observaciones</label>
+              <textarea id="nm-obs" class="form-control" rows="3" placeholder="Becas, condiciones especiales, traslados, etc."></textarea>
+            </div>
+            <div style="margin-top:8px">
+              <button class="btn btn-primary" onclick="guardarMatricula()">📋 Registrar matrícula</button>
+              <button class="btn btn-secondary" style="margin-left:8px" onclick="limpiarNuevaMatricula()">Limpiar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB RESUMEN -->
+      <div id="tab-resumen" style="display:none">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px" id="resumen-grados"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script>
+  initDB(); requireAuth(); renderUserBar(); applyRoleVisibility();
+
+  function refrescarSelects() {
+    poblarSelectAlumnos('nm-alumno');
+  }
+  refrescarSelects();
+  document.getElementById('nm-fecha').value = new Date().toISOString().split('T')[0];
+
+  function renderStats() {
+    const db = getDB();
+    const anio = parseInt(document.getElementById('f-anio-mat')?.value || 2024);
+    const mats = db.matriculas.filter(m=>m.anio===anio);
+    const activos = mats.filter(m=>m.estado==='activo').length;
+    const retirados = mats.filter(m=>m.estado==='retirado').length;
+    const manana = mats.filter(m=>m.turno==='mañana').length;
+    document.getElementById('stats-mat').innerHTML = `
+      <div class="stat-card"><div class="stat-icon blue">📋</div><div><div class="stat-value">${mats.length}</div><div class="stat-label">Total matrículas ${anio}</div></div></div>
+      <div class="stat-card"><div class="stat-icon green">✅</div><div><div class="stat-value">${activos}</div><div class="stat-label">Activos</div></div></div>
+      <div class="stat-card"><div class="stat-icon red">❌</div><div><div class="stat-value">${retirados}</div><div class="stat-label">Retirados</div></div></div>
+      <div class="stat-card"><div class="stat-icon amber">🌅</div><div><div class="stat-value">${manana}</div><div class="stat-label">Turno mañana</div></div></div>`;
+  }
+
+  function switchTab(tab, btn) {
+    ['lista','nueva','resumen'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'':'none');
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    if (tab==='resumen') renderResumen();
+  }
+
+  function renderMatriculas() {
+    const db = getDB();
+    const anio = parseInt(document.getElementById('f-anio-mat').value);
+    const gradoF = document.getElementById('f-grado-mat').value;
+    const estadoF = document.getElementById('f-estado-mat').value;
+    let data = db.matriculas.filter(m=>m.anio===anio);
+    if (gradoF) data = data.filter(m=>m.grado===gradoF);
+    if (estadoF) data = data.filter(m=>m.estado===estadoF);
+    document.getElementById('count-mat').textContent = data.length + ' matrícula(s)';
+    const tbody = document.getElementById('tbody-mat');
+    tbody.innerHTML = '';
+    data.forEach((m,i) => {
+      const alumno = db.alumnos.find(a=>a.id===m.alumnoId);
+      const ini = alumno ? alumno.nombre.split(' ').map(w=>w[0]).join('').slice(0,2) : '??';
+      tbody.innerHTML += `<tr>
+        <td style="color:var(--text-muted);font-size:12px">${i+1}</td>
+        <td><div style="display:flex;align-items:center;gap:8px">
+          <div class="avatar avatar-sm">${ini}</div>
+          <div><div style="font-weight:500">${alumno?alumno.nombre:'—'}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${alumno?alumno.codigo:''}</div></div>
+        </div></td>
+        <td>${m.grado} — Sec. ${m.seccion}</td>
+        <td>${m.anio}</td>
+        <td><span class="badge ${badgeEstado(m.turno)}">${m.turno}</span></td>
+        <td style="font-size:12px">${formatFecha(m.fechaMatricula)}</td>
+        <td><span class="badge ${badgeEstado(m.estado)}">${m.estado}</span></td>
+        <td style="font-size:12px;color:var(--text-secondary);max-width:180px">${m.observaciones||'—'}</td>
+        <td data-role="admin"><div style="display:flex;gap:4px">
+          <button class="btn btn-secondary btn-sm" onclick="editarMatricula(${m.id})">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarMatricula(${m.id})">✕</button>
+        </div></td>
+      </tr>`;
+    });
+    renderStats();
+    applyRoleVisibility();
+  }
+
+  function guardarMatricula() {
+    const alumnoId = parseInt(document.getElementById('nm-alumno').value);
+    if (!alumnoId) { showToast('Selecciona un alumno','error'); return; }
+    const db = getDB();
+    const anio = parseInt(document.getElementById('nm-anio').value);
+    const yaExiste = db.matriculas.find(m=>m.alumnoId===alumnoId && m.anio===anio);
+    if (yaExiste) { showToast('Este alumno ya tiene matrícula en '+anio,'error'); return; }
+    const obj = {
+      id: genId(db.matriculas),
+      alumnoId, anio,
+      grado: document.getElementById('nm-grado').value,
+      seccion: document.getElementById('nm-seccion').value,
+      turno: document.getElementById('nm-turno').value,
+      fechaMatricula: document.getElementById('nm-fecha').value,
+      observaciones: document.getElementById('nm-obs').value,
+      estado: 'activo',
+    };
+    db.matriculas.push(obj);
+    // Actualizar grado del alumno
+    const ai = db.alumnos.findIndex(a=>a.id===alumnoId);
+    if (ai>=0) { db.alumnos[ai].grado=obj.grado; db.alumnos[ai].seccion=obj.seccion; db.alumnos[ai].estado='activo'; }
+    saveDB(db);
+    showToast('Matrícula registrada correctamente');
+    limpiarNuevaMatricula();
+    renderMatriculas();
+  }
+
+  function limpiarNuevaMatricula() {
+    refrescarSelects();
+    document.getElementById('nm-alumno').value='';
+    document.getElementById('nm-obs').value='';
+  }
+
+  function editarMatricula(id) {
+    const db=getDB(); const m=db.matriculas.find(x=>x.id===id); if(!m) return;
+    const nuevo = prompt('Nuevo estado (activo / retirado):', m.estado);
+    if (!nuevo) return;
+    const obs = prompt('Observaciones:', m.observaciones);
+    const idx=db.matriculas.findIndex(x=>x.id===id);
+    db.matriculas[idx]={...m, estado:nuevo, observaciones:obs||m.observaciones};
+    if(nuevo==='retirado'){const ai=db.alumnos.findIndex(a=>a.id===m.alumnoId); if(ai>=0) db.alumnos[ai].estado='retirado';}
+    saveDB(db); renderMatriculas(); showToast('Matrícula actualizada');
+  }
+
+  function eliminarMatricula(id) {
+    confirmar('¿Eliminar esta matrícula?',()=>{
+      const db=getDB(); db.matriculas=db.matriculas.filter(x=>x.id!==id);
+      saveDB(db); renderMatriculas(); showToast('Matrícula eliminada','warning');
+    });
+  }
+
+  function renderResumen() {
+    const db = getDB();
+    const grados = ['1ro','2do','3ro','4to','5to','6to','7mo'];
+    const container = document.getElementById('resumen-grados');
+    container.innerHTML = '';
+    grados.forEach(g => {
+      const mats = db.matriculas.filter(m=>m.grado===g && m.anio===2024 && m.estado==='activo');
+      const secA = mats.filter(m=>m.seccion==='A').length;
+      const secB = mats.filter(m=>m.seccion==='B').length;
+      const secC = mats.filter(m=>m.seccion==='C').length;
+      container.innerHTML += `<div class="card">
+        <div class="card-header">
+          <h3>${g} Grado</h3>
+          <span class="badge badge-blue">${mats.length} alumnos</span>
+        </div>
+        <div class="card-body">
+          ${[['A',secA],['B',secB],['C',secC]].map(([sec,n])=>`
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <span style="font-size:13px;font-weight:500">Sección ${sec}</span>
+              <div style="display:flex;align-items:center;gap:8px;flex:1;margin:0 12px">
+                <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:${n?Math.min(n*4,100):0}%"></div></div>
+              </div>
+              <span style="font-size:13px;font-weight:600;min-width:24px;text-align:right">${n}</span>
+            </div>`).join('')}
+          <div class="divider"></div>
+          <div style="font-size:12px;color:var(--text-muted);display:flex;justify-content:space-between">
+            <span>Turno mañana: ${mats.filter(m=>m.turno==='mañana').length}</span>
+            <span>Turno tarde: ${mats.filter(m=>m.turno==='tarde').length}</span>
+          </div>
+        </div>
+      </div>`;
+    });
+  }
+
+  renderMatriculas();
+</script>
+</body>
+</html>

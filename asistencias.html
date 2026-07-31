@@ -1,0 +1,310 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asistencias – U.E. Rio Jordan</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><div class="logo-icon">🏫</div><div class="logo-text">U.E. Rio Jordan<small>Sistema Escolar 2024</small></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Inicio</a>
+      <div class="nav-section-label">Gestión Académica</div>
+      <a href="alumnos.html" class="nav-item"><span class="nav-icon">👨‍🎓</span> Alumnos</a>
+      <a href="docentes.html" class="nav-item"><span class="nav-icon">👨‍🏫</span> Docentes</a>
+      <a href="calificaciones.html" class="nav-item"><span class="nav-icon">📊</span> Calificaciones</a>
+      <a href="asistencias.html" class="nav-item active"><span class="nav-icon">✅</span> Asistencias</a>
+      <a href="horarios.html" class="nav-item"><span class="nav-icon">🕐</span> Horarios</a>
+      <a href="actividades.html" class="nav-item"><span class="nav-icon">📅</span> Actividades y Tareas</a>
+      <div class="nav-section-label">Administración</div>
+      <a href="matriculas.html" class="nav-item"><span class="nav-icon">📋</span> Matrículas</a>
+      <a href="finanzas.html" class="nav-item"><span class="nav-icon">💰</span> Finanzas</a>
+      
+      
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info" onclick="logout()">
+        <div class="user-avatar" id="sidebar-user-avatar">AD</div>
+        <div class="user-details"><div class="user-name" id="sidebar-user-name"></div><div class="user-role" id="sidebar-user-role"></div></div>
+        <span style="font-size:14px;opacity:.5">↩</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">✅ Módulo de Asistencias</div>
+    </div>
+    <div class="page-content">
+
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('diaria',this)">Registro diario</button>
+        <button class="tab-btn" onclick="switchTab('historial',this)">Historial por alumno</button>
+        <button class="tab-btn" onclick="switchTab('reporte',this)">Reporte general</button>
+      </div>
+
+      <!-- TAB: REGISTRO DIARIO -->
+      <div id="tab-diaria">
+        <div class="toolbar">
+          <div class="toolbar-start" style="flex-wrap:wrap;gap:10px">
+            <div class="form-group" style="margin:0">
+              <label class="form-label" style="display:inline;margin-right:8px">Fecha:</label>
+              <input type="date" id="fecha-diaria" class="form-control" style="width:auto;display:inline-block" onchange="renderAsistDiaria()">
+            </div>
+            <select class="form-control" id="filtro-grado-asist" onchange="renderAsistDiaria()" style="width:130px">
+              <option value="">Todos los grados</option>
+              <option>1ro</option><option>2do</option><option>3ro</option>
+              <option>4to</option><option>5to</option><option>6to</option><option>7mo</option>
+            </select>
+            <select class="form-control" id="filtro-sec-asist" onchange="renderAsistDiaria()" style="width:110px">
+              <option value="">Todas las secciones</option>
+              <option>A</option><option>B</option><option>C</option>
+            </select>
+          </div>
+          <div class="toolbar-end">
+            <button class="btn btn-success" onclick="guardarAsistDiaria()">💾 Guardar asistencia</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 id="titulo-diaria">Registro de asistencia</h3>
+            <div style="display:flex;gap:8px;font-size:12px;align-items:center">
+              <span style="color:var(--secondary)">P = Presente</span>
+              <span style="color:var(--danger)">A = Ausente</span>
+              <span style="color:var(--accent)">T = Tardanza</span>
+              <span style="color:var(--primary)">J = Justificado</span>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table id="tabla-diaria">
+              <thead>
+                <tr>
+                  <th>Alumno</th>
+                  <th>Grado</th>
+                  <th style="width:260px">Estado</th>
+                  <th>Observación</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-diaria"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: HISTORIAL -->
+      <div id="tab-historial" style="display:none">
+        <div class="toolbar">
+          <div class="toolbar-start">
+            <select class="form-control" id="h-alumno" onchange="renderHistorial()" style="width:240px">
+              <option value="">— Seleccionar alumno —</option>
+            </select>
+            <input type="month" id="h-mes" class="form-control" style="width:160px" onchange="renderHistorial()">
+          </div>
+        </div>
+        <div id="historial-content">
+          <div class="empty-state"><div class="empty-icon">📋</div><p>Selecciona un alumno para ver su historial</p></div>
+        </div>
+      </div>
+
+      <!-- TAB: REPORTE -->
+      <div id="tab-reporte" style="display:none">
+        <div class="card">
+          <div class="card-header"><h3>Reporte general de asistencias</h3></div>
+          <div class="card-body" style="padding:0">
+            <table>
+              <thead>
+                <tr><th>Alumno</th><th>Grado</th><th style="color:var(--secondary)">Presentes</th><th style="color:var(--danger)">Ausentes</th><th style="color:var(--accent)">Tardanzas</th><th style="color:var(--primary)">Justificados</th><th>Total días</th><th>% Asistencia</th></tr>
+              </thead>
+              <tbody id="tbody-reporte"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script>
+  initDB(); requireAuth(); renderUserBar();
+
+  // Fecha de hoy
+  const hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('fecha-diaria').value = hoy;
+  document.getElementById('h-mes').value = hoy.slice(0,7);
+
+  // Poblar select alumnos dinámicamente
+  function refrescarSelects() {
+    const sel = document.getElementById('h-alumno');
+    if (!sel) return;
+    const val = sel.value;
+    sel.innerHTML = '<option value="">— Seleccionar alumno —</option>';
+    getDB().alumnos.filter(a => a.estado === 'activo').forEach(a => {
+      sel.innerHTML += `<option value="${a.id}">${a.nombre} (${a.grado}-${a.seccion})</option>`;
+    });
+    if (val) sel.value = val;
+  }
+  refrescarSelects();
+
+  function switchTab(tab, btn) {
+    ['diaria','historial','reporte'].forEach(t => {
+      document.getElementById('tab-'+t).style.display = t===tab ? '' : 'none';
+    });
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (tab === 'reporte') renderReporte();
+  }
+
+  function renderAsistDiaria() {
+    const fecha = document.getElementById('fecha-diaria').value;
+    const gradoF = document.getElementById('filtro-grado-asist').value;
+    const secF = document.getElementById('filtro-sec-asist').value;
+    const db = getDB();
+
+    let alumnos = db.alumnos.filter(a=>a.estado==='activo');
+    if (gradoF) alumnos = alumnos.filter(a=>a.grado===gradoF);
+    if (secF) alumnos = alumnos.filter(a=>a.seccion===secF);
+
+    document.getElementById('titulo-diaria').textContent = `Asistencia del ${formatFecha(fecha)} (${alumnos.length} alumnos)`;
+
+    const tbody = document.getElementById('tbody-diaria');
+    tbody.innerHTML = '';
+    alumnos.forEach(a => {
+      const reg = db.asistencias.find(x=>x.alumnoId===a.id && x.fecha===fecha);
+      const estado = reg ? reg.estado : 'P';
+      const obs = reg ? reg.observacion : '';
+      const ini = a.nombre.split(' ').map(w=>w[0]).join('').slice(0,2);
+      tbody.innerHTML += `<tr>
+        <td><div style="display:flex;align-items:center;gap:8px">
+          <div class="avatar avatar-sm">${ini}</div>
+          <span style="font-weight:500">${a.nombre}</span>
+        </div></td>
+        <td>${a.grado}-${a.seccion}</td>
+        <td>
+          <div style="display:flex;gap:6px">
+            ${['P','A','T','J'].map(s=>`
+              <label style="display:flex;align-items:center;gap:3px;cursor:pointer;font-size:12px;font-weight:600;color:${s==='P'?'var(--secondary)':s==='A'?'var(--danger)':s==='T'?'var(--accent)':'var(--primary)'}">
+                <input type="radio" name="asist-${a.id}" value="${s}" ${estado===s?'checked':''} style="cursor:pointer"> ${s}
+              </label>`).join('')}
+          </div>
+        </td>
+        <td><input type="text" class="form-control" id="obs-${a.id}" value="${obs}" placeholder="Observación..." style="font-size:12px;padding:4px 8px"></td>
+      </tr>`;
+    });
+  }
+
+  function guardarAsistDiaria() {
+    const fecha = document.getElementById('fecha-diaria').value;
+    const gradoF = document.getElementById('filtro-grado-asist').value;
+    const secF = document.getElementById('filtro-sec-asist').value;
+    const db = getDB();
+    let alumnos = db.alumnos.filter(a=>a.estado==='activo');
+    if (gradoF) alumnos = alumnos.filter(a=>a.grado===gradoF);
+    if (secF) alumnos = alumnos.filter(a=>a.seccion===secF);
+
+    alumnos.forEach(a => {
+      const radio = document.querySelector(`input[name="asist-${a.id}"]:checked`);
+      if (!radio) return;
+      const estado = radio.value;
+      const obs = document.getElementById(`obs-${a.id}`).value;
+      const idx = db.asistencias.findIndex(x=>x.alumnoId===a.id && x.fecha===fecha);
+      if (idx >= 0) {
+        db.asistencias[idx] = {...db.asistencias[idx], estado, observacion: obs};
+      } else {
+        db.asistencias.push({id: genId(db.asistencias), alumnoId: a.id, fecha, estado, observacion: obs});
+      }
+    });
+    saveDB(db);
+    showToast('Asistencia guardada correctamente');
+  }
+
+  function renderHistorial() {
+    const alumnoId = parseInt(document.getElementById('h-alumno').value);
+    const mes = document.getElementById('h-mes').value;
+    if (!alumnoId) return;
+    const db = getDB();
+    const alumno = db.alumnos.find(a=>a.id===alumnoId);
+    let regs = db.asistencias.filter(x=>x.alumnoId===alumnoId);
+    if (mes) regs = regs.filter(x=>x.fecha.startsWith(mes));
+    regs.sort((a,b)=>a.fecha.localeCompare(b.fecha));
+
+    const stats = {P:0,A:0,T:0,J:0};
+    regs.forEach(r=>{ if(stats[r.estado]!==undefined) stats[r.estado]++; });
+    const total = regs.length;
+    const pctAsist = total ? Math.round(((stats.P+stats.J)/total)*100) : 0;
+
+    const colores = {P:'var(--secondary)',A:'var(--danger)',T:'var(--accent)',J:'var(--primary)'};
+    const labels = {P:'Presente',A:'Ausente',T:'Tardanza',J:'Justificado'};
+
+    let html = `
+      <div class="stats-grid" style="margin-bottom:16px">
+        <div class="stat-card"><div class="stat-icon green">✅</div><div><div class="stat-value">${stats.P}</div><div class="stat-label">Presentes</div></div></div>
+        <div class="stat-card"><div class="stat-icon red">❌</div><div><div class="stat-value">${stats.A}</div><div class="stat-label">Ausencias</div></div></div>
+        <div class="stat-card"><div class="stat-icon amber">⏰</div><div><div class="stat-value">${stats.T}</div><div class="stat-label">Tardanzas</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue">📄</div><div><div class="stat-value">${pctAsist}%</div><div class="stat-label">% Asistencia</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <table>
+            <thead><tr><th>Fecha</th><th>Estado</th><th>Observación</th></tr></thead>
+            <tbody>`;
+
+    if (regs.length === 0) {
+      html += `<tr><td colspan="3" style="text-align:center;padding:32px;color:var(--text-muted)">Sin registros en este periodo</td></tr>`;
+    } else {
+      regs.forEach(r => {
+        html += `<tr>
+          <td>${formatFecha(r.fecha)}</td>
+          <td><span style="font-weight:700;color:${colores[r.estado]}">${r.estado}</span> <span style="color:var(--text-muted);font-size:12px">— ${labels[r.estado]}</span></td>
+          <td style="color:var(--text-secondary);font-size:13px">${r.observacion||'—'}</td>
+        </tr>`;
+      });
+    }
+    html += `</tbody></table></div></div>`;
+    document.getElementById('historial-content').innerHTML = html;
+  }
+
+  function renderReporte() {
+    const db = getDB();
+    const tbody = document.getElementById('tbody-reporte');
+    tbody.innerHTML = '';
+    db.alumnos.filter(a=>a.estado==='activo').forEach(a => {
+      const regs = db.asistencias.filter(x=>x.alumnoId===a.id);
+      const stats = {P:0,A:0,T:0,J:0};
+      regs.forEach(r=>{ if(stats[r.estado]!==undefined) stats[r.estado]++; });
+      const total = regs.length;
+      const pct = total ? Math.round(((stats.P+stats.J)/total)*100) : 0;
+      const pctColor = pct>=85?'var(--secondary)':pct>=70?'var(--accent)':'var(--danger)';
+      tbody.innerHTML += `<tr>
+        <td><div style="display:flex;align-items:center;gap:8px">
+          <div class="avatar avatar-sm">${a.nombre.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+          <span style="font-weight:500">${a.nombre}</span>
+        </div></td>
+        <td>${a.grado}-${a.seccion}</td>
+        <td style="color:var(--secondary);font-weight:600">${stats.P}</td>
+        <td style="color:var(--danger);font-weight:600">${stats.A}</td>
+        <td style="color:var(--accent);font-weight:600">${stats.T}</td>
+        <td style="color:var(--primary);font-weight:600">${stats.J}</td>
+        <td>${total}</td>
+        <td><span style="font-weight:700;color:${pctColor}">${pct}%</span>
+          <div class="progress-bar" style="margin-top:4px;width:80px">
+            <div class="progress-fill" style="width:${pct}%;background:${pctColor}"></div>
+          </div>
+        </td>
+      </tr>`;
+    });
+  }
+
+  renderAsistDiaria();
+</script>
+</body>
+</html>

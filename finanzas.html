@@ -1,0 +1,534 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finanzas – U.E. Rio Jordan</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    @media print {
+      body > * { display: none !important; }
+      #print-area { display: block !important; }
+    }
+    #print-area { display: none; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><div class="logo-icon">🏫</div><div class="logo-text">U.E. Rio Jordan<small>Sistema Escolar 2024</small></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Inicio</a>
+      <div class="nav-section-label">Gestión Académica</div>
+      <a href="alumnos.html" class="nav-item"><span class="nav-icon">👨‍🎓</span> Alumnos</a>
+      <a href="docentes.html" class="nav-item"><span class="nav-icon">👨‍🏫</span> Docentes</a>
+      <a href="calificaciones.html" class="nav-item"><span class="nav-icon">📊</span> Calificaciones</a>
+      <a href="asistencias.html" class="nav-item"><span class="nav-icon">✅</span> Asistencias</a>
+      <a href="horarios.html" class="nav-item"><span class="nav-icon">🕐</span> Horarios</a>
+      <a href="actividades.html" class="nav-item"><span class="nav-icon">📅</span> Actividades y Tareas</a>
+      <div class="nav-section-label">Administración</div>
+      <a href="matriculas.html" class="nav-item"><span class="nav-icon">📋</span> Matrículas</a>
+      <a href="finanzas.html" class="nav-item active"><span class="nav-icon">💰</span> Finanzas</a>
+      
+      
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info" onclick="logout()">
+        <div class="user-avatar" id="sidebar-user-avatar">AD</div>
+        <div class="user-details"><div class="user-name" id="sidebar-user-name"></div><div class="user-role" id="sidebar-user-role"></div></div>
+        <span style="font-size:14px;opacity:.5">↩</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">💰 Módulo de Finanzas</div>
+    </div>
+    <div class="page-content">
+
+      <!-- RESUMEN STATS -->
+      <div class="stats-grid" id="stats-finanzas" style="margin-bottom:24px"></div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('pagos',this)">Registro de pagos</button>
+        <button class="tab-btn" onclick="switchTab('estado',this)">Estado por alumno</button>
+        <button class="tab-btn" onclick="switchTab('reporte',this)">Reporte general</button>
+      </div>
+
+      <!-- TAB PAGOS -->
+      <div id="tab-pagos">
+        <div class="toolbar">
+          <div class="toolbar-start" style="flex-wrap:wrap;gap:10px">
+            <div class="search-bar" style="min-width:220px">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="search-pago" placeholder="Buscar concepto, alumno..." oninput="filterTable('search-pago','tabla-pagos')">
+            </div>
+            <select class="form-control" id="f-estado-pago" onchange="renderPagos()" style="width:140px">
+              <option value="">Todos los estados</option>
+              <option>pagado</option><option>pendiente</option><option>vencido</option>
+            </select>
+            <select class="form-control" id="f-alumno-pago" onchange="renderPagos()" style="width:220px">
+              <option value="">Todos los alumnos</option>
+            </select>
+          </div>
+          <div class="toolbar-end" data-role="admin">
+            <button class="btn btn-secondary" onclick="exportCSV('tabla-pagos','finanzas')">⬇ Exportar CSV</button>
+            <button class="btn btn-primary" onclick="openModal('modal-pago');limpiarFormP()">+ Registrar pago</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <table id="tabla-pagos">
+              <thead>
+                <tr><th>Recibo</th><th>Alumno</th><th>Concepto</th><th>Monto</th><th>Vencimiento</th><th>Fecha pago</th><th>Método</th><th>Estado</th><th data-role="admin">Acciones</th></tr>
+              </thead>
+              <tbody id="tbody-pagos"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB ESTADO ALUMNO -->
+      <div id="tab-estado" style="display:none">
+        <div class="toolbar">
+          <div class="toolbar-start">
+            <select class="form-control" id="sel-alumno-fin" onchange="renderEstadoAlumno()" style="width:240px">
+              <option value="">— Seleccionar alumno —</option>
+            </select>
+          </div>
+        </div>
+        <div id="estado-alumno-content">
+          <div class="empty-state"><div class="empty-icon">💰</div><p>Selecciona un alumno para ver su estado financiero</p></div>
+        </div>
+      </div>
+
+      <!-- TAB REPORTE -->
+      <div id="tab-reporte" style="display:none">
+        <div class="card">
+          <div class="card-header"><h3>Reporte financiero por alumno</h3></div>
+          <div class="card-body" style="padding:0">
+            <table id="tabla-reporte-fin">
+              <thead>
+                <tr><th>Alumno</th><th>Grado</th><th style="color:var(--secondary)">Total pagado</th><th style="color:var(--danger)">Total pendiente</th><th>Último pago</th><th>Estado</th></tr>
+              </thead>
+              <tbody id="tbody-reporte-fin"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL PAGO -->
+<div class="modal-overlay" id="modal-pago" style="display:none">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <h2 id="modal-p-titulo">Registrar pago</h2>
+      <button class="btn-icon" onclick="closeModal('modal-pago')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="p-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Grado</label>
+          <select id="p-grado" class="form-control" onchange="filtrarAlumnosPago()">
+            <option value="">Todos</option>
+            <option>1ro</option><option>2do</option><option>3ro</option>
+            <option>4to</option><option>5to</option><option>6to</option><option>7mo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sección</label>
+          <select id="p-seccion" class="form-control" onchange="filtrarAlumnosPago()">
+            <option value="">Todas</option>
+            <option>A</option><option>B</option><option>C</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Alumno *</label>
+        <select id="p-alumno" class="form-control">
+          <option value="">— Seleccionar alumno —</option>
+        </select>
+        <div id="p-alumno-info" style="margin-top:6px;font-size:12px;color:var(--text-muted);display:none"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Concepto *</label>
+        <input type="text" id="p-concepto" class="form-control" placeholder="Ej: Mensualidad Julio 2024">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Monto (USD) *</label>
+          <input type="number" id="p-monto" class="form-control" min="0" step="0.01" placeholder="150.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha de vencimiento</label>
+          <input type="date" id="p-fechaVenc" class="form-control">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select id="p-estado" class="form-control" onchange="togglePagoFields()">
+            <option>pendiente</option><option>pagado</option><option>vencido</option>
+          </select>
+        </div>
+        <div class="form-group" id="campo-metodo">
+          <label class="form-label">Método de pago</label>
+          <select id="p-metodo" class="form-control">
+            <option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Cheque</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" id="campo-fecha-pago">
+        <label class="form-label">Fecha de pago</label>
+        <input type="date" id="p-fechaPago" class="form-control">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-pago')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarPago()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RECIBO -->
+<div class="modal-overlay" id="modal-recibo" style="display:none">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <h2>🧾 Comprobante de pago</h2>
+      <button class="btn-icon" onclick="closeModal('modal-recibo')">✕</button>
+    </div>
+    <div class="modal-body" id="recibo-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-recibo')">Cerrar</button>
+      <button class="btn btn-primary" onclick="imprimirRecibo()">🖨 Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<!-- Área oculta solo para impresión -->
+<div id="print-area"></div>
+
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script>
+  initDB(); requireAuth(); renderUserBar(); applyRoleVisibility();
+
+  function refrescarSelects() {
+    poblarSelectAlumnos('f-alumno-pago', 'sel-alumno-fin');
+    filtrarAlumnosPago();
+  }
+  refrescarSelects();
+
+  function filtrarAlumnosPago() {
+    const grado   = document.getElementById('p-grado').value;
+    const seccion = document.getElementById('p-seccion').value;
+    const sel     = document.getElementById('p-alumno');
+    const info    = document.getElementById('p-alumno-info');
+    const prevVal = sel.value;
+    const db      = getDB();
+
+    let lista = db.alumnos.filter(a => a.estado === 'activo');
+    if (grado)   lista = lista.filter(a => a.grado   === grado);
+    if (seccion) lista = lista.filter(a => a.seccion === seccion);
+
+    sel.innerHTML = '<option value="">— Seleccionar alumno —</option>';
+    lista.forEach(a => {
+      sel.innerHTML += `<option value="${a.id}">${a.nombre} — ${a.grado}° ${a.seccion}</option>`;
+    });
+    if (prevVal) sel.value = prevVal;
+
+    // Info rápida del alumno seleccionado
+    sel.onchange = () => mostrarInfoAlumno(db);
+    mostrarInfoAlumno(db);
+
+    function mostrarInfoAlumno(db) {
+      const id = parseInt(sel.value);
+      const a  = db.alumnos.find(x => x.id === id);
+      if (a) {
+        const pagos   = db.finanzas.filter(f => f.alumnoId === a.id);
+        const deuda   = pagos.filter(f => f.estado !== 'pagado').reduce((s, f) => s + f.monto, 0);
+        info.style.display = '';
+        info.innerHTML = `👤 <b>${a.nombre}</b> &nbsp;|&nbsp; Grado: <b>${a.grado}° ${a.seccion}</b>`
+          + (a.dni ? ` &nbsp;|&nbsp; DNI: <b>${a.dni}</b>` : '')
+          + (deuda > 0 ? ` &nbsp;|&nbsp; <span style="color:var(--danger)">Deuda pendiente: <b>${formatMonto(deuda)}</b></span>` : ` &nbsp;|&nbsp; <span style="color:var(--secondary)">Al día ✓</span>`);
+      } else {
+        info.style.display = 'none';
+        info.innerHTML = '';
+      }
+    }
+  }
+
+  // Stats
+  function renderStats() {
+    const db = getDB();
+    const total = db.finanzas.reduce((s,f)=>s+f.monto,0);
+    const pagado = db.finanzas.filter(f=>f.estado==='pagado').reduce((s,f)=>s+f.monto,0);
+    const pendiente = db.finanzas.filter(f=>f.estado==='pendiente').reduce((s,f)=>s+f.monto,0);
+    const vencido = db.finanzas.filter(f=>f.estado==='vencido').reduce((s,f)=>s+f.monto,0);
+    document.getElementById('stats-finanzas').innerHTML = `
+      <div class="stat-card"><div class="stat-icon green">💵</div><div><div class="stat-value" style="font-size:18px">${formatMonto(pagado)}</div><div class="stat-label">Total cobrado</div></div></div>
+      <div class="stat-card"><div class="stat-icon amber">⏳</div><div><div class="stat-value" style="font-size:18px">${formatMonto(pendiente)}</div><div class="stat-label">Pendiente</div></div></div>
+      <div class="stat-card"><div class="stat-icon red">⚠️</div><div><div class="stat-value" style="font-size:18px">${formatMonto(vencido)}</div><div class="stat-label">Vencido</div></div></div>
+      <div class="stat-card"><div class="stat-icon blue">📊</div><div><div class="stat-value" style="font-size:18px">${Math.round((pagado/total)*100)}%</div><div class="stat-label">% Recaudación</div></div></div>`;
+  }
+
+  function switchTab(tab, btn) {
+    ['pagos','estado','reporte'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'':'none');
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    if (tab==='reporte') renderReporteFin();
+  }
+
+  function renderPagos() {
+    const estadoF = document.getElementById('f-estado-pago').value;
+    const alumnoF = parseInt(document.getElementById('f-alumno-pago').value);
+    const db = getDB();
+    let data = db.finanzas;
+    if (estadoF) data = data.filter(f=>f.estado===estadoF);
+    if (alumnoF) data = data.filter(f=>f.alumnoId===alumnoF);
+    const tbody = document.getElementById('tbody-pagos');
+    tbody.innerHTML = '';
+    data.forEach(f => {
+      const alumno = db.alumnos.find(a=>a.id===f.alumnoId);
+      tbody.innerHTML += `<tr>
+        <td><code style="font-size:11px;background:var(--surface-2);padding:2px 6px;border-radius:4px">${f.recibo||'—'}</code></td>
+        <td style="font-weight:500">${alumno?alumno.nombre:'—'}</td>
+        <td>${f.concepto}</td>
+        <td style="font-weight:600">${formatMonto(f.monto)}</td>
+        <td style="font-size:12px">${formatFecha(f.fechaVenc)}</td>
+        <td style="font-size:12px">${f.fechaPago?formatFecha(f.fechaPago):'—'}</td>
+        <td style="font-size:12px">${f.metodoPago||'—'}</td>
+        <td><span class="badge ${badgeEstado(f.estado)}">${f.estado}</span></td>
+        <td data-role="admin"><div style="display:flex;gap:4px">
+          ${f.estado==='pagado'?`<button class="btn btn-secondary btn-sm" onclick="verRecibo(${f.id})">🧾</button>`:''}
+          ${f.estado!=='pagado'?`<button class="btn btn-success btn-sm" onclick="marcarPagado(${f.id})">✓ Pagar</button>`:''}
+          <button class="btn btn-danger btn-sm" onclick="eliminarPago(${f.id})">✕</button>
+        </div></td>
+      </tr>`;
+    });
+    applyRoleVisibility();
+  }
+
+  function marcarPagado(id) {
+    const db = getDB();
+    const idx = db.finanzas.findIndex(x=>x.id===id);
+    const hoy = new Date().toISOString().split('T')[0];
+    const nRec = 'REC-'+String(id).padStart(3,'0');
+    db.finanzas[idx] = {...db.finanzas[idx], estado:'pagado', fechaPago:hoy, metodoPago:'Efectivo', recibo:nRec};
+    saveDB(db); renderPagos(); renderStats(); showToast('Pago registrado correctamente');
+  }
+
+  function renderEstadoAlumno() {
+    const alumnoId = parseInt(document.getElementById('sel-alumno-fin').value);
+    if (!alumnoId) return;
+    const db = getDB();
+    const alumno = db.alumnos.find(a=>a.id===alumnoId);
+    const pagos = db.finanzas.filter(f=>f.alumnoId===alumnoId);
+    const pagado = pagos.filter(f=>f.estado==='pagado').reduce((s,f)=>s+f.monto,0);
+    const pendiente = pagos.filter(f=>f.estado!=='pagado').reduce((s,f)=>s+f.monto,0);
+
+    let html = `<div class="stats-grid" style="margin-bottom:16px">
+      <div class="stat-card"><div class="stat-icon green">💵</div><div><div class="stat-value" style="font-size:18px">${formatMonto(pagado)}</div><div class="stat-label">Pagado</div></div></div>
+      <div class="stat-card"><div class="stat-icon red">⏳</div><div><div class="stat-value" style="font-size:18px">${formatMonto(pendiente)}</div><div class="stat-label">Por pagar</div></div></div>
+    </div>
+    <div class="card"><div class="card-body" style="padding:0"><table>
+      <thead><tr><th>Concepto</th><th>Monto</th><th>Vencimiento</th><th>Pago</th><th>Estado</th></tr></thead><tbody>`;
+    pagos.forEach(f => {
+      html += `<tr>
+        <td>${f.concepto}</td><td style="font-weight:600">${formatMonto(f.monto)}</td>
+        <td style="font-size:12px">${formatFecha(f.fechaVenc)}</td>
+        <td style="font-size:12px">${f.fechaPago?formatFecha(f.fechaPago):'—'}</td>
+        <td><span class="badge ${badgeEstado(f.estado)}">${f.estado}</span></td>
+      </tr>`;
+    });
+    html += `</tbody></table></div></div>`;
+    document.getElementById('estado-alumno-content').innerHTML = html;
+  }
+
+  function renderReporteFin() {
+    const db = getDB();
+    const tbody = document.getElementById('tbody-reporte-fin');
+    tbody.innerHTML = '';
+    db.alumnos.filter(a=>a.estado==='activo').forEach(a => {
+      const pagos = db.finanzas.filter(f=>f.alumnoId===a.id);
+      const pagado = pagos.filter(f=>f.estado==='pagado').reduce((s,f)=>s+f.monto,0);
+      const pendiente = pagos.filter(f=>f.estado!=='pagado').reduce((s,f)=>s+f.monto,0);
+      const ultimo = pagos.filter(f=>f.fechaPago).sort((a,b)=>b.fechaPago.localeCompare(a.fechaPago))[0];
+      const tieneVencido = pagos.some(f=>f.estado==='vencido');
+      tbody.innerHTML += `<tr>
+        <td style="font-weight:500">${a.nombre}</td>
+        <td>${a.grado}-${a.seccion}</td>
+        <td style="color:var(--secondary);font-weight:600">${formatMonto(pagado)}</td>
+        <td style="color:${pendiente>0?'var(--danger)':'var(--secondary)'};font-weight:600">${formatMonto(pendiente)}</td>
+        <td style="font-size:12px">${ultimo?formatFecha(ultimo.fechaPago):'—'}</td>
+        <td><span class="badge ${tieneVencido?'badge-red':pendiente>0?'badge-amber':'badge-green'}">${tieneVencido?'vencido':pendiente>0?'pendiente':'al día'}</span></td>
+      </tr>`;
+    });
+  }
+
+  function limpiarFormP() {
+    ['p-id','p-concepto','p-monto','p-fechaVenc','p-fechaPago'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('p-grado').value   = '';
+    document.getElementById('p-seccion').value = '';
+    document.getElementById('p-estado').value  = 'pendiente';
+    document.getElementById('modal-p-titulo').textContent = 'Registrar pago';
+    document.getElementById('p-alumno-info').style.display = 'none';
+    refrescarSelects();
+    togglePagoFields();
+  }
+
+  function togglePagoFields() {
+    const pagado = document.getElementById('p-estado').value === 'pagado';
+    document.getElementById('campo-metodo').style.opacity = pagado ? '1' : '0.4';
+    document.getElementById('campo-fecha-pago').style.opacity = pagado ? '1' : '0.4';
+  }
+
+  function guardarPago() {
+    const concepto = document.getElementById('p-concepto').value.trim();
+    const monto = parseFloat(document.getElementById('p-monto').value);
+    const alumnoId = parseInt(document.getElementById('p-alumno').value);
+    if (!concepto || isNaN(monto) || !alumnoId) {
+      showToast('Alumno, concepto y monto son obligatorios', 'error'); return;
+    }
+    const db = getDB();
+    const estado = document.getElementById('p-estado').value;
+    const ahora = new Date();
+    const obj = {
+      alumnoId, concepto, monto,
+      fechaVenc: document.getElementById('p-fechaVenc').value,
+      estado,
+      metodoPago: estado === 'pagado' ? document.getElementById('p-metodo').value : null,
+      fechaPago: estado === 'pagado' ? (document.getElementById('p-fechaPago').value || ahora.toISOString().split('T')[0]) : null,
+      registradoEn: ahora.toISOString(),
+    };
+    const existId = parseInt(document.getElementById('p-id').value);
+    let savedId;
+    if (existId) {
+      const idx = db.finanzas.findIndex(x => x.id === existId);
+      db.finanzas[idx] = { ...db.finanzas[idx], ...obj };
+      savedId = existId;
+    } else {
+      savedId = genId(db.finanzas);
+      obj.recibo = 'REC-' + String(savedId).padStart(4, '0');
+      db.finanzas.push({ id: savedId, ...obj });
+    }
+    saveDB(db);
+    closeModal('modal-pago');
+    renderPagos();
+    renderStats();
+    showToast('Pago guardado correctamente');
+    if (estado === 'pagado') {
+      setTimeout(() => verRecibo(savedId), 250);
+    }
+  }
+
+  function eliminarPago(id) {
+    confirmar('¿Eliminar este registro de pago?', () => {
+      const db = getDB();
+      db.finanzas = db.finanzas.filter(x => x.id !== id);
+      saveDB(db); renderPagos(); renderStats(); showToast('Registro eliminado', 'warning');
+    });
+  }
+
+  function marcarPagado(id) {
+    const db = getDB();
+    const idx = db.finanzas.findIndex(x => x.id === id);
+    const ahora = new Date();
+    db.finanzas[idx] = {
+      ...db.finanzas[idx],
+      estado: 'pagado',
+      fechaPago: ahora.toISOString().split('T')[0],
+      metodoPago: 'Efectivo',
+      recibo: 'REC-' + String(id).padStart(4, '0'),
+      registradoEn: ahora.toISOString(),
+    };
+    saveDB(db); renderPagos(); renderStats();
+    showToast('Pago registrado correctamente');
+    setTimeout(() => verRecibo(id), 250);
+  }
+
+  function verRecibo(id) {
+    const db = getDB();
+    const f = db.finanzas.find(x => x.id === id);
+    if (!f) return;
+    const alumno = db.alumnos.find(a => a.id === f.alumnoId);
+    const usuario = JSON.parse(sessionStorage.getItem('user') || '{}');
+
+    // Fecha y hora de registro
+    let fechaHoraReg = '—';
+    if (f.registradoEn) {
+      const dt = new Date(f.registradoEn);
+      fechaHoraReg = dt.toLocaleDateString('es-PE', { day:'2-digit', month:'2-digit', year:'numeric' })
+        + ' ' + dt.toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    }
+
+    function fila(label, valor, bold) {
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--text-muted);font-size:12px;min-width:120px">${label}</span>
+        <span style="font-weight:${bold?700:500};font-size:13px;text-align:right">${valor}</span>
+      </div>`;
+    }
+
+    document.getElementById('recibo-body').innerHTML = `
+      <div id="comprobante-print">
+        <!-- Encabezado -->
+        <div style="text-align:center;padding:16px 0 12px;border-bottom:2px solid var(--primary)">
+          <div style="font-size:32px;margin-bottom:4px">🏫</div>
+          <div style="font-weight:800;font-size:17px;color:var(--text-primary)">U.E. Rio Jordan</div>
+          <div style="font-size:11px;color:var(--text-muted);letter-spacing:.5px">COMPROBANTE DE PAGO</div>
+          <div style="display:inline-block;background:var(--primary);color:#fff;font-weight:700;font-size:13px;padding:3px 14px;border-radius:20px;margin-top:6px">${f.recibo}</div>
+        </div>
+
+        <!-- Datos del pago -->
+        <div style="padding:12px 0">
+          ${fila('Fecha de registro', fechaHoraReg)}
+          ${fila('Alumno', alumno ? alumno.nombre : '—')}
+          ${alumno ? fila('Grado / Sección', alumno.grado + '° ' + alumno.seccion) : ''}
+          ${alumno && alumno.dni ? fila('DNI Alumno', alumno.dni) : ''}
+          ${fila('Concepto', f.concepto)}
+          ${fila('Fecha de vencimiento', formatFecha(f.fechaVenc))}
+          ${fila('Fecha de pago', formatFecha(f.fechaPago))}
+          ${fila('Método de pago', f.metodoPago || '—')}
+          ${fila('Registrado por', usuario.name || usuario.username || '—')}
+        </div>
+
+        <!-- Total -->
+        <div style="background:var(--surface-1);border-radius:8px;padding:14px 16px;margin-top:4px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-weight:700;font-size:14px">TOTAL PAGADO</span>
+          <span style="font-weight:800;font-size:22px;color:var(--secondary)">${formatMonto(f.monto)}</span>
+        </div>
+
+        <!-- Pie -->
+        <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--text-muted);line-height:1.6">
+          Este comprobante es válido como constancia de pago.<br>
+          Gracias por su pago puntual ✓
+        </div>
+      </div>`;
+    openModal('modal-recibo');
+  }
+
+  function imprimirRecibo() {
+    const contenido = document.getElementById('comprobante-print');
+    if (!contenido) return;
+    const area = document.getElementById('print-area');
+    area.innerHTML = `
+      <div style="font-family:'Inter',sans-serif;max-width:400px;margin:40px auto;padding:24px;border:1px solid #ddd;border-radius:12px">
+        ${contenido.innerHTML}
+      </div>`;
+    window.print();
+    area.innerHTML = '';
+  }
+
+  renderStats();
+  renderPagos();
+</script>
+</body>
+</html>

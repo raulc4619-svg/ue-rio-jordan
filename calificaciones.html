@@ -1,0 +1,352 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calificaciones – U.E. Rio Jordan</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><div class="logo-icon">🏫</div><div class="logo-text">U.E. Rio Jordan<small>Sistema Escolar 2024</small></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Inicio</a>
+      <div class="nav-section-label">Gestión Académica</div>
+      <a href="alumnos.html" class="nav-item"><span class="nav-icon">👨‍🎓</span> Alumnos</a>
+      <a href="docentes.html" class="nav-item"><span class="nav-icon">👨‍🏫</span> Docentes</a>
+      <a href="calificaciones.html" class="nav-item active"><span class="nav-icon">📊</span> Calificaciones</a>
+      <a href="asistencias.html" class="nav-item"><span class="nav-icon">✅</span> Asistencias</a>
+      <a href="horarios.html" class="nav-item"><span class="nav-icon">🕐</span> Horarios</a>
+      <a href="actividades.html" class="nav-item"><span class="nav-icon">📅</span> Actividades y Tareas</a>
+      <div class="nav-section-label">Administración</div>
+      <a href="matriculas.html" class="nav-item"><span class="nav-icon">📋</span> Matrículas</a>
+      <a href="finanzas.html" class="nav-item"><span class="nav-icon">💰</span> Finanzas</a>
+      
+      
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info" onclick="logout()">
+        <div class="user-avatar" id="sidebar-user-avatar">AD</div>
+        <div class="user-details"><div class="user-name" id="sidebar-user-name"></div><div class="user-role" id="sidebar-user-role"></div></div>
+        <span style="font-size:14px;opacity:.5">↩</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">📊 Módulo de Calificaciones</div>
+    </div>
+    <div class="page-content">
+
+      <!-- FILTROS -->
+      <div class="toolbar" style="margin-bottom:20px">
+        <div class="toolbar-start" style="flex-wrap:wrap;gap:10px">
+          <select class="form-control" id="f-alumno" onchange="renderCalif()" style="width:220px">
+            <option value="">— Seleccionar alumno —</option>
+          </select>
+          <select class="form-control" id="f-periodo" onchange="renderCalif()" style="width:160px">
+            <option value="">Todos los periodos</option>
+            <option>I Bimestre</option><option>II Bimestre</option>
+            <option>III Bimestre</option><option>IV Bimestre</option>
+          </select>
+          <select class="form-control" id="f-anio" onchange="renderCalif()" style="width:100px">
+            <option value="2024">2024</option><option value="2023">2023</option>
+          </select>
+        </div>
+        <div class="toolbar-end" data-role="admin,docente">
+          <button class="btn btn-primary" onclick="openModal('modal-calif');limpiarForm()">+ Registrar nota</button>
+        </div>
+      </div>
+
+      <!-- RESUMEN -->
+      <div id="resumen-alumno" style="display:none;margin-bottom:20px"></div>
+
+      <!-- TABLA -->
+      <div class="card">
+        <div class="card-header">
+          <h3 id="tabla-titulo">Selecciona un alumno para ver sus calificaciones</h3>
+          <div id="promedio-general" style="font-size:13px;color:var(--text-secondary)"></div>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="table-container">
+            <table id="tabla-calificaciones">
+              <thead>
+                <tr>
+                  <th>Materia</th>
+                  <th>Periodo</th>
+                  <th>Nota</th>
+                  <th>Escala</th>
+                  <th>Estado</th>
+                  <th>Docente</th>
+                  <th data-role="admin,docente">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-calificaciones">
+                <tr><td colspan="7" class="empty-state"><p>Selecciona un alumno para ver sus notas</p></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIBRETA POR BIMESTRE -->
+      <div id="libreta-section" style="display:none;margin-top:24px">
+        <div class="card">
+          <div class="card-header"><h3>📄 Resumen por materia (Año 2024)</h3></div>
+          <div class="card-body" style="padding:0">
+            <table id="tabla-libreta">
+              <thead>
+                <tr>
+                  <th>Materia</th>
+                  <th>I Bimestre</th>
+                  <th>II Bimestre</th>
+                  <th>III Bimestre</th>
+                  <th>IV Bimestre</th>
+                  <th>Promedio Final</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-libreta"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL CALIFICACION -->
+<div class="modal-overlay" id="modal-calif" style="display:none">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <h2 id="modal-titulo">Registrar calificación</h2>
+      <button class="btn-icon" onclick="closeModal('modal-calif')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="c-id">
+      <div class="form-group">
+        <label class="form-label">Alumno *</label>
+        <select id="c-alumno" class="form-control"></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Materia *</label>
+          <select id="c-materia" class="form-control">
+            <option>Matemáticas</option><option>Lenguaje</option><option>Ciencias Naturales</option>
+            <option>Historia</option><option>Inglés</option><option>Arte</option>
+            <option>Educación Física</option><option>Computación</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Periodo *</label>
+          <select id="c-periodo" class="form-control">
+            <option>I Bimestre</option><option>II Bimestre</option>
+            <option>III Bimestre</option><option>IV Bimestre</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nota (0–20) *</label>
+          <input type="number" id="c-nota" class="form-control" min="0" max="20" placeholder="15">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Año</label>
+          <input type="number" id="c-anio" class="form-control" value="2024" min="2020" max="2030">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Docente</label>
+        <select id="c-docente" class="form-control"></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-calif')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarCalif()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script>
+  initDB(); requireAuth(); renderUserBar(); applyRoleVisibility();
+
+  // Poblar selects dinámicamente desde DB
+  function refrescarSelects() {
+    poblarSelectAlumnos('f-alumno', 'c-alumno');
+    poblarSelectDocentes('c-docente');
+  }
+  refrescarSelects();
+
+  function getLetraColor(n) {
+    if (n >= 17) return '<span style="color:#2e7d32;font-weight:700">AD</span>';
+    if (n >= 13) return '<span style="color:#1565c0;font-weight:700">A</span>';
+    if (n >= 11) return '<span style="color:#f57f17;font-weight:700">B</span>';
+    return '<span style="color:#c62828;font-weight:700">C</span>';
+  }
+
+  function getNota(nota) {
+    const n = parseInt(nota);
+    const color = n >= 13 ? 'var(--secondary)' : n >= 11 ? 'var(--accent)' : 'var(--danger)';
+    return `<span style="font-size:16px;font-weight:700;color:${color}">${n}</span>`;
+  }
+
+  function renderCalif() {
+    const alumnoId = parseInt(document.getElementById('f-alumno').value);
+    const periodo = document.getElementById('f-periodo').value;
+    const anio = parseInt(document.getElementById('f-anio').value);
+    const db = getDB();
+
+    if (!alumnoId) {
+      document.getElementById('tabla-titulo').textContent = 'Selecciona un alumno';
+      document.getElementById('tbody-calificaciones').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">Selecciona un alumno para ver sus notas</td></tr>';
+      document.getElementById('resumen-alumno').style.display = 'none';
+      document.getElementById('libreta-section').style.display = 'none';
+      return;
+    }
+
+    const alumno = db.alumnos.find(a => a.id === alumnoId);
+    let califs = db.calificaciones.filter(c => c.alumnoId === alumnoId && c.anio === anio);
+    if (periodo) califs = califs.filter(c => c.periodo === periodo);
+
+    document.getElementById('tabla-titulo').textContent = `Calificaciones: ${alumno.nombre}`;
+
+    // Resumen alumno
+    document.getElementById('resumen-alumno').style.display = 'block';
+    const ini = alumno.nombre.split(' ').map(w=>w[0]).join('').slice(0,2);
+    const prom = califs.length ? (califs.reduce((s,c)=>s+c.nota,0)/califs.length).toFixed(1) : '—';
+    document.getElementById('resumen-alumno').innerHTML = `
+      <div class="card" style="padding:16px 20px">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div class="avatar avatar-lg">${ini}</div>
+          <div style="flex:1">
+            <div style="font-size:16px;font-weight:600">${alumno.nombre}</div>
+            <div style="font-size:13px;color:var(--text-secondary)">${alumno.grado} grado — Sección ${alumno.seccion} · ${alumno.codigo}</div>
+          </div>
+          <div style="text-align:center;background:var(--primary-bg);border-radius:10px;padding:12px 20px">
+            <div style="font-size:28px;font-weight:700;color:var(--primary)">${prom}</div>
+            <div style="font-size:11px;color:var(--text-muted)">Promedio</div>
+          </div>
+        </div>
+      </div>`;
+
+    // Tabla
+    const tbody = document.getElementById('tbody-calificaciones');
+    tbody.innerHTML = '';
+    if (califs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">Sin calificaciones registradas</td></tr>';
+    } else {
+      califs.forEach(c => {
+        tbody.innerHTML += `<tr>
+          <td style="font-weight:500">${c.materia}</td>
+          <td>${c.periodo}</td>
+          <td>${getNota(c.nota)}</td>
+          <td>${getLetraColor(c.nota)}</td>
+          <td><span class="badge ${c.estado==='aprobado'?'badge-green':'badge-red'}">${c.estado}</span></td>
+          <td style="font-size:12px;color:var(--text-secondary)">${getDocenteNombre(c.docenteId)}</td>
+          <td data-role="admin,docente">
+            <div style="display:flex;gap:4px">
+              <button class="btn btn-secondary btn-sm" onclick="editarCalif(${c.id})">Editar</button>
+              <button class="btn btn-danger btn-sm" onclick="eliminarCalif(${c.id})">✕</button>
+            </div>
+          </td>
+        </tr>`;
+      });
+    }
+
+    // Promedio
+    if (califs.length) {
+      document.getElementById('promedio-general').textContent = `Promedio: ${prom}/20 · ${califs.length} notas`;
+    }
+
+    // Libreta
+    renderLibreta(alumnoId, anio);
+    applyRoleVisibility();
+  }
+
+  function renderLibreta(alumnoId, anio) {
+    const db = getDB();
+    const califs = db.calificaciones.filter(c => c.alumnoId === alumnoId && c.anio === anio);
+    const materias = [...new Set(califs.map(c => c.materia))];
+    const periodos = ['I Bimestre','II Bimestre','III Bimestre','IV Bimestre'];
+
+    if (materias.length === 0) { document.getElementById('libreta-section').style.display='none'; return; }
+    document.getElementById('libreta-section').style.display = 'block';
+
+    const tbody = document.getElementById('tbody-libreta');
+    tbody.innerHTML = '';
+    materias.forEach(mat => {
+      let notas = periodos.map(p => {
+        const c = califs.find(x => x.materia === mat && x.periodo === p);
+        return c ? c.nota : null;
+      });
+      const validas = notas.filter(n => n !== null);
+      const prom = validas.length ? (validas.reduce((a,b)=>a+b,0)/validas.length).toFixed(1) : '—';
+      const promColor = validas.length && parseFloat(prom) >= 11 ? 'var(--secondary)' : 'var(--danger)';
+      tbody.innerHTML += `<tr>
+        <td style="font-weight:500">${mat}</td>
+        ${notas.map(n => `<td>${n !== null ? `<span style="font-weight:600">${n}</span>` : '<span style="color:var(--text-muted)">—</span>'}</td>`).join('')}
+        <td><span style="font-size:15px;font-weight:700;color:${promColor}">${prom}</span></td>
+      </tr>`;
+    });
+  }
+
+  function limpiarForm() {
+    refrescarSelects();
+    document.getElementById('c-id').value = '';
+    document.getElementById('c-nota').value = '';
+    document.getElementById('modal-titulo').textContent = 'Registrar calificación';
+  }
+
+  function editarCalif(id) {
+    const db = getDB(); const c = db.calificaciones.find(x=>x.id===id); if(!c) return;
+    document.getElementById('modal-titulo').textContent = 'Editar calificación';
+    document.getElementById('c-id').value = c.id;
+    document.getElementById('c-alumno').value = c.alumnoId;
+    document.getElementById('c-materia').value = c.materia;
+    document.getElementById('c-periodo').value = c.periodo;
+    document.getElementById('c-nota').value = c.nota;
+    document.getElementById('c-anio').value = c.anio;
+    document.getElementById('c-docente').value = c.docenteId;
+    openModal('modal-calif');
+  }
+
+  function guardarCalif() {
+    const nota = parseInt(document.getElementById('c-nota').value);
+    if (isNaN(nota) || nota < 0 || nota > 20) { showToast('La nota debe ser entre 0 y 20','error'); return; }
+    const db = getDB();
+    const obj = {
+      alumnoId: parseInt(document.getElementById('c-alumno').value),
+      materia: document.getElementById('c-materia').value,
+      periodo: document.getElementById('c-periodo').value,
+      nota, anio: parseInt(document.getElementById('c-anio').value),
+      docenteId: parseInt(document.getElementById('c-docente').value),
+      estado: nota >= 11 ? 'aprobado' : 'desaprobado',
+    };
+    const existId = parseInt(document.getElementById('c-id').value);
+    if (existId) {
+      const idx = db.calificaciones.findIndex(x=>x.id===existId);
+      db.calificaciones[idx] = {...db.calificaciones[idx], ...obj};
+      showToast('Calificación actualizada');
+    } else {
+      db.calificaciones.push({id: genId(db.calificaciones), ...obj});
+      showToast('Calificación registrada');
+    }
+    saveDB(db); closeModal('modal-calif'); renderCalif();
+  }
+
+  function eliminarCalif(id) {
+    confirmar('¿Eliminar esta calificación?', () => {
+      const db = getDB();
+      db.calificaciones = db.calificaciones.filter(x=>x.id!==id);
+      saveDB(db); renderCalif(); showToast('Calificación eliminada','warning');
+    });
+  }
+</script>
+</body>
+</html>

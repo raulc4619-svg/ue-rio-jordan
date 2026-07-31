@@ -1,0 +1,257 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Docentes – U.E. Rio Jordan</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><div class="logo-icon">🏫</div><div class="logo-text">U.E. Rio Jordan<small>Sistema Escolar 2024</small></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Inicio</a>
+      <div class="nav-section-label">Gestión Académica</div>
+      <a href="alumnos.html" class="nav-item"><span class="nav-icon">👨‍🎓</span> Alumnos</a>
+      <a href="docentes.html" class="nav-item active"><span class="nav-icon">👨‍🏫</span> Docentes</a>
+      <a href="calificaciones.html" class="nav-item"><span class="nav-icon">📊</span> Calificaciones</a>
+      <a href="asistencias.html" class="nav-item"><span class="nav-icon">✅</span> Asistencias</a>
+      <a href="horarios.html" class="nav-item"><span class="nav-icon">🕐</span> Horarios</a>
+      <a href="actividades.html" class="nav-item"><span class="nav-icon">📅</span> Actividades y Tareas</a>
+      <div class="nav-section-label">Administración</div>
+      <a href="matriculas.html" class="nav-item"><span class="nav-icon">📋</span> Matrículas</a>
+      <a href="finanzas.html" class="nav-item"><span class="nav-icon">💰</span> Finanzas</a>
+      
+      
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info" onclick="logout()">
+        <div class="user-avatar" id="sidebar-user-avatar">AD</div>
+        <div class="user-details"><div class="user-name" id="sidebar-user-name"></div><div class="user-role" id="sidebar-user-role"></div></div>
+        <span style="font-size:14px;opacity:.5">↩</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">👨‍🏫 Módulo de Docentes</div>
+      <div class="topbar-actions"><span id="result-count" style="font-size:12px;color:var(--text-muted)"></span></div>
+    </div>
+    <div class="page-content">
+      <div class="toolbar">
+        <div class="toolbar-start">
+          <div class="search-bar" style="min-width:260px">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search" placeholder="Buscar por nombre, especialidad..." oninput="filterTable('search','tabla-docentes')">
+          </div>
+          <select class="form-control" id="filtro-tipo" onchange="renderTabla()" style="width:140px">
+            <option value="">Todos los tipos</option>
+            <option>nombrado</option><option>contratado</option>
+          </select>
+          <select class="form-control" id="filtro-estado" onchange="renderTabla()" style="width:130px">
+            <option value="">Todos los estados</option>
+            <option>activo</option><option>licencia</option><option>inactivo</option>
+          </select>
+        </div>
+        <div class="toolbar-end" data-role="admin">
+          <button class="btn btn-primary" onclick="openModal('modal-docente');modoEdicion=false;limpiarForm()">+ Nuevo docente</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <div class="table-container">
+            <table id="tabla-docentes">
+              <thead>
+                <tr>
+                  <th>Docente</th>
+                  <th>DNI</th>
+                  <th>Especialidad</th>
+                  <th>Grado asignado</th>
+                  <th>Tipo</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-docentes"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL DOCENTE -->
+<div class="modal-overlay" id="modal-docente" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-titulo">Nuevo docente</h2>
+      <button class="btn-icon" onclick="closeModal('modal-docente')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="f-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre completo *</label>
+          <input type="text" id="f-nombre" class="form-control" placeholder="Apellidos y nombres">
+        </div>
+        <div class="form-group">
+          <label class="form-label">DNI *</label>
+          <input type="text" id="f-dni" class="form-control" maxlength="8">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Especialidad *</label>
+          <input type="text" id="f-especialidad" class="form-control" placeholder="Ej: Matemáticas">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Grado asignado</label>
+          <select id="f-grado" class="form-control">
+            <option>1ro</option><option>2do</option><option>3ro</option>
+            <option>4to</option><option>5to</option><option>6to</option><option>7mo</option><option>Todos</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="f-email" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Teléfono</label>
+          <input type="text" id="f-telefono" class="form-control">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo de contrato</label>
+          <select id="f-tipo" class="form-control">
+            <option>nombrado</option><option>contratado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select id="f-estado" class="form-control">
+            <option>activo</option><option>licencia</option><option>inactivo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha de ingreso</label>
+          <input type="date" id="f-fechaIngreso" class="form-control">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-docente')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarDocente()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script>
+  initDB(); requireAuth(['admin','docente']); renderUserBar(); applyRoleVisibility();
+  let modoEdicion = false;
+
+  function renderTabla() {
+    const db = getDB();
+    const tipoF = document.getElementById('filtro-tipo').value;
+    const estadoF = document.getElementById('filtro-estado').value;
+    let data = db.docentes;
+    if (tipoF) data = data.filter(d => d.tipo === tipoF);
+    if (estadoF) data = data.filter(d => d.estado === estadoF);
+    document.getElementById('result-count').textContent = data.length + ' docente(s)';
+    const tbody = document.getElementById('tbody-docentes');
+    tbody.innerHTML = '';
+    data.forEach(d => {
+      const ini = d.nombre.split(' ').map(w=>w[0]).join('').slice(0,2);
+      tbody.innerHTML += `<tr>
+        <td><div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="background:var(--secondary-bg);color:var(--secondary)">${ini}</div>
+          <div><div style="font-weight:500">${d.nombre}</div><div style="font-size:11px;color:var(--text-muted)">${d.email}</div></div>
+        </div></td>
+        <td>${d.dni}</td>
+        <td>${d.especialidad}</td>
+        <td>${d.gradoAsignado} grado</td>
+        <td><span class="badge ${badgeEstado(d.tipo)}">${d.tipo}</span></td>
+        <td><span class="badge ${badgeEstado(d.estado)}">${d.estado}</span></td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn btn-secondary btn-sm" onclick="editarDocente(${d.id})" data-role="admin">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarDocente(${d.id})" data-role="admin">✕</button>
+        </div></td>
+      </tr>`;
+    });
+    applyRoleVisibility();
+  }
+
+  function limpiarForm() {
+    ['f-id','f-nombre','f-dni','f-especialidad','f-email','f-telefono','f-fechaIngreso'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('f-grado').value='1ro';
+    document.getElementById('f-tipo').value='contratado';
+    document.getElementById('f-estado').value='activo';
+    document.getElementById('modal-titulo').textContent='Nuevo docente';
+  }
+
+  function editarDocente(id) {
+    const db = getDB(); const d = db.docentes.find(x=>x.id===id); if(!d) return;
+    modoEdicion = true;
+    document.getElementById('modal-titulo').textContent = 'Editar docente';
+    document.getElementById('f-id').value = d.id;
+    document.getElementById('f-nombre').value = d.nombre;
+    document.getElementById('f-dni').value = d.dni;
+    document.getElementById('f-especialidad').value = d.especialidad;
+    document.getElementById('f-grado').value = d.gradoAsignado;
+    document.getElementById('f-email').value = d.email;
+    document.getElementById('f-telefono').value = d.telefono;
+    document.getElementById('f-tipo').value = d.tipo;
+    document.getElementById('f-estado').value = d.estado;
+    document.getElementById('f-fechaIngreso').value = d.fechaIngreso;
+    openModal('modal-docente');
+  }
+
+  function guardarDocente() {
+    const nombre = document.getElementById('f-nombre').value.trim();
+    const dni = document.getElementById('f-dni').value.trim();
+    if (!nombre || !dni) { showToast('Nombre y DNI son obligatorios','error'); return; }
+    const db = getDB();
+    const obj = {
+      nombre, dni,
+      especialidad: document.getElementById('f-especialidad').value,
+      gradoAsignado: document.getElementById('f-grado').value,
+      email: document.getElementById('f-email').value,
+      telefono: document.getElementById('f-telefono').value,
+      tipo: document.getElementById('f-tipo').value,
+      estado: document.getElementById('f-estado').value,
+      fechaIngreso: document.getElementById('f-fechaIngreso').value,
+    };
+    if (modoEdicion) {
+      const id = parseInt(document.getElementById('f-id').value);
+      const idx = db.docentes.findIndex(x=>x.id===id);
+      db.docentes[idx] = {...db.docentes[idx], ...obj};
+      showToast('Docente actualizado');
+    } else {
+      db.docentes.push({id: genId(db.docentes), ...obj});
+      showToast('Docente registrado');
+    }
+    saveDB(db); closeModal('modal-docente'); renderTabla();
+  }
+
+  function eliminarDocente(id) {
+    confirmar('¿Eliminar este docente?', () => {
+      const db = getDB();
+      db.docentes = db.docentes.filter(x=>x.id!==id);
+      saveDB(db); renderTabla(); showToast('Docente eliminado','warning');
+    });
+  }
+
+  renderTabla();
+</script>
+</body>
+</html>

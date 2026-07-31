@@ -1,0 +1,364 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Horarios – U.E. Rio Jordan</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .sch-cell { background:var(--primary-bg); border-radius:6px; padding:6px 8px; text-align:center; font-size:12px; }
+    .sch-cell .subj { font-weight:600; color:var(--primary-dark); }
+    .sch-cell .prof { color:var(--text-secondary); font-size:11px; }
+    .sch-cell .aula { color:var(--text-muted); font-size:10px; }
+    .sch-cell.libre { background:var(--surface-2); }
+    .sch-cell.libre span { color:var(--text-muted); font-size:11px; }
+    .sch-cell.receso { background:var(--accent-bg); }
+    .sch-cell.receso span { color:var(--accent); font-weight:600; font-size:11px; }
+    td.hora-col { font-size:11px; font-weight:600; color:var(--text-secondary); white-space:nowrap; padding:8px 12px; background:var(--surface-1); }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><div class="logo-icon">🏫</div><div class="logo-text">U.E. Rio Jordan<small>Sistema Escolar 2024</small></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Inicio</a>
+      <div class="nav-section-label">Gestión Académica</div>
+      <a href="alumnos.html" class="nav-item"><span class="nav-icon">👨‍🎓</span> Alumnos</a>
+      <a href="docentes.html" class="nav-item"><span class="nav-icon">👨‍🏫</span> Docentes</a>
+      <a href="calificaciones.html" class="nav-item"><span class="nav-icon">📊</span> Calificaciones</a>
+      <a href="asistencias.html" class="nav-item"><span class="nav-icon">✅</span> Asistencias</a>
+      <a href="horarios.html" class="nav-item active"><span class="nav-icon">🕐</span> Horarios</a>
+      <a href="actividades.html" class="nav-item"><span class="nav-icon">📅</span> Actividades y Tareas</a>
+      <div class="nav-section-label">Administración</div>
+      <a href="matriculas.html" class="nav-item"><span class="nav-icon">📋</span> Matrículas</a>
+      <a href="finanzas.html" class="nav-item"><span class="nav-icon">💰</span> Finanzas</a>
+      
+      
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info" onclick="logout()">
+        <div class="user-avatar" id="sidebar-user-avatar">AD</div>
+        <div class="user-details"><div class="user-name" id="sidebar-user-name"></div><div class="user-role" id="sidebar-user-role"></div></div>
+        <span style="font-size:14px;opacity:.5">↩</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">🕐 Módulo de Horarios</div>
+    </div>
+    <div class="page-content">
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('grado',this)">Por grado/sección</button>
+        <button class="tab-btn" onclick="switchTab('docente',this)">Por docente</button>
+        <button class="tab-btn" onclick="switchTab('gestion',this)" data-role="admin">Gestionar horarios</button>
+      </div>
+
+      <!-- TAB GRADO -->
+      <div id="tab-grado">
+        <div class="toolbar">
+          <div class="toolbar-start">
+            <select class="form-control" id="sel-grado" onchange="renderHorarioGrado()" style="width:120px">
+              <option>1ro</option><option>2do</option><option>3ro</option>
+              <option>4to</option><option selected>5to</option><option>6to</option><option>7mo</option>
+            </select>
+            <select class="form-control" id="sel-seccion" onchange="renderHorarioGrado()" style="width:100px">
+              <option>A</option><option>B</option><option>C</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 id="titulo-horario">Horario — 5to grado, Sección A</h3>
+            <div style="font-size:12px;color:var(--text-muted)">Turno mañana · 07:30 – 12:30</div>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-container">
+              <table id="tabla-horario" style="min-width:700px">
+                <thead>
+                  <tr>
+                    <th style="width:110px">Hora</th>
+                    <th>Lunes</th><th>Martes</th><th>Miércoles</th><th>Jueves</th><th>Viernes</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-horario"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB DOCENTE -->
+      <div id="tab-docente" style="display:none">
+        <div class="toolbar">
+          <div class="toolbar-start">
+            <select class="form-control" id="sel-docente" onchange="renderHorarioDocente()" style="width:240px">
+              <option value="">— Seleccionar docente —</option>
+            </select>
+          </div>
+        </div>
+        <div id="horario-docente-content">
+          <div class="empty-state"><div class="empty-icon">👨‍🏫</div><p>Selecciona un docente para ver su horario</p></div>
+        </div>
+      </div>
+
+      <!-- TAB GESTION -->
+      <div id="tab-gestion" style="display:none" data-role="admin">
+        <div class="toolbar">
+          <div class="toolbar-end">
+            <button class="btn btn-primary" onclick="openModal('modal-horario');limpiarFormH()">+ Agregar clase</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <table id="tabla-gestion">
+              <thead>
+                <tr><th>Grado/Sec</th><th>Día</th><th>Hora</th><th>Materia</th><th>Docente</th><th>Aula</th><th>Acciones</th></tr>
+              </thead>
+              <tbody id="tbody-gestion"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL HORARIO -->
+<div class="modal-overlay" id="modal-horario" style="display:none">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <h2 id="modal-h-titulo">Agregar clase al horario</h2>
+      <button class="btn-icon" onclick="closeModal('modal-horario')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="h-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Grado</label>
+          <select id="h-grado" class="form-control">
+            <option>1ro</option><option>2do</option><option>3ro</option><option>4to</option><option>5to</option><option>6to</option><option>7mo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sección</label>
+          <select id="h-seccion" class="form-control"><option>A</option><option>B</option><option>C</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Día</label>
+          <select id="h-dia" class="form-control">
+            <option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hora</label>
+          <select id="h-hora" class="form-control">
+            <option>07:30 - 08:15</option><option>08:15 - 09:00</option><option>09:00 - 09:45</option>
+            <option>10:15 - 11:00</option><option>11:00 - 11:45</option><option>11:45 - 12:30</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Materia</label>
+        <select id="h-materia" class="form-control">
+          <option>Matemáticas</option><option>Lenguaje</option><option>Ciencias Naturales</option>
+          <option>Historia</option><option>Inglés</option><option>Arte</option>
+          <option>Educación Física</option><option>Computación</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Docente</label>
+          <select id="h-docente" class="form-control"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Aula</label>
+          <input type="text" id="h-aula" class="form-control" placeholder="B-201">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-horario')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarHorario()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script>
+  initDB(); requireAuth(); renderUserBar(); applyRoleVisibility();
+
+  const DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
+  const HORAS = ['07:30 - 08:15','08:15 - 09:00','09:00 - 09:45','RECESO','10:15 - 11:00','11:00 - 11:45','11:45 - 12:30'];
+
+  function refrescarSelects() {
+    poblarSelectDocentes('h-docente', 'sel-docente');
+  }
+  refrescarSelects();
+
+  function switchTab(tab, btn) {
+    ['grado','docente','gestion'].forEach(t => document.getElementById('tab-'+t).style.display = t===tab?'':'none');
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    if (tab==='gestion') renderGestion();
+  }
+
+  function renderHorarioGrado() {
+    const grado = document.getElementById('sel-grado').value;
+    const seccion = document.getElementById('sel-seccion').value;
+    const db = getDB();
+    document.getElementById('titulo-horario').textContent = `Horario — ${grado} grado, Sección ${seccion}`;
+
+    const tbody = document.getElementById('tbody-horario');
+    tbody.innerHTML = '';
+
+    HORAS.forEach(hora => {
+      if (hora === 'RECESO') {
+        tbody.innerHTML += `<tr>
+          <td class="hora-col">⏸ Recreo<br><span style="font-size:10px">09:45 – 10:15</span></td>
+          ${DIAS.map(()=>`<td style="padding:4px"><div class="sch-cell receso"><span>Recreo</span></div></td>`).join('')}
+        </tr>`;
+        return;
+      }
+      let row = `<tr><td class="hora-col">${hora}</td>`;
+      DIAS.forEach(dia => {
+        const clase = db.horarios.find(h=>h.grado===grado&&h.seccion===seccion&&h.dia===dia&&h.hora===hora);
+        if (clase) {
+          const doc = db.docentes.find(d=>d.id===clase.docenteId);
+          const docNombre = doc ? doc.nombre.split(' ').slice(0,2).join(' ') : '—';
+          row += `<td style="padding:4px"><div class="sch-cell">
+            <div class="subj">${clase.materia}</div>
+            <div class="prof">${docNombre}</div>
+            <div class="aula">🏫 ${clase.aula}</div>
+          </div></td>`;
+        } else {
+          row += `<td style="padding:4px"><div class="sch-cell libre"><span>—</span></div></td>`;
+        }
+      });
+      row += '</tr>';
+      tbody.innerHTML += row;
+    });
+  }
+
+  function renderHorarioDocente() {
+    const docenteId = parseInt(document.getElementById('sel-docente').value);
+    if (!docenteId) return;
+    const db = getDB();
+    const doc = db.docentes.find(d=>d.id===docenteId);
+    const clases = db.horarios.filter(h=>h.docenteId===docenteId);
+
+    let html = `<div class="card"><div class="card-header"><h3>Horario: ${doc.nombre}</h3><span class="badge badge-blue">${doc.especialidad}</span></div>
+      <div class="card-body" style="padding:0"><div class="table-container"><table style="min-width:700px">
+      <thead><tr><th style="width:110px">Hora</th>${DIAS.map(d=>`<th>${d}</th>`).join('')}</tr></thead><tbody>`;
+
+    HORAS.forEach(hora => {
+      if (hora==='RECESO') {
+        html += `<tr><td class="hora-col">⏸ Recreo</td>${DIAS.map(()=>`<td style="padding:4px"><div class="sch-cell receso"><span>Recreo</span></div></td>`).join('')}</tr>`;
+        return;
+      }
+      html += `<tr><td class="hora-col">${hora}</td>`;
+      DIAS.forEach(dia => {
+        const clase = clases.find(h=>h.dia===dia&&h.hora===hora);
+        if (clase) {
+          html += `<td style="padding:4px"><div class="sch-cell">
+            <div class="subj">${clase.grado}-${clase.seccion}</div>
+            <div class="prof">${clase.materia}</div>
+            <div class="aula">🏫 ${clase.aula}</div>
+          </div></td>`;
+        } else {
+          html += `<td style="padding:4px"><div class="sch-cell libre"><span>—</span></div></td>`;
+        }
+      });
+      html += '</tr>';
+    });
+
+    html += `</tbody></table></div></div></div>`;
+    document.getElementById('horario-docente-content').innerHTML = html;
+  }
+
+  function renderGestion() {
+    const db = getDB();
+    const tbody = document.getElementById('tbody-gestion');
+    tbody.innerHTML = '';
+    db.horarios.forEach(h => {
+      const doc = db.docentes.find(d=>d.id===h.docenteId);
+      tbody.innerHTML += `<tr>
+        <td>${h.grado}-${h.seccion}</td>
+        <td>${h.dia}</td>
+        <td style="font-size:12px">${h.hora}</td>
+        <td style="font-weight:500">${h.materia}</td>
+        <td style="font-size:12px;color:var(--text-secondary)">${doc?doc.nombre:'—'}</td>
+        <td><span class="badge badge-gray">${h.aula}</span></td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn btn-secondary btn-sm" onclick="editarHorario(${h.id})">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarHorario(${h.id})">✕</button>
+        </div></td>
+      </tr>`;
+    });
+  }
+
+  function limpiarFormH() {
+    document.getElementById('h-id').value='';
+    document.getElementById('h-aula').value='';
+    document.getElementById('modal-h-titulo').textContent='Agregar clase al horario';
+  }
+
+  function editarHorario(id) {
+    const db=getDB(); const h=db.horarios.find(x=>x.id===id); if(!h) return;
+    document.getElementById('modal-h-titulo').textContent='Editar clase';
+    document.getElementById('h-id').value=h.id;
+    document.getElementById('h-grado').value=h.grado;
+    document.getElementById('h-seccion').value=h.seccion;
+    document.getElementById('h-dia').value=h.dia;
+    document.getElementById('h-hora').value=h.hora;
+    document.getElementById('h-materia').value=h.materia;
+    document.getElementById('h-docente').value=h.docenteId;
+    document.getElementById('h-aula').value=h.aula;
+    openModal('modal-horario');
+  }
+
+  function guardarHorario() {
+    const db=getDB();
+    const obj = {
+      grado:document.getElementById('h-grado').value,
+      seccion:document.getElementById('h-seccion').value,
+      dia:document.getElementById('h-dia').value,
+      hora:document.getElementById('h-hora').value,
+      materia:document.getElementById('h-materia').value,
+      docenteId:parseInt(document.getElementById('h-docente').value),
+      aula:document.getElementById('h-aula').value||'—',
+    };
+    const existId=parseInt(document.getElementById('h-id').value);
+    if(existId){
+      const idx=db.horarios.findIndex(x=>x.id===existId);
+      db.horarios[idx]={...db.horarios[idx],...obj};
+      showToast('Horario actualizado');
+    } else {
+      db.horarios.push({id:genId(db.horarios),...obj});
+      showToast('Clase agregada al horario');
+    }
+    saveDB(db); closeModal('modal-horario'); renderGestion();
+  }
+
+  function eliminarHorario(id) {
+    confirmar('¿Eliminar esta clase del horario?',()=>{
+      const db=getDB();
+      db.horarios=db.horarios.filter(x=>x.id!==id);
+      saveDB(db); renderGestion(); showToast('Clase eliminada','warning');
+    });
+  }
+
+  renderHorarioGrado();
+</script>
+</body>
+</html>

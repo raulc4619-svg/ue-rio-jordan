@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>U.E. Rio Jordan – Bienvenidos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:   #F59E0B;
+      --primary-dk:#D97706;
+      --dark:      #1E293B;
+      --dark-2:    #0F172A;
+      --text:      #1E293B;
+      --text-muted:#64748B;
+      --surface:   #ffffff;
+      --border:    #E2E8F0;
+      --radius:    12px;
+      --shadow:    0 4px 24px rgba(0,0,0,.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      background: #fff;
+      overflow-x: hidden;
+    }
+
+    h1,h2,h3 { font-family: 'Poppins', sans-serif; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 5%;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-brand .brand-icon { width: 38px; height: 38px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .nav-brand .brand-name { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 15px; color: var(--dark); line-height: 1.2; }
+    .nav-brand .brand-name small { display: block; font-family: 'Inter', sans-serif; font-weight: 400; font-size: 11px; color: var(--text-muted); }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a { text-decoration: none; font-size: 14px; font-weight: 500; color: var(--text-muted); transition: color .2s; }
+    .nav-links a:hover { color: var(--primary-dk); }
+    .nav-cta { background: var(--primary); color: #fff; border: none; padding: 9px 22px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration: none; transition: background .2s; }
+    .nav-cta:hover { background: var(--primary-dk); }
+    .nav-menu-btn { display: none; background: none; border: none; font-size: 22px; cursor: pointer; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--dark-2) 0%, var(--dark) 60%, #1a3a5c 100%);
+      display: flex; align-items: center;
+      padding: 80px 5% 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23F59E0B' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 600px; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(245,158,11,.15); border: 1px solid rgba(245,158,11,.3); color: var(--primary); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: .5px; margin-bottom: 24px; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800; color: #fff; line-height: 1.15; margin-bottom: 20px; }
+    .hero h1 span { color: var(--primary); }
+    .hero p { font-size: 16px; color: rgba(255,255,255,.7); line-height: 1.7; margin-bottom: 36px; max-width: 480px; }
+    .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn-primary { background: var(--primary); color: #fff; padding: 13px 28px; border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; transition: all .2s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary:hover { background: var(--primary-dk); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,158,11,.35); }
+    .btn-outline { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.3); padding: 13px 28px; border-radius: 10px; font-weight: 600; font-size: 15px; text-decoration: none; transition: all .2s; }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .hero-image { position: absolute; right: 5%; top: 50%; transform: translateY(-50%); width: 420px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; opacity: .9; }
+    .hero-card { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 20px; backdrop-filter: blur(8px); animation: fadeInUp .6s ease both; }
+    .hero-card:nth-child(2) { animation-delay: .1s; margin-top: 20px; }
+    .hero-card:nth-child(3) { animation-delay: .2s; }
+    .hero-card:nth-child(4) { animation-delay: .3s; margin-top: -20px; }
+    .hero-card .icon { font-size: 26px; margin-bottom: 8px; }
+    .hero-card .num { font-family: 'Poppins', sans-serif; font-size: 26px; font-weight: 800; color: var(--primary); }
+    .hero-card .lbl { font-size: 12px; color: rgba(255,255,255,.6); margin-top: 2px; }
+
+    /* ── SECCIÓN GENÉRICA ── */
+    section { padding: 80px 5%; }
+    .section-label { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: var(--primary); text-transform: uppercase; margin-bottom: 10px; }
+    .section-title { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 800; color: var(--dark); margin-bottom: 16px; }
+    .section-sub { font-size: 16px; color: var(--text-muted); line-height: 1.7; max-width: 580px; }
+    .section-title-center { text-align: center; }
+    .section-sub-center { text-align: center; margin: 0 auto; }
+
+    /* ── VMO (Visión Misión Objetivo) ── */
+    .vmo { background: #F8FAFC; }
+    .vmo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 48px; }
+    .vmo-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; position: relative; overflow: hidden; transition: box-shadow .2s, transform .2s; animation: fadeInUp .5s ease both; }
+    .vmo-card:hover { box-shadow: 0 12px 40px rgba(0,0,0,.1); transform: translateY(-4px); }
+    .vmo-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--primary); }
+    .vmo-card:nth-child(2)::before { background: #3B82F6; }
+    .vmo-card:nth-child(3)::before { background: #10B981; }
+    .vmo-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; }
+    .vmo-icon.amber { background: rgba(245,158,11,.12); }
+    .vmo-icon.blue  { background: rgba(59,130,246,.12); }
+    .vmo-icon.green { background: rgba(16,185,129,.12); }
+    .vmo-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: var(--dark); }
+    .vmo-card p { font-size: 14px; color: var(--text-muted); line-height: 1.75; }
+
+    /* ── VALORES ── */
+    .valores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-top: 48px; }
+    .valor-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 16px; text-align: center; transition: all .2s; animation: fadeInUp .5s ease both; }
+    .valor-item:hover { border-color: var(--primary); box-shadow: 0 4px 20px rgba(245,158,11,.15); }
+    .valor-item .vi { font-size: 32px; margin-bottom: 10px; }
+    .valor-item p { font-size: 13px; font-weight: 600; color: var(--dark); }
+
+    /* ── GALERÍA ── */
+    .galeria { background: var(--dark); }
+    .galeria .section-title, .galeria .section-label { color: #fff; }
+    .galeria .section-sub { color: rgba(255,255,255,.6); }
+    .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: auto; gap: 12px; margin-top: 48px; }
+    .gallery-item { border-radius: 12px; overflow: hidden; position: relative; cursor: pointer; }
+    .gallery-item.large { grid-column: span 2; grid-row: span 2; }
+    .gallery-item.tall  { grid-row: span 2; }
+    .gallery-ph {
+      width: 100%; height: 100%; min-height: 180px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 10px; font-size: 13px; font-weight: 500;
+      transition: transform .3s;
+    }
+    .gallery-item:hover .gallery-ph { transform: scale(1.04); }
+    .gallery-ph .ph-icon { font-size: 36px; }
+    .gallery-ph .ph-label { color: rgba(255,255,255,.85); }
+    .g1 { background: linear-gradient(135deg, #1a3a5c, #2563EB); }
+    .g2 { background: linear-gradient(135deg, #7c3aed, #4f46e5); }
+    .g3 { background: linear-gradient(135deg, #065f46, #059669); }
+    .g4 { background: linear-gradient(135deg, #92400e, #D97706); }
+    .g5 { background: linear-gradient(135deg, #831843, #db2777); }
+    .g6 { background: linear-gradient(135deg, #1e3a5f, #0ea5e9); }
+    .g7 { background: linear-gradient(135deg, #3f3f3f, #6b7280); }
+    .gallery-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-end; padding: 16px; opacity: 0; transition: opacity .3s; }
+    .gallery-item:hover .gallery-overlay { opacity: 1; }
+    .gallery-overlay span { color: #fff; font-size: 13px; font-weight: 600; }
+
+    /* ── ESTADÍSTICAS ── */
+    .stats-banner { background: var(--primary); padding: 60px 5%; }
+    .stats-inner { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 32px; max-width: 900px; margin: 0 auto; text-align: center; }
+    .stat-b .num { font-family: 'Poppins', sans-serif; font-size: 42px; font-weight: 800; color: #fff; }
+    .stat-b .lbl { font-size: 13px; color: rgba(255,255,255,.8); margin-top: 4px; font-weight: 500; }
+
+    /* ── CTA FINAL ── */
+    .cta-final { background: var(--dark-2); padding: 80px 5%; text-align: center; }
+    .cta-final h2 { color: #fff; font-size: clamp(1.6rem, 3vw, 2.4rem); margin-bottom: 16px; }
+    .cta-final p { color: rgba(255,255,255,.6); font-size: 16px; margin-bottom: 36px; }
+
+    /* ── FOOTER ── */
+    footer { background: #0a0f1a; padding: 32px 5%; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    footer p { font-size: 13px; color: rgba(255,255,255,.4); }
+    footer a { color: var(--primary); text-decoration: none; font-size: 13px; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .hero-image { display: none; }
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+      .gallery-item.large, .gallery-item.tall { grid-column: span 1; grid-row: span 1; }
+      .nav-links { display: none; }
+      .nav-menu-btn { display: block; }
+    }
+    @media (max-width: 520px) {
+      .gallery-grid { grid-template-columns: 1fr; }
+      nav { padding: 0 4%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ NAV ══════════════ -->
+<nav>
+  <a href="#" class="nav-brand">
+    <div class="brand-icon">🏫</div>
+    <div class="brand-name">U.E. Rio Jordan <small>Formando líderes del mañana</small></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#mision">Misión & Visión</a></li>
+    <li><a href="#valores">Valores</a></li>
+    <li><a href="#galeria">Galería</a></li>
+    <li><a href="#contacto">Contacto</a></li>
+  </ul>
+  <a href="index.html" class="nav-cta">Acceso al Sistema →</a>
+  <button class="nav-menu-btn" onclick="toggleMobileNav()">☰</button>
+</nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">🎓 Año Escolar 2024</div>
+    <h1>Bienvenidos a<br><span>U.E. Rio Jordan</span></h1>
+    <p>Formamos personas íntegras, con valores sólidos y conocimientos que les permiten enfrentar los desafíos del mundo moderno. Juntos construimos el futuro.</p>
+    <div class="hero-btns">
+      <a href="#mision" class="btn-primary">Conocer más ↓</a>
+      <a href="index.html" class="btn-outline">Acceso docentes / alumnos</a>
+    </div>
+  </div>
+  <div class="hero-image">
+    <div class="hero-card"><div class="icon">👨‍🎓</div><div class="num" id="cnt-alumnos">—</div><div class="lbl">Estudiantes</div></div>
+    <div class="hero-card"><div class="icon">👨‍🏫</div><div class="num" id="cnt-docentes">—</div><div class="lbl">Docentes</div></div>
+    <div class="hero-card"><div class="icon">📚</div><div class="num">7</div><div class="lbl">Grados</div></div>
+    <div class="hero-card"><div class="icon">🏆</div><div class="num">+10</div><div class="lbl">Años de trayectoria</div></div>
+  </div>
+</section>
+
+<!-- ══════════════ VISIÓN MISIÓN OBJETIVO ══════════════ -->
+<section class="vmo" id="mision">
+  <div style="text-align:center">
+    <div class="section-label">Nuestra identidad</div>
+    <h2 class="section-title section-title-center">Visión, Misión y Objetivo</h2>
+    <p class="section-sub section-sub-center">Los pilares que guían cada acción y decisión dentro de nuestra comunidad educativa.</p>
+  </div>
+  <div class="vmo-grid">
+
+    <div class="vmo-card" style="animation-delay:.05s">
+      <div class="vmo-icon amber">🔭</div>
+      <h3>Visión</h3>
+      <p>Ser una institución educativa líder y de referencia regional, reconocida por la excelencia académica, la formación en valores y el compromiso con el desarrollo integral de cada estudiante. Aspiramos a que nuestros egresados sean ciudadanos críticos, creativos y con plena capacidad de transformar su entorno social y profesional.</p>
+    </div>
+
+    <div class="vmo-card" style="animation-delay:.15s">
+      <div class="vmo-icon blue">🎯</div>
+      <h3>Misión</h3>
+      <p>Brindar una educación de calidad, inclusiva y humanista, que desarrolle las competencias cognitivas, sociales y emocionales de nuestros estudiantes. Trabajamos con docentes altamente capacitados, metodologías innovadoras y un ambiente escolar seguro y motivador, en alianza permanente con las familias y la comunidad.</p>
+    </div>
+
+    <div class="vmo-card" style="animation-delay:.25s">
+      <div class="vmo-icon green">✅</div>
+      <h3>Objetivo General</h3>
+      <p>Garantizar el aprendizaje significativo de todos los estudiantes desde 1ro hasta 7mo grado, fortaleciendo su identidad cultural, pensamiento crítico y habilidades para la vida. Promovemos una formación integral que combina la excelencia académica con el desarrollo personal, ético y ciudadano de cada alumno.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════ ESTADÍSTICAS ══════════════ -->
+<div class="stats-banner">
+  <div class="stats-inner">
+    <div class="stat-b"><div class="num">7</div><div class="lbl">Grados educativos</div></div>
+    <div class="stat-b"><div class="num">3</div><div class="lbl">Secciones por grado</div></div>
+    <div class="stat-b"><div class="num">100%</div><div class="lbl">Compromiso docente</div></div>
+    <div class="stat-b"><div class="num">+10</div><div class="lbl">Años formando líderes</div></div>
+  </div>
+</div>
+
+<!-- ══════════════ VALORES ══════════════ -->
+<section id="valores">
+  <div style="text-align:center">
+    <div class="section-label">Lo que nos define</div>
+    <h2 class="section-title section-title-center">Nuestros Valores</h2>
+    <p class="section-sub section-sub-center">Los valores que cultivamos cada día en el aula, en el recreo y en la vida.</p>
+  </div>
+  <div class="valores-grid">
+    <div class="valor-item" style="animation-delay:.05s"><div class="vi">🤝</div><p>Respeto</p></div>
+    <div class="valor-item" style="animation-delay:.1s"><div class="vi">💡</div><p>Innovación</p></div>
+    <div class="valor-item" style="animation-delay:.15s"><div class="vi">⚖️</div><p>Honestidad</p></div>
+    <div class="valor-item" style="animation-delay:.2s"><div class="vi">🌱</div><p>Responsabilidad</p></div>
+    <div class="valor-item" style="animation-delay:.25s"><div class="vi">🤲</div><p>Solidaridad</p></div>
+    <div class="valor-item" style="animation-delay:.3s"><div class="vi">🏅</div><p>Excelencia</p></div>
+    <div class="valor-item" style="animation-delay:.35s"><div class="vi">🌍</div><p>Inclusión</p></div>
+    <div class="valor-item" style="animation-delay:.4s"><div class="vi">❤️</div><p>Vocación</p></div>
+  </div>
+</section>
+
+<!-- ══════════════ GALERÍA ══════════════ -->
+<section class="galeria" id="galeria">
+  <div style="text-align:center">
+    <div class="section-label">Nuestra vida escolar</div>
+    <h2 class="section-title section-title-center">Galería</h2>
+    <p class="section-sub section-sub-center">Momentos que hacen grande a nuestra comunidad educativa.</p>
+  </div>
+  <div class="gallery-grid">
+
+    <div class="gallery-item large">
+      <div class="gallery-ph g1" style="min-height:320px">
+        <div class="ph-icon">🏫</div>
+        <div class="ph-label">Instalaciones principales</div>
+      </div>
+      <div class="gallery-overlay"><span>Nuestra institución</span></div>
+    </div>
+
+    <div class="gallery-item">
+      <div class="gallery-ph g2" style="min-height:154px">
+        <div class="ph-icon">🎨</div>
+        <div class="ph-label">Arte y cultura</div>
+      </div>
+      <div class="gallery-overlay"><span>Actividades culturales</span></div>
+    </div>
+
+    <div class="gallery-item">
+      <div class="gallery-ph g3" style="min-height:154px">
+        <div class="ph-icon">⚽</div>
+        <div class="ph-label">Deportes</div>
+      </div>
+      <div class="gallery-overlay"><span>Olimpiadas escolares</span></div>
+    </div>
+
+    <div class="gallery-item tall">
+      <div class="gallery-ph g4" style="min-height:320px">
+        <div class="ph-icon">🔬</div>
+        <div class="ph-label">Laboratorio de Ciencias</div>
+      </div>
+      <div class="gallery-overlay"><span>Feria de ciencias</span></div>
+    </div>
+
+    <div class="gallery-item">
+      <div class="gallery-ph g5" style="min-height:154px">
+        <div class="ph-icon">📚</div>
+        <div class="ph-label">Biblioteca</div>
+      </div>
+      <div class="gallery-overlay"><span>Espacio de lectura</span></div>
+    </div>
+
+    <div class="gallery-item">
+      <div class="gallery-ph g6" style="min-height:154px">
+        <div class="ph-icon">💻</div>
+        <div class="ph-label">Sala de Cómputo</div>
+      </div>
+      <div class="gallery-overlay"><span>Tecnología educativa</span></div>
+    </div>
+
+    <div class="gallery-item">
+      <div class="gallery-ph g7" style="min-height:154px">
+        <div class="ph-icon">🎓</div>
+        <div class="ph-label">Clausura 2023</div>
+      </div>
+      <div class="gallery-overlay"><span>Ceremonia de graduación</span></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════ CTA ══════════════ -->
+<section class="cta-final" id="contacto">
+  <h2>¿Listo para ser parte de<br>nuestra comunidad?</h2>
+  <p>Accede al sistema escolar para consultar calificaciones,<br>asistencias, horarios y más.</p>
+  <a href="index.html" class="btn-primary" style="display:inline-flex;margin:0 auto">
+    Ingresar al sistema escolar →
+  </a>
+  <div style="margin-top:48px;display:flex;gap:32px;justify-content:center;flex-wrap:wrap">
+    <div style="text-align:center;color:rgba(255,255,255,.5)">
+      <div style="font-size:20px;margin-bottom:4px">📍</div>
+      <div style="font-size:13px">Dirección institucional</div>
+    </div>
+    <div style="text-align:center;color:rgba(255,255,255,.5)">
+      <div style="font-size:20px;margin-bottom:4px">📞</div>
+      <div style="font-size:13px">Teléfono de contacto</div>
+    </div>
+    <div style="text-align:center;color:rgba(255,255,255,.5)">
+      <div style="font-size:20px;margin-bottom:4px">✉️</div>
+      <div style="font-size:13px">correo@ueriojordan.edu</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer>
+  <p>© 2024 U.E. Rio Jordan — Todos los derechos reservados.</p>
+  <a href="index.html">Acceso al sistema escolar →</a>
+</footer>
+
+<script>
+  // Leer datos del sistema escolar desde localStorage
+  (function cargarContadores() {
+    try {
+      const db = JSON.parse(localStorage.getItem('escuela_db'));
+      if (!db) return;
+      const alumnos  = (db.alumnos  || []).filter(a => a.estado === 'activo').length;
+      const docentes = (db.docentes || []).filter(d => d.estado === 'activo').length;
+
+      function animarNum(el, target) {
+        if (!el || target === 0) return;
+        let start = 0;
+        const dur = 900;
+        const t0 = performance.now();
+        function step(now) {
+          const p = Math.min((now - t0) / dur, 1);
+          const ease = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(ease * target);
+          if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+
+      animarNum(document.getElementById('cnt-alumnos'),  alumnos);
+      animarNum(document.getElementById('cnt-docentes'), docentes);
+    } catch(e) {}
+  })();
+
+  function toggleMobileNav() {
+    const links = document.querySelector('.nav-links');
+    if (!links) return;
+    if (links.style.display === 'flex') {
+      links.style.display = 'none';
+    } else {
+      links.style.cssText = 'display:flex;flex-direction:column;position:fixed;top:64px;left:0;right:0;background:#fff;padding:20px 5%;border-bottom:1px solid #E2E8F0;gap:16px;z-index:99';
+    }
+  }
+
+  // Intersection Observer para animar cards al hacer scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.vmo-card, .valor-item, .gallery-item').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(24px)';
+    el.style.transition = 'opacity .5s ease, transform .5s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
