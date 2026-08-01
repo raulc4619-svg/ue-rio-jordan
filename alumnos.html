@@ -200,6 +200,13 @@
   requireAuth();
   renderUserBar();
   applyRoleVisibility();
+  (function ocultarParaAlumno() {
+    const rol = getSession()?.role;
+    if (rol === 'alumno') {
+      document.querySelectorAll('.toolbar-end, [data-role="admin,docente"], [data-role="admin"]')
+        .forEach(el => { el.style.setProperty('display','none','important'); });
+    }
+  })();
 
   let modoEdicion = false;
 
