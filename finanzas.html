@@ -66,11 +66,20 @@
           <div class="toolbar-start" style="flex-wrap:wrap;gap:10px">
             <div class="search-bar" style="min-width:220px">
               <span class="search-icon">🔍</span>
-              <input type="text" id="search-pago" placeholder="Buscar concepto, alumno..." oninput="filterTable('search-pago','tabla-pagos')">
+              <input type="text" id="search-pago" placeholder="Buscar alumno, concepto..." oninput="renderPagos()">
             </div>
             <select class="form-control" id="f-estado-pago" onchange="renderPagos()" style="width:140px">
               <option value="">Todos los estados</option>
               <option>pagado</option><option>parcial</option><option>pendiente</option><option>vencido</option>
+            </select>
+            <select class="form-control" id="f-grado-pago" onchange="renderPagos();sincronizarSeccionesFin()" style="width:110px">
+              <option value="">Todos los grados</option>
+              <option>1ro</option><option>2do</option><option>3ro</option>
+              <option>4to</option><option>5to</option><option>6to</option><option>7mo</option>
+            </select>
+            <select class="form-control" id="f-seccion-pago" onchange="renderPagos()" style="width:100px">
+              <option value="">Todas las secciones</option>
+              <option>A</option><option>B</option><option>C</option>
             </select>
             <select class="form-control" id="f-alumno-pago" onchange="renderPagos()" style="width:220px">
               <option value="">Todos los alumnos</option>
@@ -338,10 +347,13 @@
   actualizarCuotasMensuales();
 
   function refrescarSelects() {
-    poblarSelectAlumnos('f-alumno-pago', 'sel-alumno-fin');
+    actualizarSelectAlumnosFin();
+    poblarSelectAlumnos('sel-alumno-fin');
     filtrarAlumnosPago();
   }
   refrescarSelects();
+
+  document.getElementById('f-seccion-pago').addEventListener('change', actualizarSelectAlumnosFin);
 
   function filtrarAlumnosPago() {
     const grado   = document.getElementById('p-grado').value;
@@ -404,13 +416,52 @@
     if (tab==='reporte') renderReporteFin();
   }
 
+  function sincronizarSeccionesFin() {
+    // Cuando cambia el grado, resetear sección y alumno
+    document.getElementById('f-seccion-pago').value = '';
+    document.getElementById('f-alumno-pago').value  = '';
+    actualizarSelectAlumnosFin();
+  }
+
+  function actualizarSelectAlumnosFin() {
+    const grado   = document.getElementById('f-grado-pago').value;
+    const seccion = document.getElementById('f-seccion-pago').value;
+    const sel     = document.getElementById('f-alumno-pago');
+    const prev    = sel.value;
+    const db      = getDB();
+    let lista = getFinanzasFiltradas(db).map(f => f.alumnoId);
+    let alumnos = db.alumnos.filter(a => lista.includes(a.id));
+    if (grado)   alumnos = alumnos.filter(a => a.grado   === grado);
+    if (seccion) alumnos = alumnos.filter(a => a.seccion === seccion);
+    alumnos.sort((a,b) => a.nombre.localeCompare(b.nombre));
+    sel.innerHTML = '<option value="">Todos los alumnos</option>' +
+      alumnos.map(a => `<option value="${a.id}" ${a.id==prev?'selected':''}>${a.nombre} (${a.grado}${a.seccion})</option>`).join('');
+  }
+
   function renderPagos() {
-    const estadoF = document.getElementById('f-estado-pago').value;
-    const alumnoF = parseInt(document.getElementById('f-alumno-pago').value);
+    const estadoF  = document.getElementById('f-estado-pago').value;
+    const gradoF   = document.getElementById('f-grado-pago').value;
+    const seccionF = document.getElementById('f-seccion-pago').value;
+    const alumnoF  = parseInt(document.getElementById('f-alumno-pago').value);
+    const busqueda = (document.getElementById('search-pago').value || '').toLowerCase().trim();
     const db = getDB();
     let data = getFinanzasFiltradas(db);
-    if (estadoF) data = data.filter(f=>f.estado===estadoF);
-    if (alumnoF) data = data.filter(f=>f.alumnoId===alumnoF);
+    if (estadoF)  data = data.filter(f => f.estado === estadoF);
+    if (alumnoF)  data = data.filter(f => f.alumnoId === alumnoF);
+    if (gradoF || seccionF) {
+      const ids = db.alumnos
+        .filter(a => (!gradoF || a.grado===gradoF) && (!seccionF || a.seccion===seccionF))
+        .map(a => a.id);
+      data = data.filter(f => ids.includes(f.alumnoId));
+    }
+    if (busqueda) {
+      data = data.filter(f => {
+        const alumno = db.alumnos.find(a => a.id === f.alumnoId);
+        return (alumno && alumno.nombre.toLowerCase().includes(busqueda)) ||
+               (f.concepto && f.concepto.toLowerCase().includes(busqueda)) ||
+               (f.recibo   && f.recibo.toLowerCase().includes(busqueda));
+      });
+    }
     const tbody = document.getElementById('tbody-pagos');
     tbody.innerHTML = '';
     const hoy = new Date(); hoy.setHours(0,0,0,0);
