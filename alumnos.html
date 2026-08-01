@@ -302,7 +302,33 @@
       const newId = genId(db.alumnos);
       const codigo = 'ALU-' + String(newId).padStart(3, '0');
       db.alumnos.push({ id: newId, codigo, ...obj });
-      showToast('Alumno registrado correctamente');
+
+      // Generar cuotas mensuales automáticas con fecha límite el día 5 de cada mes
+      const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                     'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      const hoy = new Date();
+      const anio = hoy.getFullYear();
+      const mesActual = hoy.getMonth(); // 0-based
+
+      for (let m = mesActual; m < 12; m++) {
+        const fechaLimite = `${anio}-${String(m + 1).padStart(2,'0')}-05`;
+        const estado = hoy > new Date(anio, m, 5) ? 'vencido' : 'pendiente';
+        db.finanzas.push({
+          id: genId(db.finanzas),
+          alumnoId: newId,
+          concepto: `Mensualidad ${meses[m]} ${anio}`,
+          monto: 0,
+          fechaVenc: fechaLimite,
+          fechaPago: '',
+          metodoPago: '',
+          estado,
+          recibo: '',
+          registradoEn: new Date().toISOString(),
+          registradoPor: getSession()?.name || 'Sistema',
+          autogenerado: true
+        });
+      }
+      showToast(`Alumno registrado. Se generaron ${12 - mesActual} cuotas mensuales automáticamente.`);
     }
 
     saveDB(db);
