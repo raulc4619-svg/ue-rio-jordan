@@ -320,8 +320,8 @@
         <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted);font-size:12px">Comentario</span><span style="font-size:12px;text-align:right;max-width:60%" id="vc-comentario">—</span></div>
       </div>
       <div style="text-align:center">
-        <img id="vc-imagen" src="" alt="Comprobante" style="display:none;max-width:100%;max-height:300px;border-radius:10px;border:1px solid var(--border);object-fit:contain">
-        <a id="vc-descarga" href="#" style="display:none;padding:10px 20px;background:var(--primary);color:#000;border-radius:8px;font-weight:600;text-decoration:none;font-size:14px"></a>
+        <img id="vc-imagen" src="" alt="Comprobante" style="display:none;max-width:100%;max-height:360px;border-radius:10px;border:1px solid var(--border);object-fit:contain">
+        <embed id="vc-pdf" src="" type="application/pdf" style="display:none;width:100%;height:400px;border-radius:10px;border:1px solid var(--border)">
       </div>
     </div>
     <div class="modal-footer">
@@ -929,16 +929,13 @@
     document.getElementById('vc-comentario').textContent = f.comentarioAlumno || '—';
     document.getElementById('vc-fecha').textContent = f.fechaEnvio ? new Date(f.fechaEnvio).toLocaleString('es-PE') : '—';
     const img = document.getElementById('vc-imagen');
-    const descarga = document.getElementById('vc-descarga');
+    const pdf = document.getElementById('vc-pdf');
     if (f.comprobante.tipo && f.comprobante.tipo.startsWith('image/')) {
       img.src = f.comprobante.datos; img.style.display = 'block';
-      descarga.style.display = 'none';
+      pdf.style.display = 'none';
     } else {
       img.style.display = 'none';
-      descarga.href = f.comprobante.datos;
-      descarga.download = f.comprobante.nombre;
-      descarga.textContent = '📥 Descargar ' + f.comprobante.nombre;
-      descarga.style.display = 'inline-block';
+      pdf.src = f.comprobante.datos; pdf.style.display = 'block';
     }
     document.getElementById('vc-aprobar-btn').onclick = () => { closeModal('modal-ver-comprobante'); aprobarPagoAlumno(id); };
     openModal('modal-ver-comprobante');
