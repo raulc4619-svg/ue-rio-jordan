@@ -189,17 +189,19 @@
   }
   refrescarSelects();
 
-  // Para alumno: ocultar selector y auto-cargar sus notas
+  // Para alumno: bloquear vista de otros estudiantes y cargar solo sus notas
   if (_sesionCal.role === 'alumno') {
+    // Ocultar controles de selección
     document.querySelector('.toolbar').style.display = 'none';
     document.querySelector('.topbar-title').textContent = '📊 Mis calificaciones';
-    const anioActual = new Date().getFullYear();
-    document.getElementById('f-anio').value = anioActual;
-    if (_sesionCal.alumnoId) {
-      document.getElementById('f-alumno').value = _sesionCal.alumnoId;
-    }
+    // Bloquear select de alumno para que no puedan manipularlo
+    const selAl = document.getElementById('f-alumno');
+    selAl.disabled = true;
+    if (_sesionCal.alumnoId) selAl.value = _sesionCal.alumnoId;
+    document.getElementById('f-anio').value = new Date().getFullYear();
     renderCalifAlumno();
   }
+
 
   function getLetraColor(n) {
     if (n >= 17) return '<span style="color:#2e7d32;font-weight:700">AD</span>';
