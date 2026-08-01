@@ -68,8 +68,8 @@
       <div class="nav-section-label">Administración</div>
       <a href="matriculas.html" class="nav-item"><span class="nav-icon">📋</span> Matrículas</a>
       <a href="finanzas.html" class="nav-item"><span class="nav-icon">💰</span> Finanzas</a>
-          <div class="nav-section-label">Sistema</div>
-      <a href="usuarios.html" class="nav-item"><span class="nav-icon">👤</span> Usuarios</a>
+          <div class="nav-section-label" data-role="admin,docente">Sistema</div>
+      <a href="usuarios.html" class="nav-item" data-role="admin,docente"><span class="nav-icon">👤</span> Usuarios</a>
     </nav>
     <div class="sidebar-footer">
       <div class="user-info" onclick="logout()">
@@ -180,7 +180,7 @@
               <option value="cerrada">Cerrada</option>
             </select>
           </div>
-          <div class="toolbar-end">
+          <div class="toolbar-end" data-role="admin,docente">
             <button class="btn btn-primary" onclick="abrirModalTarea()">+ Nueva tarea</button>
           </div>
         </div>
@@ -682,7 +682,7 @@ function verEntregas(tareaId){
       <div style="flex-shrink:0;text-align:right">
         ${e?`<div style="display:flex;align-items:center;gap:6px">
           <input type="number" class="form-control nota-input" id="nota-${a.id}" value="${e.calificacion??''}" min="0" max="${tarea.notaMax||20}" placeholder="—">
-          <button class="btn btn-primary btn-sm" onclick="calificarEntrega(${tareaId},${a.id})">✓</button>
+          ${['admin','docente'].includes(getSession()?.role)?`<button class="btn btn-primary btn-sm" onclick="calificarEntrega(${tareaId},${a.id})">✓</button>`:''}
         </div>${e.calificacion!=null?`<div style="font-size:11px;color:var(--secondary);margin-top:4px">Nota: ${e.calificacion}/${tarea.notaMax||20}</div>`:''}`
           :`<span class="badge-pendiente">Sin entregar</span>`}
       </div>
