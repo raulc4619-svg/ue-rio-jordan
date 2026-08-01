@@ -713,6 +713,12 @@ select.form-control { cursor: pointer; }
 .toolbar-start { flex: 1; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .toolbar-end { display: flex; align-items: center; gap: 10px; }
 
+/* Ocultar elementos restringidos por rol */
+body.role-alumno [data-role="admin"],
+body.role-alumno [data-role="admin,docente"],
+body.role-alumno [data-role="docente,admin"] { display: none !important; }
+body.role-docente [data-role="admin"] { display: none !important; }
+
 /* ============================================================
    ALERTS
    ============================================================ */

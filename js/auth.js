@@ -77,6 +77,7 @@ function setActiveNav() {
 function applyRoleVisibility() {
   const session = getSession();
   if (!session) return;
+  document.body.classList.add('role-' + session.role);
   document.querySelectorAll('[data-role]').forEach(el => {
     const roles = el.getAttribute('data-role').split(',');
     if (!roles.includes(session.role)) el.style.display = 'none';
