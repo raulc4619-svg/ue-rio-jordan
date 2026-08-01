@@ -95,7 +95,7 @@
           <div class="card-body" style="padding:0">
             <table id="tabla-pagos">
               <thead>
-                <tr><th>Recibo</th><th>Alumno</th><th>Concepto</th><th>Total</th><th>Abono</th><th>Saldo</th><th>Vencimiento</th><th>Fecha pago</th><th>Método</th><th>Estado</th><th data-role="admin">Acciones</th></tr>
+                <tr><th>Recibo</th><th>Alumno</th><th>Concepto</th><th>Total</th><th>Abono</th><th>Saldo</th><th>Vencimiento</th><th>Fecha pago</th><th>Método</th><th>Estado</th><th data-role="admin">Acciones</th><th data-role="alumno">Acción</th></tr>
               </thead>
               <tbody id="tbody-pagos"></tbody>
             </table>
@@ -244,6 +244,92 @@
 
 <!-- Área oculta solo para impresión -->
 <div id="print-area"></div>
+
+<!-- Modal: Realizar pago (alumno) -->
+<div class="modal-overlay" id="modal-realizar-pago" onclick="if(event.target===this)closeModal('modal-realizar-pago')">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h3 class="modal-title">💳 Realizar pago por transferencia</h3>
+      <button class="modal-close" onclick="closeModal('modal-realizar-pago')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--surface-1);border-radius:10px;padding:14px 16px;margin-bottom:18px;border:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="color:var(--text-muted);font-size:13px">Alumno</span>
+          <span style="font-weight:600;font-size:13px" id="pa-alumno">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="color:var(--text-muted);font-size:13px">Concepto</span>
+          <span style="font-weight:600;font-size:13px" id="pa-concepto">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--text-muted);font-size:13px">Monto</span>
+          <span style="font-weight:800;font-size:18px;color:var(--primary)" id="pa-monto">—</span>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">Método de pago</label>
+        <input class="form-control" value="Transferencia bancaria" readonly style="background:var(--surface-1);color:var(--text-muted);cursor:not-allowed">
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">Número de referencia / transacción <span style="color:var(--danger)">*</span></label>
+        <input type="text" id="pa-referencia" class="form-control" placeholder="Ej: TRF-20240801-123456">
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">Comprobante de transferencia <span style="color:var(--danger)">*</span></label>
+        <div style="border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s"
+             onclick="document.getElementById('pa-archivo').click()"
+             ondragover="event.preventDefault();this.style.borderColor='var(--primary)'"
+             ondragleave="this.style.borderColor='var(--border)'"
+             ondrop="event.preventDefault();this.style.borderColor='var(--border)';const f=event.dataTransfer.files[0];if(f){const dt=new DataTransfer();dt.items.add(f);document.getElementById('pa-archivo').files=dt.files;document.getElementById('pa-archivo-nombre').textContent=f.name;if(f.type.startsWith('image/')){const r=new FileReader();r.onload=e=>{const p=document.getElementById('pa-archivo-preview');p.src=e.target.result;p.style.display='block'};r.readAsDataURL(f)}}">
+          <div style="font-size:28px;margin-bottom:6px">📎</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text-primary)">Arrastra o haz clic para subir</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Imagen (JPG, PNG) o PDF del comprobante</div>
+        </div>
+        <input type="file" id="pa-archivo" accept="image/*,.pdf" style="display:none"
+               onchange="document.getElementById('pa-archivo-nombre').textContent=this.files[0]?.name||'';if(this.files[0]?.type.startsWith('image/')){const r=new FileReader();r.onload=e=>{const p=document.getElementById('pa-archivo-preview');p.src=e.target.result;p.style.display='block'};r.readAsDataURL(this.files[0])}else{document.getElementById('pa-archivo-preview').style.display='none'}">
+        <div style="margin-top:6px;font-size:12px;color:var(--primary);font-weight:500" id="pa-archivo-nombre"></div>
+        <img id="pa-archivo-preview" src="" alt="Preview" style="display:none;max-width:100%;max-height:180px;border-radius:8px;margin-top:8px;object-fit:contain">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Comentario (opcional)</label>
+        <textarea id="pa-comentario" class="form-control" rows="2" placeholder="Ej: Pago realizado desde banco Mercantil..." style="resize:vertical"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-realizar-pago')">Cancelar</button>
+      <button class="btn btn-primary" onclick="enviarPagoAlumno()">📤 Enviar comprobante</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Ver comprobante (admin) -->
+<div class="modal-overlay" id="modal-ver-comprobante" onclick="if(event.target===this)closeModal('modal-ver-comprobante')">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <h3 class="modal-title">📎 Comprobante de transferencia</h3>
+      <button class="modal-close" onclick="closeModal('modal-ver-comprobante')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--surface-1);border-radius:10px;padding:14px 16px;margin-bottom:16px;border:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text-muted);font-size:12px">Alumno</span><span style="font-weight:600;font-size:13px" id="vc-nombre">—</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text-muted);font-size:12px">Concepto</span><span style="font-weight:600;font-size:13px" id="vc-concepto">—</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text-muted);font-size:12px">Monto</span><span style="font-weight:800;font-size:16px;color:var(--primary)" id="vc-monto">—</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text-muted);font-size:12px">Referencia</span><span style="font-weight:600;font-size:13px;font-family:monospace" id="vc-referencia">—</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text-muted);font-size:12px">Enviado el</span><span style="font-size:12px" id="vc-fecha">—</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted);font-size:12px">Comentario</span><span style="font-size:12px;text-align:right;max-width:60%" id="vc-comentario">—</span></div>
+      </div>
+      <div style="text-align:center">
+        <img id="vc-imagen" src="" alt="Comprobante" style="display:none;max-width:100%;max-height:300px;border-radius:10px;border:1px solid var(--border);object-fit:contain">
+        <a id="vc-descarga" href="#" style="display:none;padding:10px 20px;background:var(--primary);color:#000;border-radius:8px;font-weight:600;text-decoration:none;font-size:14px"></a>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-ver-comprobante')">Cerrar</button>
+      <button class="btn btn-success" id="vc-aprobar-btn">✓ Aprobar pago</button>
+    </div>
+  </div>
+</div>
 
 <script src="js/data.js"></script>
 <script src="js/auth.js"></script>
@@ -494,12 +580,14 @@
         <td>${fechaTag}</td>
         <td style="font-size:12px">${f.fechaPago?formatFecha(f.fechaPago):'—'}</td>
         <td style="font-size:12px">${f.metodoPago||'—'}</td>
-        <td><span class="badge ${badgeEstado(f.estado)}">${f.estado}</span></td>
+        <td><span class="badge ${badgeEstado(f.estado)}">${f.estado==='en_revision'?'En revisión':f.estado}</span></td>
         <td data-role="admin"><div style="display:flex;gap:4px">
           ${f.estado==='pagado'?`<button class="btn btn-secondary btn-sm" onclick="verRecibo(${f.id})">🧾</button>`:''}
-          ${f.estado!=='pagado'?`<button class="btn btn-success btn-sm" onclick="marcarPagado(${f.id})">💳 Pagar</button>`:''}
+          ${f.estado==='en_revision'?`<button class="btn btn-success btn-sm" onclick="aprobarPagoAlumno(${f.id})">✓ Aprobar</button><button class="btn btn-secondary btn-sm" onclick="verComprobanteAlumno(${f.id})">📎 Ver comprobante</button>`:''}
+          ${f.estado!=='pagado'&&f.estado!=='en_revision'?`<button class="btn btn-success btn-sm" onclick="marcarPagado(${f.id})">💳 Pagar</button>`:''}
           <button class="btn btn-danger btn-sm" onclick="eliminarPago(${f.id})">✕</button>
         </div></td>
+        <td data-role="alumno">${f.estado!=='pagado'&&f.estado!=='en_revision'?`<button class="btn btn-success btn-sm" onclick="abrirModalPagoAlumno(${f.id})">💳 Realizar pago</button>`:f.estado==='en_revision'?'<span style="font-size:12px;color:var(--text-muted)">⏳ En revisión</span>':'<span style="font-size:12px;color:var(--success)">✓ Pagado</span>'}</td>
       </tr>`;
     });
     applyRoleVisibility();
@@ -754,6 +842,106 @@
       </div>`;
     window.print();
     area.innerHTML = '';
+  }
+
+  // ===== PAGO ALUMNO (TRANSFERENCIA) =====
+  let _pagoAlumnoId = null;
+
+  function abrirModalPagoAlumno(id) {
+    _pagoAlumnoId = id;
+    const db = getDB();
+    const f = db.finanzas.find(x => x.id === id);
+    if (!f) return;
+    const alumno = db.alumnos.find(a => a.id === f.alumnoId);
+    document.getElementById('pa-concepto').textContent = f.concepto;
+    document.getElementById('pa-monto').textContent = formatMonto(f.monto);
+    document.getElementById('pa-alumno').textContent = alumno ? alumno.nombre : '—';
+    document.getElementById('pa-referencia').value = '';
+    document.getElementById('pa-comentario').value = '';
+    document.getElementById('pa-archivo').value = '';
+    document.getElementById('pa-archivo-nombre').textContent = '';
+    document.getElementById('pa-archivo-preview').style.display = 'none';
+    openModal('modal-realizar-pago');
+  }
+
+  function enviarPagoAlumno() {
+    const ref = document.getElementById('pa-referencia').value.trim();
+    const comentario = document.getElementById('pa-comentario').value.trim();
+    const archivoInput = document.getElementById('pa-archivo');
+    if (!ref) { showToast('Ingresa el número de referencia de la transferencia', 'error'); return; }
+    if (!archivoInput.files || !archivoInput.files[0]) { showToast('Debes adjuntar el comprobante de transferencia', 'error'); return; }
+
+    const file = archivoInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const db = getDB();
+      const idx = db.finanzas.findIndex(x => x.id === _pagoAlumnoId);
+      if (idx === -1) return;
+      db.finanzas[idx] = {
+        ...db.finanzas[idx],
+        estado: 'en_revision',
+        metodoPago: 'Transferencia',
+        referenciaTransferencia: ref,
+        comentarioAlumno: comentario,
+        comprobante: { nombre: file.name, tipo: file.type, datos: e.target.result },
+        fechaEnvio: new Date().toISOString()
+      };
+      saveDB(db);
+      closeModal('modal-realizar-pago');
+      renderPagos(); renderStats();
+      showToast('Pago enviado para revisión. El administrador confirmará en breve. ✓');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function aprobarPagoAlumno(id) {
+    confirmar('¿Aprobar y registrar este pago como completado?', () => {
+      const db = getDB();
+      const idx = db.finanzas.findIndex(x => x.id === id);
+      if (idx === -1) return;
+      const f = db.finanzas[idx];
+      const hoy = new Date().toISOString().split('T')[0];
+      db.finanzas[idx] = {
+        ...f,
+        estado: 'pagado',
+        abono: f.monto,
+        saldo: 0,
+        fechaPago: hoy,
+        recibo: f.recibo || ('REC-' + String(id).padStart(4, '0')),
+        aprobadoPor: getSession()?.name || '—',
+        aprobadoEn: new Date().toISOString()
+      };
+      saveDB(db);
+      renderPagos(); renderStats();
+      showToast('Pago aprobado y registrado ✓');
+    });
+  }
+
+  function verComprobanteAlumno(id) {
+    const db = getDB();
+    const f = db.finanzas.find(x => x.id === id);
+    if (!f || !f.comprobante) { showToast('No hay comprobante adjunto', 'error'); return; }
+    const alumno = db.alumnos.find(a => a.id === f.alumnoId);
+    document.getElementById('vc-nombre').textContent = alumno ? alumno.nombre : '—';
+    document.getElementById('vc-concepto').textContent = f.concepto;
+    document.getElementById('vc-monto').textContent = formatMonto(f.monto);
+    document.getElementById('vc-referencia').textContent = f.referenciaTransferencia || '—';
+    document.getElementById('vc-comentario').textContent = f.comentarioAlumno || '—';
+    document.getElementById('vc-fecha').textContent = f.fechaEnvio ? new Date(f.fechaEnvio).toLocaleString('es-PE') : '—';
+    const img = document.getElementById('vc-imagen');
+    const descarga = document.getElementById('vc-descarga');
+    if (f.comprobante.tipo && f.comprobante.tipo.startsWith('image/')) {
+      img.src = f.comprobante.datos; img.style.display = 'block';
+      descarga.style.display = 'none';
+    } else {
+      img.style.display = 'none';
+      descarga.href = f.comprobante.datos;
+      descarga.download = f.comprobante.nombre;
+      descarga.textContent = '📥 Descargar ' + f.comprobante.nombre;
+      descarga.style.display = 'inline-block';
+    }
+    document.getElementById('vc-aprobar-btn').onclick = () => { closeModal('modal-ver-comprobante'); aprobarPagoAlumno(id); };
+    openModal('modal-ver-comprobante');
   }
 
   renderStats();

@@ -177,6 +177,7 @@ function badgeEstado(estado) {
     'programado': 'badge-blue',
     'en progreso': 'badge-teal',
     'cancelado': 'badge-red',
+    'en_revision': 'badge-blue',
     'aprobado': 'badge-green',
     'desaprobado': 'badge-red',
     'mañana': 'badge-blue',
