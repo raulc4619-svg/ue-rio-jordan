@@ -56,6 +56,7 @@
             <option>III Bimestre</option><option>IV Bimestre</option>
           </select>
           <select class="form-control" id="f-anio" onchange="renderCalif()" style="width:100px">
+            <option value="2026">2026</option><option value="2025">2025</option>
             <option value="2024">2024</option><option value="2023">2023</option>
           </select>
         </div>
@@ -179,12 +180,26 @@
 <script>
   initDB(); requireAuth(); renderUserBar(); applyRoleVisibility();
 
+  const _sesionCal = getSession() || {};
+
   // Poblar selects dinámicamente desde DB
   function refrescarSelects() {
     poblarSelectAlumnos('f-alumno', 'c-alumno');
     poblarSelectDocentes('c-docente');
   }
   refrescarSelects();
+
+  // Para alumno: ocultar selector y auto-cargar sus notas
+  if (_sesionCal.role === 'alumno') {
+    document.querySelector('.toolbar').style.display = 'none';
+    document.querySelector('.topbar-title').textContent = '📊 Mis calificaciones';
+    const anioActual = new Date().getFullYear();
+    document.getElementById('f-anio').value = anioActual;
+    if (_sesionCal.alumnoId) {
+      document.getElementById('f-alumno').value = _sesionCal.alumnoId;
+    }
+    renderCalifAlumno();
+  }
 
   function getLetraColor(n) {
     if (n >= 17) return '<span style="color:#2e7d32;font-weight:700">AD</span>';
@@ -197,6 +212,63 @@
     const n = parseInt(nota);
     const color = n >= 13 ? 'var(--secondary)' : n >= 11 ? 'var(--accent)' : 'var(--danger)';
     return `<span style="font-size:16px;font-weight:700;color:${color}">${n}</span>`;
+  }
+
+  function renderCalifAlumno() {
+    const db        = getDB();
+    const alumnoId  = _sesionCal.alumnoId;
+    const anio      = new Date().getFullYear();
+    const tbody     = document.getElementById('tbody-calificaciones');
+
+    // Calificaciones manuales del módulo
+    const calManuales = (db.calificaciones || []).filter(c => c.alumnoId === alumnoId && c.anio === anio);
+
+    // Notas de tareas (entregas calificadas)
+    const entregasCalif = (db.entregas || [])
+      .filter(e => e.alumnoId === alumnoId && e.calificacion != null);
+    const notasTareas = entregasCalif.map(e => {
+      const tarea   = (db.tareas || []).find(t => t.id === e.tareaId);
+      const docente = tarea ? (db.docentes || []).find(d => d.id === tarea.docenteId) : null;
+      return {
+        materia : tarea?.materia || '—',
+        periodo : `Tarea: ${tarea?.titulo || '—'}`,
+        nota    : e.calificacion,
+        docente : docente?.nombre || '—',
+        estado  : e.calificacion >= 11 ? 'aprobado' : 'desaprobado',
+      };
+    });
+
+    const todas = [
+      ...calManuales.map(c => ({
+        materia : c.materia,
+        periodo : c.periodo,
+        nota    : c.nota,
+        docente : (db.docentes || []).find(d => d.id === c.docenteId)?.nombre || '—',
+        estado  : c.estado,
+      })),
+      ...notasTareas,
+    ];
+
+    document.getElementById('tabla-titulo').textContent = `Mis calificaciones ${anio}`;
+    document.getElementById('resumen-alumno').style.display = 'none';
+
+    if (!todas.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">Aún no tienes calificaciones registradas</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = todas.map(c => `<tr>
+      <td style="font-weight:500">${c.materia}</td>
+      <td>${c.periodo}</td>
+      <td>${getNota(c.nota)}</td>
+      <td>${getLetraColor(c.nota)}</td>
+      <td><span class="badge ${c.estado === 'aprobado' ? 'badge-green' : 'badge-red'}">${c.estado}</span></td>
+      <td style="font-size:12px">${c.docente}</td>
+      <td></td>
+    </tr>`).join('');
+
+    const prom = todas.reduce((s, c) => s + c.nota, 0) / todas.length;
+    document.getElementById('promedio-general').textContent = `Promedio: ${prom.toFixed(1)}`;
   }
 
   function renderCalif() {
