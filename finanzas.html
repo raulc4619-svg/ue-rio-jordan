@@ -121,12 +121,18 @@
       <!-- TAB CIERRE DE CAJA -->
       <div id="tab-caja" style="display:none" data-role="admin">
         <div class="toolbar">
-          <div class="toolbar-start" style="gap:12px;align-items:center">
-            <label class="form-label" style="margin:0;white-space:nowrap">Fecha del cierre:</label>
-            <input type="date" id="caja-fecha" class="form-control" style="width:180px" onchange="renderCierreCaja()">
+          <div class="toolbar-start" style="gap:12px;align-items:center;flex-wrap:wrap">
+            <label class="form-label" style="margin:0;white-space:nowrap">Fecha:</label>
+            <input type="date" id="caja-fecha" class="form-control" style="width:170px" onchange="renderCierreCaja()">
+            <select id="caja-metodo" class="form-control" style="width:180px" onchange="renderCierreCaja()">
+              <option value="">Todos los métodos</option>
+              <option value="Efectivo">💵 Efectivo</option>
+              <option value="Transferencia">🏦 Transferencia</option>
+            </select>
           </div>
-          <div class="toolbar-end">
-            <button class="btn btn-secondary" onclick="imprimirCierreCaja()">🖨 Imprimir reporte</button>
+          <div class="toolbar-end" style="gap:8px">
+            <button class="btn btn-secondary" onclick="exportarCajaExcel()">📊 Exportar Excel</button>
+            <button class="btn btn-secondary" onclick="imprimirCierreCaja()">🖨 Imprimir</button>
           </div>
         </div>
         <div id="caja-contenido"></div>
@@ -523,10 +529,12 @@
   }
 
   function renderCierreCaja() {
-    const fecha = document.getElementById('caja-fecha').value;
+    const fecha   = document.getElementById('caja-fecha').value;
+    const metodoF = document.getElementById('caja-metodo').value;
     if (!fecha) return;
     const db = getDB();
-    const pagos = db.finanzas.filter(f => f.estado === 'pagado' && f.fechaPago === fecha);
+    let pagos = db.finanzas.filter(f => f.estado === 'pagado' && f.fechaPago === fecha);
+    if (metodoF) pagos = pagos.filter(f => (f.metodoPago || '') === metodoF);
     const cont = document.getElementById('caja-contenido');
 
     if (pagos.length === 0) {
@@ -615,6 +623,79 @@
           </div>
         </div>
       </div>`;
+  }
+
+  function exportarCajaExcel() {
+    const fecha   = document.getElementById('caja-fecha').value;
+    const metodoF = document.getElementById('caja-metodo').value;
+    if (!fecha) { showToast('Selecciona una fecha primero', 'error'); return; }
+    const db = getDB();
+    let pagos = db.finanzas.filter(f => f.estado === 'pagado' && f.fechaPago === fecha);
+    if (metodoF) pagos = pagos.filter(f => (f.metodoPago || '') === metodoF);
+    if (pagos.length === 0) { showToast('No hay pagos para exportar en esa fecha', 'error'); return; }
+
+    const totalDia = pagos.reduce((s, f) => s + (f.monto || 0), 0);
+    const porMetodo = {};
+    pagos.forEach(f => {
+      const m = f.metodoPago || 'Sin especificar';
+      porMetodo[m] = (porMetodo[m] || 0) + (f.monto || 0);
+    });
+
+    // Construir tabla HTML que Excel entiende como .xls
+    let html = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head><meta charset="UTF-8">
+      <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+      <x:Name>Cierre de Caja</x:Name>
+      <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+      </x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+      </head><body><table>
+        <tr><td colspan="7" style="font-size:16pt;font-weight:bold;text-align:center">U.E. RIO JORDAN — CIERRE DE CAJA DIARIO</td></tr>
+        <tr><td colspan="7" style="text-align:center">Fecha: ${formatFecha(fecha)}${metodoF ? ' · Método: ' + metodoF : ''} · Generado: ${new Date().toLocaleString('es-PE')} · Por: ${getSession()?.name || '—'}</td></tr>
+        <tr></tr>
+        <tr><td colspan="7" style="font-weight:bold;background:#f0f0f0">RESUMEN POR MÉTODO DE PAGO</td></tr>
+        <tr><td style="font-weight:bold">Método</td><td style="font-weight:bold">Cantidad</td><td style="font-weight:bold">Total</td></tr>
+        ${Object.entries(porMetodo).map(([m, t]) =>
+          `<tr><td>${m}</td><td>${pagos.filter(f=>(f.metodoPago||'Sin especificar')===m).length}</td><td>${t.toFixed(2)}</td></tr>`
+        ).join('')}
+        <tr><td style="font-weight:bold">TOTAL GENERAL</td><td style="font-weight:bold">${pagos.length}</td><td style="font-weight:bold">${totalDia.toFixed(2)}</td></tr>
+        <tr></tr>
+        <tr><td colspan="7" style="font-weight:bold;background:#f0f0f0">DETALLE DE PAGOS</td></tr>
+        <tr>
+          <td style="font-weight:bold">#</td>
+          <td style="font-weight:bold">Recibo</td>
+          <td style="font-weight:bold">Alumno</td>
+          <td style="font-weight:bold">Grado</td>
+          <td style="font-weight:bold">Concepto</td>
+          <td style="font-weight:bold">Método</td>
+          <td style="font-weight:bold">Monto (Bs)</td>
+        </tr>
+        ${pagos.map((f, i) => {
+          const a = db.alumnos.find(x => x.id === f.alumnoId);
+          return `<tr>
+            <td>${i+1}</td>
+            <td>${f.recibo||'—'}</td>
+            <td>${a ? a.nombre : '—'}</td>
+            <td>${a ? a.grado+'-'+a.seccion : '—'}</td>
+            <td>${f.concepto}</td>
+            <td>${f.metodoPago||'—'}</td>
+            <td>${(f.monto||0).toFixed(2)}</td>
+          </tr>`;
+        }).join('')}
+        <tr>
+          <td colspan="6" style="font-weight:bold;text-align:right">TOTAL DEL DÍA</td>
+          <td style="font-weight:bold">${totalDia.toFixed(2)}</td>
+        </tr>
+      </table></body></html>`;
+
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `cierre_caja_${fecha}${metodoF?'_'+metodoF:''}.xls`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Archivo Excel descargado ✓');
   }
 
   function imprimirCierreCaja() {
