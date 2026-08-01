@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usuarios – U.E. Rio Jordan</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><img src="logo.png" alt="Logo" style="width:38px;height:38px;object-fit:contain;border-radius:8px;"><div class="logo-text">U.E. Rio Jordan<small>Sistema Escolar 2024</small></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Inicio</a>
+      <div class="nav-section-label">Gestión Académica</div>
+      <a href="alumnos.html"        class="nav-item"><span class="nav-icon">👨‍🎓</span> Alumnos</a>
+      <a href="docentes.html"       class="nav-item"><span class="nav-icon">👨‍🏫</span> Docentes</a>
+      <a href="calificaciones.html" class="nav-item"><span class="nav-icon">📊</span> Calificaciones</a>
+      <a href="asistencias.html"    class="nav-item"><span class="nav-icon">✅</span> Asistencias</a>
+      <a href="horarios.html"       class="nav-item"><span class="nav-icon">🕐</span> Horarios</a>
+      <a href="actividades.html"    class="nav-item"><span class="nav-icon">📅</span> Actividades y Tareas</a>
+      <div class="nav-section-label">Administración</div>
+      <a href="matriculas.html"     class="nav-item"><span class="nav-icon">📋</span> Matrículas</a>
+      <a href="finanzas.html"       class="nav-item"><span class="nav-icon">💰</span> Finanzas</a>
+      <div class="nav-section-label">Sistema</div>
+      <a href="usuarios.html"       class="nav-item active"><span class="nav-icon">👤</span> Usuarios</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info" onclick="logout()">
+        <div class="user-avatar" id="sidebar-user-avatar">AD</div>
+        <div class="user-details"><div class="user-name" id="sidebar-user-name"></div><div class="user-role" id="sidebar-user-role"></div></div>
+        <span style="font-size:14px;opacity:.5">↩</span>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <main class="main-content">
+    <div class="topbar">
+      <button class="btn-icon" onclick="toggleSidebar()" id="menu-btn">☰</button>
+      <div class="topbar-title">👤 Gestión de Usuarios</div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- STATS -->
+      <div class="stats-grid" id="stats-usuarios" style="margin-bottom:20px"></div>
+
+      <!-- TOOLBAR -->
+      <div class="toolbar">
+        <div class="toolbar-start">
+          <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-user" placeholder="Buscar usuario, nombre..." oninput="filterTable('search-user','tabla-usuarios')">
+          </div>
+          <select class="form-control" id="f-rol" onchange="renderTabla()" style="width:150px">
+            <option value="">Todos los roles</option>
+            <option value="admin">Administrador</option>
+            <option value="docente">Docente</option>
+            <option value="alumno">Alumno</option>
+          </select>
+        </div>
+        <div class="toolbar-end">
+          <button class="btn btn-primary" onclick="openModal('modal-usuario');limpiarForm()">+ Nuevo usuario</button>
+        </div>
+      </div>
+
+      <!-- TABLA -->
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <div class="table-wrap">
+            <table id="tabla-usuarios">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Usuario</th>
+                  <th>Nombre completo</th>
+                  <th>Rol</th>
+                  <th>Email</th>
+                  <th>Vinculado a</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-usuarios"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL USUARIO -->
+<div class="modal-overlay" id="modal-usuario" style="display:none">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h2 id="modal-titulo">Nuevo usuario</h2>
+      <button class="btn-icon" onclick="closeModal('modal-usuario')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="f-id">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Usuario (login) *</label>
+          <input type="text" id="f-username" class="form-control" placeholder="ej: prof.garcia" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rol *</label>
+          <select id="f-role" class="form-control" onchange="onRolChange()">
+            <option value="admin">Administrador</option>
+            <option value="docente">Docente</option>
+            <option value="alumno">Alumno</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Nombre completo *</label>
+        <input type="text" id="f-name" class="form-control" placeholder="Apellidos y nombres">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="f-email" class="form-control" placeholder="correo@escuela.edu">
+      </div>
+
+      <!-- Contraseña -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" id="lbl-pass">Contraseña *</label>
+          <div style="position:relative">
+            <input type="password" id="f-password" class="form-control" placeholder="Contraseña" autocomplete="new-password" style="padding-right:40px">
+            <button type="button" onclick="togglePass('f-password','eye1')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;opacity:.5" id="eye1">👁</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirmar contraseña *</label>
+          <div style="position:relative">
+            <input type="password" id="f-password2" class="form-control" placeholder="Repetir contraseña" style="padding-right:40px">
+            <button type="button" onclick="togglePass('f-password2','eye2')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;opacity:.5" id="eye2">👁</button>
+          </div>
+        </div>
+      </div>
+      <div id="pass-hint" style="font-size:11px;color:var(--text-muted);margin-top:-8px;margin-bottom:10px">
+        Dejar en blanco para mantener la contraseña actual (solo al editar).
+      </div>
+
+      <!-- Vincular a docente/alumno -->
+      <div class="form-group" id="campo-vinculo" style="display:none">
+        <label class="form-label" id="lbl-vinculo">Vincular a alumno</label>
+        <select id="f-vinculo" class="form-control">
+          <option value="">— Sin vincular —</option>
+        </select>
+        <small style="color:var(--text-muted);font-size:11px">Vincula este usuario al registro correspondiente para acceso personalizado.</small>
+      </div>
+
+      <!-- Alerta error -->
+      <div id="form-error" style="display:none;background:var(--danger-bg);border:1px solid var(--danger-border);color:var(--danger);border-radius:8px;padding:10px 14px;font-size:13px;margin-top:4px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-usuario')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarUsuario()" id="btn-guardar">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMBIAR CONTRASEÑA -->
+<div class="modal-overlay" id="modal-pass" style="display:none">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <h2>🔑 Cambiar contraseña</h2>
+      <button class="btn-icon" onclick="closeModal('modal-pass')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cp-id">
+      <div style="margin-bottom:14px;font-size:13px;color:var(--text-secondary)">Usuario: <strong id="cp-username"></strong></div>
+      <div class="form-group">
+        <label class="form-label">Nueva contraseña *</label>
+        <div style="position:relative">
+          <input type="password" id="cp-pass" class="form-control" placeholder="Nueva contraseña" style="padding-right:40px">
+          <button type="button" onclick="togglePass('cp-pass','eye3')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;opacity:.5" id="eye3">👁</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirmar contraseña *</label>
+        <input type="password" id="cp-pass2" class="form-control" placeholder="Repetir contraseña">
+      </div>
+      <div id="cp-error" style="display:none;color:var(--danger);font-size:13px;margin-top:6px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-pass')">Cancelar</button>
+      <button class="btn btn-primary" onclick="cambiarPassword()">Guardar contraseña</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script>
+  initDB();
+  const session = requireAuth(['admin']);
+  renderUserBar(); setActiveNav(); applyRoleVisibility();
+
+  const ROLE_LABELS = { admin: 'Administrador', docente: 'Docente', alumno: 'Alumno' };
+  const ROLE_BADGE  = { admin: 'badge-red', docente: 'badge-blue', alumno: 'badge-green' };
+  let modoEdicion = false;
+
+  function renderStats() {
+    const db = getDB();
+    const total    = db.users.length;
+    const admins   = db.users.filter(u => u.role === 'admin').length;
+    const docentes = db.users.filter(u => u.role === 'docente').length;
+    const alumnos  = db.users.filter(u => u.role === 'alumno').length;
+    document.getElementById('stats-usuarios').innerHTML = `
+      <div class="stat-card"><div class="stat-icon yellow">👤</div><div><div class="stat-value">${total}</div><div class="stat-label">Total usuarios</div></div></div>
+      <div class="stat-card"><div class="stat-icon red">🛡</div><div><div class="stat-value">${admins}</div><div class="stat-label">Administradores</div></div></div>
+      <div class="stat-card"><div class="stat-icon blue">👨‍🏫</div><div><div class="stat-value">${docentes}</div><div class="stat-label">Docentes</div></div></div>
+      <div class="stat-card"><div class="stat-icon green">👨‍🎓</div><div><div class="stat-value">${alumnos}</div><div class="stat-label">Alumnos</div></div></div>`;
+  }
+
+  function renderTabla() {
+    const db     = getDB();
+    const filtro = document.getElementById('f-rol').value;
+    let users    = filtro ? db.users.filter(u => u.role === filtro) : db.users;
+    const tbody  = document.getElementById('tbody-usuarios');
+    tbody.innerHTML = '';
+    users.forEach(u => {
+      const vinculo = u.docenteId
+        ? (db.docentes.find(d => d.id === u.docenteId)?.nombre || '—')
+        : u.alumnoId
+        ? (db.alumnos.find(a => a.id === u.alumnoId)?.nombre || '—')
+        : '—';
+      const esSelf = u.id === session.userId;
+      tbody.innerHTML += `<tr>
+        <td><code style="font-size:11px;background:var(--surface-2);padding:2px 6px;border-radius:4px">${u.id}</code></td>
+        <td style="font-weight:600">${u.username}${esSelf?' <span style="font-size:10px;background:var(--primary);color:#000;padding:1px 6px;border-radius:10px;font-weight:700">Tú</span>':''}</td>
+        <td>${u.name}</td>
+        <td><span class="badge ${ROLE_BADGE[u.role]}">${ROLE_LABELS[u.role]}</span></td>
+        <td style="font-size:12px;color:var(--text-muted)">${u.email || '—'}</td>
+        <td style="font-size:12px">${vinculo}</td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn btn-secondary btn-sm" onclick="editarUsuario(${u.id})">✏ Editar</button>
+          <button class="btn btn-secondary btn-sm" onclick="abrirCambioPass(${u.id})">🔑</button>
+          ${!esSelf ? `<button class="btn btn-danger btn-sm" onclick="eliminarUsuario(${u.id})">✕</button>` : ''}
+        </div></td>
+      </tr>`;
+    });
+  }
+
+  function onRolChange() {
+    const rol   = document.getElementById('f-role').value;
+    const campo = document.getElementById('campo-vinculo');
+    const lbl   = document.getElementById('lbl-vinculo');
+    const sel   = document.getElementById('f-vinculo');
+    if (rol === 'admin') { campo.style.display = 'none'; return; }
+    campo.style.display = 'block';
+    lbl.textContent = rol === 'docente' ? 'Vincular a docente' : 'Vincular a alumno';
+    const db = getDB();
+    const lista = rol === 'docente' ? db.docentes : db.alumnos;
+    sel.innerHTML = '<option value="">— Sin vincular —</option>';
+    lista.forEach(x => { sel.innerHTML += `<option value="${x.id}">${x.nombre}</option>`; });
+  }
+
+  function limpiarForm() {
+    modoEdicion = false;
+    ['f-id','f-username','f-name','f-email','f-password','f-password2'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('f-role').value = 'docente';
+    document.getElementById('form-error').style.display = 'none';
+    document.getElementById('modal-titulo').textContent = 'Nuevo usuario';
+    document.getElementById('lbl-pass').textContent = 'Contraseña *';
+    document.getElementById('pass-hint').style.display = 'none';
+    document.getElementById('btn-guardar').textContent = 'Crear usuario';
+    onRolChange();
+  }
+
+  function editarUsuario(id) {
+    const db = getDB();
+    const u  = db.users.find(x => x.id === id);
+    if (!u) return;
+    modoEdicion = true;
+    document.getElementById('f-id').value       = u.id;
+    document.getElementById('f-username').value  = u.username;
+    document.getElementById('f-name').value      = u.name;
+    document.getElementById('f-email').value     = u.email || '';
+    document.getElementById('f-role').value      = u.role;
+    document.getElementById('f-password').value  = '';
+    document.getElementById('f-password2').value = '';
+    document.getElementById('modal-titulo').textContent = 'Editar usuario';
+    document.getElementById('lbl-pass').textContent = 'Nueva contraseña';
+    document.getElementById('pass-hint').style.display = 'block';
+    document.getElementById('btn-guardar').textContent = 'Guardar cambios';
+    document.getElementById('form-error').style.display = 'none';
+    onRolChange();
+    setTimeout(() => {
+      if (u.docenteId) document.getElementById('f-vinculo').value = u.docenteId;
+      if (u.alumnoId)  document.getElementById('f-vinculo').value = u.alumnoId;
+    }, 50);
+    openModal('modal-usuario');
+  }
+
+  function guardarUsuario() {
+    const username = document.getElementById('f-username').value.trim();
+    const name     = document.getElementById('f-name').value.trim();
+    const role     = document.getElementById('f-role').value;
+    const email    = document.getElementById('f-email').value.trim();
+    const pass     = document.getElementById('f-password').value;
+    const pass2    = document.getElementById('f-password2').value;
+    const errEl    = document.getElementById('form-error');
+    errEl.style.display = 'none';
+
+    if (!username || !name) { mostrarError('Usuario y nombre son obligatorios.'); return; }
+
+    const db = getDB();
+
+    // Validar contraseña
+    if (!modoEdicion && !pass) { mostrarError('La contraseña es obligatoria para usuarios nuevos.'); return; }
+    if (pass && pass !== pass2) { mostrarError('Las contraseñas no coinciden.'); return; }
+    if (pass && pass.length < 4) { mostrarError('La contraseña debe tener al menos 4 caracteres.'); return; }
+
+    // Validar usuario único
+    const existId = parseInt(document.getElementById('f-id').value);
+    const dupUser = db.users.find(u => u.username === username && u.id !== existId);
+    if (dupUser) { mostrarError('Ese nombre de usuario ya está en uso.'); return; }
+
+    const vinculoId = parseInt(document.getElementById('f-vinculo')?.value) || null;
+    const obj = {
+      username, name, role, email,
+      docenteId: role === 'docente' ? vinculoId : null,
+      alumnoId:  role === 'alumno'  ? vinculoId : null,
+    };
+    if (pass) obj.password = pass;
+
+    if (modoEdicion) {
+      const idx = db.users.findIndex(u => u.id === existId);
+      db.users[idx] = { ...db.users[idx], ...obj };
+      showToast('Usuario actualizado correctamente');
+    } else {
+      const newId = genId(db.users);
+      db.users.push({ id: newId, ...obj });
+      showToast('Usuario creado correctamente');
+    }
+
+    saveDB(db);
+    closeModal('modal-usuario');
+    renderTabla(); renderStats();
+  }
+
+  function mostrarError(msg) {
+    const el = document.getElementById('form-error');
+    el.textContent = '⚠ ' + msg;
+    el.style.display = 'block';
+  }
+
+  function abrirCambioPass(id) {
+    const db = getDB();
+    const u  = db.users.find(x => x.id === id);
+    if (!u) return;
+    document.getElementById('cp-id').value      = id;
+    document.getElementById('cp-username').textContent = u.username;
+    document.getElementById('cp-pass').value    = '';
+    document.getElementById('cp-pass2').value   = '';
+    document.getElementById('cp-error').style.display = 'none';
+    openModal('modal-pass');
+  }
+
+  function cambiarPassword() {
+    const id    = parseInt(document.getElementById('cp-id').value);
+    const pass  = document.getElementById('cp-pass').value;
+    const pass2 = document.getElementById('cp-pass2').value;
+    const errEl = document.getElementById('cp-error');
+    errEl.style.display = 'none';
+    if (!pass) { errEl.textContent = 'Ingresa la nueva contraseña.'; errEl.style.display = 'block'; return; }
+    if (pass.length < 4) { errEl.textContent = 'Mínimo 4 caracteres.'; errEl.style.display = 'block'; return; }
+    if (pass !== pass2) { errEl.textContent = 'Las contraseñas no coinciden.'; errEl.style.display = 'block'; return; }
+    const db  = getDB();
+    const idx = db.users.findIndex(u => u.id === id);
+    db.users[idx].password = pass;
+    saveDB(db);
+    closeModal('modal-pass');
+    showToast('Contraseña actualizada correctamente');
+  }
+
+  function eliminarUsuario(id) {
+    if (id === session.userId) { showToast('No puedes eliminar tu propio usuario', 'error'); return; }
+    confirmar('¿Eliminar este usuario? Esta acción no se puede deshacer.', () => {
+      const db = getDB();
+      db.users = db.users.filter(u => u.id !== id);
+      saveDB(db); renderTabla(); renderStats();
+      showToast('Usuario eliminado', 'warning');
+    });
+  }
+
+  function togglePass(inputId, btnId) {
+    const inp = document.getElementById(inputId);
+    const btn = document.getElementById(btnId);
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+    else { inp.type = 'password'; btn.textContent = '👁'; }
+  }
+
+  renderStats();
+  renderTabla();
+</script>
+</body>
+</html>
