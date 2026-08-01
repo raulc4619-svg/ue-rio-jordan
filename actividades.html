@@ -387,7 +387,7 @@
 <script>
 initDB(); requireAuth(); renderUserBar(); applyRoleVisibility();
 
-const USER = JSON.parse(sessionStorage.getItem('user') || '{}');
+const USER = getSession() || {};
 const ROL  = USER.role || '';
 
 /* ══════════════════════════════════════════
@@ -762,12 +762,14 @@ function eliminarTarea(id){
 function renderTareasAlumno(){
   const db=getDB(); const alumnoId=USER.alumnoId;
   const alumno=(db.alumnos||[]).find(a=>a.id===alumnoId);
+  const grado  = alumno?.grado   || USER.grado;
+  const seccion= alumno?.seccion || USER.seccion;
   const grid=document.getElementById('tareas-alumno-grid');
   const empty=document.getElementById('tareas-alumno-empty');
-  if(!alumno){grid.innerHTML='<p style="padding:20px;color:var(--text-muted)">Perfil de alumno no encontrado.</p>';return;}
+  if(!grado){grid.innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div><p>Tu usuario no está vinculado a un alumno. Contacta al administrador.</p></div>';return;}
   const estF=document.getElementById('f-estado-al').value;
   const entregas=db.entregas||[];
-  const tareas=(db.tareas||[]).filter(t=>t.grado===alumno.grado&&(!t.seccion||t.seccion===alumno.seccion));
+  const tareas=(db.tareas||[]).filter(t=>t.grado===grado&&(!t.seccion||t.seccion===seccion));
   const lista=tareas.map(t=>{
     const e=entregas.find(x=>x.tareaId===t.id&&x.alumnoId===alumnoId);
     const estAl=e?(e.calificacion!=null?'calificada':'entregada'):'pendiente';
