@@ -4,10 +4,10 @@ function login(username, password) {
   const db = getDB();
   const user = db.users.find(u => u.username === username && u.password === password);
   if (user) {
-    let grado = null, seccion = null;
-    if (user.role === 'alumno' && user.alumnoId) {
+    let grado = user.grado || null, seccion = user.seccion || null;
+    if (user.role === 'alumno' && user.alumnoId && (!grado || !seccion)) {
       const alumno = (db.alumnos||[]).find(a => a.id === user.alumnoId);
-      if (alumno) { grado = alumno.grado; seccion = alumno.seccion; }
+      if (alumno) { grado = grado || alumno.grado; seccion = seccion || alumno.seccion; }
     }
     const session = { userId: user.id, role: user.role, name: user.name, email: user.email, alumnoId: user.alumnoId, docenteId: user.docenteId, grado, seccion };
     sessionStorage.setItem('session', JSON.stringify(session));

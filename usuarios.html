@@ -157,6 +157,27 @@
         <small style="color:var(--text-muted);font-size:11px">Vincula este usuario al registro correspondiente para acceso personalizado.</small>
       </div>
 
+      <!-- Grado y sección (solo alumno) -->
+      <div id="campo-grado-seccion" style="display:none">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Grado *</label>
+            <select id="f-grado" class="form-control">
+              <option value="">— Seleccionar —</option>
+              <option>1ro</option><option>2do</option><option>3ro</option>
+              <option>4to</option><option>5to</option><option>6to</option><option>7mo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sección *</label>
+            <select id="f-seccion" class="form-control">
+              <option value="">— Seleccionar —</option>
+              <option>A</option><option>B</option><option>C</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <!-- Alerta error -->
       <div id="form-error" style="display:none;background:var(--danger-bg);border:1px solid var(--danger-border);color:var(--danger);border-radius:8px;padding:10px 14px;font-size:13px;margin-top:4px"></div>
     </div>
@@ -256,9 +277,13 @@
     const campo = document.getElementById('campo-vinculo');
     const lbl   = document.getElementById('lbl-vinculo');
     const sel   = document.getElementById('f-vinculo');
+    const campoGS = document.getElementById('campo-grado-seccion');
+
+    campoGS.style.display = rol === 'alumno' ? 'block' : 'none';
+
     if (rol === 'admin') { campo.style.display = 'none'; return; }
     campo.style.display = 'block';
-    lbl.textContent = rol === 'docente' ? 'Vincular a docente' : 'Vincular a alumno';
+    lbl.textContent = rol === 'docente' ? 'Vincular a docente' : 'Vincular a alumno (opcional)';
     const db = getDB();
     const lista = rol === 'docente' ? db.docentes : db.alumnos;
     sel.innerHTML = '<option value="">— Sin vincular —</option>';
@@ -300,6 +325,8 @@
     setTimeout(() => {
       if (u.docenteId) document.getElementById('f-vinculo').value = u.docenteId;
       if (u.alumnoId)  document.getElementById('f-vinculo').value = u.alumnoId;
+      if (u.grado)   document.getElementById('f-grado').value   = u.grado;
+      if (u.seccion) document.getElementById('f-seccion').value = u.seccion;
     }, 50);
     openModal('modal-usuario');
   }
@@ -329,10 +356,14 @@
     if (dupUser) { mostrarError('Ese nombre de usuario ya está en uso.'); return; }
 
     const vinculoId = parseInt(document.getElementById('f-vinculo')?.value) || null;
+    const grado   = role === 'alumno' ? document.getElementById('f-grado').value   : null;
+    const seccion = role === 'alumno' ? document.getElementById('f-seccion').value : null;
+    if (role === 'alumno' && !grado) { mostrarError('El grado es obligatorio para usuarios alumno.'); return; }
     const obj = {
       username, name, role, email,
       docenteId: role === 'docente' ? vinculoId : null,
       alumnoId:  role === 'alumno'  ? vinculoId : null,
+      grado, seccion,
     };
     if (pass) obj.password = pass;
 
