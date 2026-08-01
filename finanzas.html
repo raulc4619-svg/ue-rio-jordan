@@ -222,20 +222,53 @@
 <script>
   initDB(); requireAuth(); renderUserBar(); applyRoleVisibility();
 
-  // Actualizar automáticamente cuotas vencidas al abrir el módulo
-  function actualizarVencidos() {
+  // Al abrir finanzas: generar cuota del mes en curso para alumnos que no la tengan
+  // y marcar como vencidas las que ya pasaron el día 5
+  function actualizarCuotasMensuales() {
     const db = getDB();
     const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                   'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const anio = hoy.getFullYear();
+    const mes  = hoy.getMonth(); // 0-based
+    const fechaLimite = `${anio}-${String(mes + 1).padStart(2,'0')}-05`;
+    const conceptoMes = `Mensualidad ${meses[mes]} ${anio}`;
     let cambios = false;
+
+    db.alumnos.filter(a => a.estado === 'activo').forEach(a => {
+      // ¿Ya tiene cuota este mes?
+      const yaTiene = db.finanzas.some(f =>
+        f.alumnoId === a.id && f.concepto === conceptoMes
+      );
+      if (!yaTiene) {
+        const estado = hoy > new Date(anio, mes, 5) ? 'vencido' : 'pendiente';
+        db.finanzas.push({
+          id: genId(db.finanzas),
+          alumnoId: a.id,
+          concepto: conceptoMes,
+          monto: 0,
+          fechaVenc: fechaLimite,
+          fechaPago: '', metodoPago: '', estado,
+          recibo: '',
+          registradoEn: new Date().toISOString(),
+          registradoPor: 'Sistema',
+          autogenerado: true
+        });
+        cambios = true;
+      }
+    });
+
+    // Marcar vencidas las pendientes cuya fecha ya pasó
     db.finanzas.forEach(f => {
       if (f.estado === 'pendiente' && f.fechaVenc) {
         const venc = new Date(f.fechaVenc + 'T00:00:00');
         if (hoy > venc) { f.estado = 'vencido'; cambios = true; }
       }
     });
+
     if (cambios) saveDB(db);
   }
-  actualizarVencidos();
+  actualizarCuotasMensuales();
 
   function refrescarSelects() {
     poblarSelectAlumnos('f-alumno-pago', 'sel-alumno-fin');
