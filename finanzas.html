@@ -240,7 +240,49 @@
 <script src="js/auth.js"></script>
 <script src="js/app.js"></script>
 <script>
-  initDB(); requireAuth(); renderUserBar(); applyRoleVisibility();
+  initDB();
+  const sesionFin = requireAuth(['admin','docente','alumno']);
+  renderUserBar(); applyRoleVisibility();
+
+  // ---- Restricciones por rol ----
+  function getFinanzasFiltradas(db) {
+    if (sesionFin.role === 'alumno') {
+      // Solo sus propios pagos
+      const alumnoId = sesionFin.alumnoId;
+      return db.finanzas.filter(f => f.alumnoId === alumnoId);
+    }
+    if (sesionFin.role === 'docente') {
+      // Alumnos de los grados/secciones que imparte
+      const docenteId = sesionFin.docenteId;
+      const horarios  = db.horarios || [];
+      const misHorarios = horarios.filter(h => h.docenteId === docenteId);
+      // Pares únicos grado-seccion
+      const pares = [...new Set(misHorarios.map(h => h.grado + '|' + h.seccion))];
+      const alumnosIds = db.alumnos
+        .filter(a => pares.includes(a.grado + '|' + a.seccion))
+        .map(a => a.id);
+      return db.finanzas.filter(f => alumnosIds.includes(f.alumnoId));
+    }
+    return db.finanzas; // admin: todos
+  }
+
+  // Ocultar controles de edición para roles no-admin
+  function aplicarModoLectura() {
+    if (sesionFin.role !== 'admin') {
+      // Ocultar toolbar de acciones
+      document.querySelectorAll('.toolbar-end').forEach(el => el.style.display = 'none');
+      // Ocultar tabs de estado y reporte (solo mostrar lista)
+      const tabEstado  = document.querySelector('[onclick*="estado"]');
+      const tabReporte = document.querySelector('[onclick*="reporte"]');
+      if (tabEstado)  tabEstado.style.display  = 'none';
+      if (tabReporte) tabReporte.style.display = 'none';
+      // Título descriptivo
+      const titulo = sesionFin.role === 'alumno'
+        ? '💰 Mis pagos' : '💰 Pagos de mis alumnos';
+      document.querySelector('.topbar-title').textContent = titulo;
+    }
+  }
+  aplicarModoLectura();
 
   // Lógica: la mensualidad de un mes vence el día 5 del mes SIGUIENTE
   // Ej: Mensualidad Julio → vence el 5 de Agosto
@@ -343,10 +385,11 @@
   // Stats
   function renderStats() {
     const db = getDB();
-    const total = db.finanzas.reduce((s,f)=>s+f.monto,0);
-    const pagado = db.finanzas.filter(f=>f.estado==='pagado').reduce((s,f)=>s+f.monto,0);
-    const pendiente = db.finanzas.filter(f=>f.estado==='pendiente').reduce((s,f)=>s+f.monto,0);
-    const vencido = db.finanzas.filter(f=>f.estado==='vencido').reduce((s,f)=>s+f.monto,0);
+    const datos = getFinanzasFiltradas(db);
+    const total = datos.reduce((s,f)=>s+(f.monto||0),0);
+    const pagado = datos.filter(f=>f.estado==='pagado').reduce((s,f)=>s+(f.monto||0),0);
+    const pendiente = datos.filter(f=>f.estado==='pendiente'||f.estado==='parcial').reduce((s,f)=>s+(f.saldo??f.monto??0),0);
+    const vencido = datos.filter(f=>f.estado==='vencido').reduce((s,f)=>s+(f.saldo??f.monto??0),0);
     document.getElementById('stats-finanzas').innerHTML = `
       <div class="stat-card"><div class="stat-icon green">💵</div><div><div class="stat-value" style="font-size:18px">${formatMonto(pagado)}</div><div class="stat-label">Total cobrado</div></div></div>
       <div class="stat-card"><div class="stat-icon amber">⏳</div><div><div class="stat-value" style="font-size:18px">${formatMonto(pendiente)}</div><div class="stat-label">Pendiente</div></div></div>
@@ -365,7 +408,7 @@
     const estadoF = document.getElementById('f-estado-pago').value;
     const alumnoF = parseInt(document.getElementById('f-alumno-pago').value);
     const db = getDB();
-    let data = db.finanzas;
+    let data = getFinanzasFiltradas(db);
     if (estadoF) data = data.filter(f=>f.estado===estadoF);
     if (alumnoF) data = data.filter(f=>f.alumnoId===alumnoF);
     const tbody = document.getElementById('tbody-pagos');
