@@ -594,13 +594,22 @@ function renderTareasAlumno() {
   const db      = getDB();
   const alumnoId= USER.alumnoId;
   const alumno  = (db.alumnos||[]).find(a => a.id === alumnoId);
-  if (!alumno) { document.getElementById('tareas-alumno-grid').innerHTML='<p style="color:var(--text-muted);padding:20px">Perfil de alumno no encontrado.</p>'; return; }
+
+  // Fallback: usar grado/seccion de la sesión si no hay registro vinculado
+  const grado   = alumno?.grado   || USER.grado;
+  const seccion = alumno?.seccion || USER.seccion;
+
+  if (!grado) {
+    document.getElementById('tareas-alumno-grid').innerHTML =
+      '<div class="empty-state"><div class="empty-icon">⚠️</div><p>Tu usuario no está vinculado a un alumno. Contacta al administrador.</p></div>';
+    return;
+  }
 
   const estF  = document.getElementById('f-estado-al').value;
   const entregas = db.entregas || [];
 
   let tareas = (db.tareas||[]).filter(t =>
-    t.grado === alumno.grado && (!t.seccion || t.seccion === alumno.seccion)
+    t.grado === grado && (!t.seccion || t.seccion === seccion)
   );
 
   const conEstado = tareas.map(t => {
