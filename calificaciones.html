@@ -65,6 +65,24 @@
         </div>
       </div>
 
+      <!-- Filtro materia para ALUMNO (oculto por defecto, se muestra por JS) -->
+      <div id="toolbar-alumno" style="display:none;margin-bottom:16px">
+        <div class="toolbar">
+          <div class="toolbar-start" style="flex-wrap:wrap;gap:10px">
+            <select class="form-control" id="f-materia-al" onchange="renderCalifAlumno()" style="width:190px">
+              <option value="">Todas las materias</option>
+              <option>Matemáticas</option><option>Lenguaje</option><option>Ciencias Naturales</option>
+              <option>Historia</option><option>Inglés</option><option>Arte</option>
+              <option>Educación Física</option><option>Computación</option><option>Otra</option>
+            </select>
+            <select class="form-control" id="f-anio-al" onchange="renderCalifAlumno()" style="width:100px">
+              <option value="2026">2026</option><option value="2025">2025</option>
+              <option value="2024">2024</option><option value="2023">2023</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <!-- RESUMEN -->
       <div id="resumen-alumno" style="display:none;margin-bottom:20px"></div>
 
@@ -191,14 +209,12 @@
 
   // Para alumno: bloquear vista de otros estudiantes y cargar solo sus notas
   if (_sesionCal.role === 'alumno') {
-    // Ocultar controles de selección
     document.querySelector('.toolbar').style.display = 'none';
+    document.getElementById('toolbar-alumno').style.display = 'block';
     document.querySelector('.topbar-title').textContent = '📊 Mis calificaciones';
-    // Bloquear select de alumno para que no puedan manipularlo
     const selAl = document.getElementById('f-alumno');
     selAl.disabled = true;
     if (_sesionCal.alumnoId) selAl.value = _sesionCal.alumnoId;
-    document.getElementById('f-anio').value = new Date().getFullYear();
     renderCalifAlumno();
   }
 
@@ -219,7 +235,8 @@
   function renderCalifAlumno() {
     const db        = getDB();
     const alumnoId  = _sesionCal.alumnoId;
-    const anio      = new Date().getFullYear();
+    const anio      = parseInt(document.getElementById('f-anio-al')?.value) || new Date().getFullYear();
+    const materiaF  = document.getElementById('f-materia-al')?.value || '';
     const tbody     = document.getElementById('tbody-calificaciones');
 
     // Calificaciones manuales del módulo
@@ -240,7 +257,7 @@
       };
     });
 
-    const todas = [
+    let todas = [
       ...calManuales.map(c => ({
         materia : c.materia,
         periodo : c.periodo,
@@ -251,7 +268,9 @@
       ...notasTareas,
     ];
 
-    document.getElementById('tabla-titulo').textContent = `Mis calificaciones ${anio}`;
+    if (materiaF) todas = todas.filter(c => c.materia === materiaF);
+
+    document.getElementById('tabla-titulo').textContent = `Mis calificaciones ${anio}${materiaF ? ' — ' + materiaF : ''}`;
     document.getElementById('resumen-alumno').style.display = 'none';
 
     if (!todas.length) {
