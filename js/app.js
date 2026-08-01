@@ -170,6 +170,7 @@ function badgeEstado(estado) {
     'nombrado': 'badge-blue',
     'contratado': 'badge-teal',
     'pagado': 'badge-green',
+    'parcial': 'badge-blue',
     'pendiente': 'badge-amber',
     'vencido': 'badge-red',
     'realizado': 'badge-green',

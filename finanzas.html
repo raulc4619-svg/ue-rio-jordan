@@ -68,7 +68,7 @@
             </div>
             <select class="form-control" id="f-estado-pago" onchange="renderPagos()" style="width:140px">
               <option value="">Todos los estados</option>
-              <option>pagado</option><option>pendiente</option><option>vencido</option>
+              <option>pagado</option><option>parcial</option><option>pendiente</option><option>vencido</option>
             </select>
             <select class="form-control" id="f-alumno-pago" onchange="renderPagos()" style="width:220px">
               <option value="">Todos los alumnos</option>
@@ -84,7 +84,7 @@
           <div class="card-body" style="padding:0">
             <table id="tabla-pagos">
               <thead>
-                <tr><th>Recibo</th><th>Alumno</th><th>Concepto</th><th>Monto</th><th>Vencimiento</th><th>Fecha pago</th><th>Método</th><th>Estado</th><th data-role="admin">Acciones</th></tr>
+                <tr><th>Recibo</th><th>Alumno</th><th>Concepto</th><th>Total</th><th>Abono</th><th>Saldo</th><th>Vencimiento</th><th>Fecha pago</th><th>Método</th><th>Estado</th><th data-role="admin">Acciones</th></tr>
               </thead>
               <tbody id="tbody-pagos"></tbody>
             </table>
@@ -164,29 +164,47 @@
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Monto (USD) *</label>
-          <input type="number" id="p-monto" class="form-control" min="0" step="0.01" placeholder="150.00">
+          <label class="form-label">Monto total (USD) *</label>
+          <input type="number" id="p-monto" class="form-control" min="0" step="0.01" placeholder="0.00" oninput="calcularSaldo()">
         </div>
         <div class="form-group">
           <label class="form-label">Fecha de vencimiento</label>
           <input type="date" id="p-fechaVenc" class="form-control">
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Estado</label>
-          <select id="p-estado" class="form-control" onchange="togglePagoFields()">
-            <option>pendiente</option><option>pagado</option><option>vencido</option>
-          </select>
+
+      <!-- BLOQUE ABONO -->
+      <div style="background:var(--surface-1);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+        <div class="form-row" style="margin-bottom:10px">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">💵 Abono recibido (USD)</label>
+            <input type="number" id="p-abono" class="form-control" min="0" step="0.01" placeholder="0.00" oninput="calcularSaldo()">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Método de pago</label>
+            <select id="p-metodo" class="form-control">
+              <option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Cheque</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group" id="campo-metodo">
-          <label class="form-label">Método de pago</label>
-          <select id="p-metodo" class="form-control">
-            <option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Cheque</option>
-          </select>
+        <!-- Resumen saldo -->
+        <div id="saldo-resumen" style="display:none;gap:8px;flex-wrap:wrap">
+          <div style="flex:1;min-width:120px;background:var(--success-bg);border:1px solid var(--success-border);border-radius:8px;padding:10px 12px;text-align:center">
+            <div style="font-size:11px;color:var(--success);font-weight:600;margin-bottom:2px">ABONO</div>
+            <div id="txt-abono" style="font-size:18px;font-weight:800;color:var(--success)">$ 0.00</div>
+          </div>
+          <div style="flex:1;min-width:120px;background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:8px;padding:10px 12px;text-align:center">
+            <div style="font-size:11px;color:var(--danger);font-weight:600;margin-bottom:2px">SALDO PENDIENTE</div>
+            <div id="txt-saldo" style="font-size:18px;font-weight:800;color:var(--danger)">$ 0.00</div>
+          </div>
+          <div style="flex:1;min-width:120px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center">
+            <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:2px">ESTADO</div>
+            <div id="txt-estado-calc" style="font-size:14px;font-weight:700">—</div>
+          </div>
         </div>
       </div>
-      <div class="form-group" id="campo-fecha-pago">
+
+      <div class="form-group">
         <label class="form-label">Fecha de pago</label>
         <input type="date" id="p-fechaPago" class="form-control">
       </div>
@@ -368,18 +386,22 @@
         }
         fechaTag = `<span style="color:${color};font-size:12px;font-weight:${dias<=3&&f.estado!=='pagado'?'600':'400'}">${icono}${formatFecha(f.fechaVenc)}${esDia5?' <small style="opacity:.6">(día 5)</small>':''}</span>`;
       }
-      tbody.innerHTML += `<tr style="${f.estado==='vencido'?'background:rgba(220,38,38,.04)':''}">
+      const saldo = f.saldo != null ? f.saldo : (f.monto || 0);
+      const abono = f.abono || 0;
+      tbody.innerHTML += `<tr style="${f.estado==='vencido'?'background:rgba(220,38,38,.04)':f.estado==='parcial'?'background:rgba(2,132,199,.04)':''}">
         <td><code style="font-size:11px;background:var(--surface-2);padding:2px 6px;border-radius:4px">${f.recibo||'—'}</code></td>
         <td style="font-weight:500">${alumno?alumno.nombre:'—'}</td>
         <td>${f.concepto}${f.autogenerado?'<br><small style="color:var(--text-muted);font-size:10px">Auto-generado</small>':''}</td>
         <td style="font-weight:600">${formatMonto(f.monto)}</td>
+        <td style="color:var(--success);font-weight:600">${abono>0?formatMonto(abono):'—'}</td>
+        <td style="color:${saldo>0?'var(--danger)':'var(--success)'};font-weight:700">${saldo>0?formatMonto(saldo):'✓ Saldado'}</td>
         <td>${fechaTag}</td>
         <td style="font-size:12px">${f.fechaPago?formatFecha(f.fechaPago):'—'}</td>
         <td style="font-size:12px">${f.metodoPago||'—'}</td>
         <td><span class="badge ${badgeEstado(f.estado)}">${f.estado}</span></td>
         <td data-role="admin"><div style="display:flex;gap:4px">
           ${f.estado==='pagado'?`<button class="btn btn-secondary btn-sm" onclick="verRecibo(${f.id})">🧾</button>`:''}
-          ${f.estado!=='pagado'?`<button class="btn btn-success btn-sm" onclick="marcarPagado(${f.id})">✓ Pagar</button>`:''}
+          ${f.estado!=='pagado'?`<button class="btn btn-success btn-sm" onclick="marcarPagado(${f.id})">💳 Pagar</button>`:''}
           <button class="btn btn-danger btn-sm" onclick="eliminarPago(${f.id})">✕</button>
         </div></td>
       </tr>`;
@@ -445,44 +467,66 @@
   }
 
   function limpiarFormP() {
-    ['p-id','p-concepto','p-monto','p-fechaVenc','p-fechaPago'].forEach(id=>document.getElementById(id).value='');
+    ['p-id','p-concepto','p-monto','p-abono','p-fechaVenc','p-fechaPago'].forEach(id => {
+      const el = document.getElementById(id); if(el) el.value = '';
+    });
     document.getElementById('p-grado').value   = '';
     document.getElementById('p-seccion').value = '';
-    document.getElementById('p-estado').value  = 'pendiente';
     document.getElementById('modal-p-titulo').textContent = 'Registrar pago';
     document.getElementById('p-alumno-info').style.display = 'none';
+    document.getElementById('saldo-resumen').style.display = 'none';
+    document.getElementById('p-fechaPago').value = new Date().toISOString().split('T')[0];
     refrescarSelects();
-    togglePagoFields();
   }
 
-  function togglePagoFields() {
-    const pagado = document.getElementById('p-estado').value === 'pagado';
-    document.getElementById('campo-metodo').style.opacity = pagado ? '1' : '0.4';
-    document.getElementById('campo-fecha-pago').style.opacity = pagado ? '1' : '0.4';
+  function calcularSaldo() {
+    const monto = parseFloat(document.getElementById('p-monto').value) || 0;
+    const abono = parseFloat(document.getElementById('p-abono').value) || 0;
+    const resumen = document.getElementById('saldo-resumen');
+    if (monto <= 0 && abono <= 0) { resumen.style.display = 'none'; return; }
+    resumen.style.display = 'flex';
+    const saldo = Math.max(0, monto - abono);
+    let estadoTxt, estadoColor;
+    if (abono <= 0)          { estadoTxt = 'Sin abono';  estadoColor = 'var(--text-muted)'; }
+    else if (saldo <= 0)     { estadoTxt = 'PAGADO ✓';   estadoColor = 'var(--success)'; }
+    else if (abono < monto)  { estadoTxt = 'PARCIAL';    estadoColor = 'var(--warning)'; }
+    else                     { estadoTxt = 'PAGADO ✓';   estadoColor = 'var(--success)'; }
+    document.getElementById('txt-abono').textContent  = '$ ' + abono.toFixed(2);
+    document.getElementById('txt-saldo').textContent  = '$ ' + saldo.toFixed(2);
+    document.getElementById('txt-estado-calc').textContent  = estadoTxt;
+    document.getElementById('txt-estado-calc').style.color  = estadoColor;
   }
 
   function guardarPago() {
-    const concepto = document.getElementById('p-concepto').value.trim();
-    const monto = parseFloat(document.getElementById('p-monto').value);
-    const alumnoId = parseInt(document.getElementById('p-alumno').value);
-    if (!concepto || isNaN(monto) || !alumnoId) {
-      showToast('Alumno, concepto y monto son obligatorios', 'error'); return;
+    const concepto  = document.getElementById('p-concepto').value.trim();
+    const monto     = parseFloat(document.getElementById('p-monto').value) || 0;
+    const abono     = parseFloat(document.getElementById('p-abono').value) || 0;
+    const alumnoId  = parseInt(document.getElementById('p-alumno').value);
+    if (!concepto || !alumnoId) {
+      showToast('Alumno y concepto son obligatorios', 'error'); return;
     }
-    const db = getDB();
-    const estado = document.getElementById('p-estado').value;
+    const saldo = Math.max(0, monto - abono);
+    let estado;
+    if (abono <= 0)    estado = 'pendiente';
+    else if (saldo <= 0) estado = 'pagado';
+    else                 estado = 'parcial';
+
     const ahora = new Date();
-    const obj = {
-      alumnoId, concepto, monto,
-      fechaVenc: document.getElementById('p-fechaVenc').value,
-      estado,
-      metodoPago: estado === 'pagado' ? document.getElementById('p-metodo').value : null,
-      fechaPago: estado === 'pagado' ? (document.getElementById('p-fechaPago').value || ahora.toISOString().split('T')[0]) : null,
-      registradoEn: ahora.toISOString(),
-    };
+    const db = getDB();
     const existId = parseInt(document.getElementById('p-id').value);
+    const obj = {
+      alumnoId, concepto, monto, abono, saldo, estado,
+      fechaVenc:   document.getElementById('p-fechaVenc').value,
+      metodoPago:  abono > 0 ? document.getElementById('p-metodo').value : null,
+      fechaPago:   abono > 0 ? (document.getElementById('p-fechaPago').value || ahora.toISOString().split('T')[0]) : null,
+      registradoEn: ahora.toISOString(),
+      registradoPor: getSession()?.name || '—',
+    };
+
     let savedId;
     if (existId) {
       const idx = db.finanzas.findIndex(x => x.id === existId);
+      obj.recibo = db.finanzas[idx].recibo;
       db.finanzas[idx] = { ...db.finanzas[idx], ...obj };
       savedId = existId;
     } else {
@@ -492,12 +536,8 @@
     }
     saveDB(db);
     closeModal('modal-pago');
-    renderPagos();
-    renderStats();
-    showToast('Pago guardado correctamente');
-    if (estado === 'pagado') {
-      setTimeout(() => verRecibo(savedId), 250);
-    }
+    renderPagos(); renderStats();
+    showToast(estado === 'pagado' ? 'Pago completo registrado ✓' : estado === 'parcial' ? `Abono registrado. Saldo pendiente: $ ${saldo.toFixed(2)}` : 'Registro guardado');
   }
 
   function eliminarPago(id) {
@@ -508,21 +548,32 @@
     });
   }
 
+  // Abre el modal pre-llenado con los datos del registro para registrar el pago manualmente
   function marcarPagado(id) {
     const db = getDB();
-    const idx = db.finanzas.findIndex(x => x.id === id);
-    const ahora = new Date();
-    db.finanzas[idx] = {
-      ...db.finanzas[idx],
-      estado: 'pagado',
-      fechaPago: ahora.toISOString().split('T')[0],
-      metodoPago: 'Efectivo',
-      recibo: 'REC-' + String(id).padStart(4, '0'),
-      registradoEn: ahora.toISOString(),
-    };
-    saveDB(db); renderPagos(); renderStats();
-    showToast('Pago registrado correctamente');
-    setTimeout(() => verRecibo(id), 250);
+    const f  = db.finanzas.find(x => x.id === id);
+    if (!f) return;
+    const alumno = db.alumnos.find(a => a.id === f.alumnoId);
+    limpiarFormP();
+    document.getElementById('p-id').value        = f.id;
+    document.getElementById('p-concepto').value  = f.concepto;
+    document.getElementById('p-monto').value     = f.monto || '';
+    document.getElementById('p-abono').value     = f.abono || '';
+    document.getElementById('p-fechaVenc').value = f.fechaVenc || '';
+    document.getElementById('p-fechaPago').value = new Date().toISOString().split('T')[0];
+    document.getElementById('modal-p-titulo').textContent = '💳 Registrar pago';
+    // Pre-seleccionar alumno
+    if (alumno) {
+      document.getElementById('p-grado').value   = alumno.grado || '';
+      document.getElementById('p-seccion').value = alumno.seccion || '';
+      filtrarAlumnosPago();
+      setTimeout(() => {
+        document.getElementById('p-alumno').value = f.alumnoId;
+        filtrarAlumnosPago();
+      }, 50);
+    }
+    calcularSaldo();
+    openModal('modal-pago');
   }
 
   function verRecibo(id) {
@@ -571,9 +622,20 @@
         </div>
 
         <!-- Total -->
-        <div style="background:var(--surface-1);border-radius:8px;padding:14px 16px;margin-top:4px;display:flex;justify-content:space-between;align-items:center">
-          <span style="font-weight:700;font-size:14px">TOTAL PAGADO</span>
-          <span style="font-weight:800;font-size:22px;color:var(--secondary)">${formatMonto(f.monto)}</span>
+        <div style="background:var(--surface-1);border-radius:8px;padding:14px 16px;margin-top:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${(f.abono>0&&f.saldo>0)?'10px':'0'}">
+            <span style="font-weight:700;font-size:14px">TOTAL A PAGAR</span>
+            <span style="font-weight:800;font-size:20px;color:var(--text-primary)">${formatMonto(f.monto)}</span>
+          </div>
+          ${f.abono>0?`<div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--border)">
+            <span style="font-weight:600;font-size:13px;color:var(--success)">ABONO RECIBIDO</span>
+            <span style="font-weight:700;font-size:18px;color:var(--success)">${formatMonto(f.abono)}</span>
+          </div>`:''}
+          ${f.saldo>0?`<div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--border)">
+            <span style="font-weight:700;font-size:13px;color:var(--danger)">SALDO PENDIENTE</span>
+            <span style="font-weight:800;font-size:18px;color:var(--danger)">${formatMonto(f.saldo)}</span>
+          </div>`:''}
+          ${(!f.saldo||f.saldo<=0)&&f.abono>0?`<div style="text-align:center;padding-top:8px;border-top:1px solid var(--border);color:var(--success);font-weight:700">✓ PAGADO COMPLETAMENTE</div>`:''}
         </div>
 
         <!-- Pie -->
