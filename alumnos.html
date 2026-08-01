@@ -303,28 +303,37 @@
       const codigo = 'ALU-' + String(newId).padStart(3, '0');
       db.alumnos.push({ id: newId, codigo, ...obj });
 
-      // Generar cuota del mes actual con fecha límite el día 5
+      // La mensualidad de un mes vence el día 5 del mes SIGUIENTE
+      // Ej: mensualidad de Julio vence el 5 de Agosto
       const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
                      'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
       const hoy = new Date();
-      const anio = hoy.getFullYear();
-      const mesActual = hoy.getMonth();
-      const fechaLimite = `${anio}-${String(mesActual + 1).padStart(2,'0')}-05`;
-      const estado = hoy > new Date(anio, mesActual, 5) ? 'vencido' : 'pendiente';
-      db.finanzas.push({
-        id: genId(db.finanzas),
-        alumnoId: newId,
-        concepto: `Mensualidad ${meses[mesActual]} ${anio}`,
-        monto: 0,
-        fechaVenc: fechaLimite,
-        fechaPago: '',
-        metodoPago: '',
-        estado,
-        recibo: '',
-        registradoEn: new Date().toISOString(),
-        registradoPor: getSession()?.name || 'Sistema',
-        autogenerado: true
-      });
+      // Mes que se cobra = mes anterior al actual (el que "ya corrió")
+      const mesAnterior = hoy.getMonth() === 0 ? 11 : hoy.getMonth() - 1;
+      const anioMesAnterior = hoy.getMonth() === 0 ? hoy.getFullYear() - 1 : hoy.getFullYear();
+      // Fecha límite = día 5 del mes actual
+      const anioLimite = hoy.getFullYear();
+      const mesLimite  = hoy.getMonth(); // mes actual (0-based)
+      const fechaLimite = `${anioLimite}-${String(mesLimite + 1).padStart(2,'0')}-05`;
+      const conceptoCuota = `Mensualidad ${meses[mesAnterior]} ${anioMesAnterior}`;
+      // ¿Ya existe esta cuota para este alumno?
+      const yaExiste = db.finanzas.some(f => f.alumnoId === newId && f.concepto === conceptoCuota);
+      if (!yaExiste) {
+        const limiteDate = new Date(anioLimite, mesLimite, 5);
+        const estado = hoy > limiteDate ? 'vencido' : 'pendiente';
+        db.finanzas.push({
+          id: genId(db.finanzas),
+          alumnoId: newId,
+          concepto: conceptoCuota,
+          monto: 0,
+          fechaVenc: fechaLimite,
+          fechaPago: '', metodoPago: '', estado,
+          recibo: '',
+          registradoEn: new Date().toISOString(),
+          registradoPor: getSession()?.name || 'Sistema',
+          autogenerado: true
+        });
+      }
       showToast('Alumno registrado. Se generó la cuota del mes en curso.');
     }
 

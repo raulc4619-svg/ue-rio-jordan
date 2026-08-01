@@ -222,26 +222,31 @@
 <script>
   initDB(); requireAuth(); renderUserBar(); applyRoleVisibility();
 
-  // Al abrir finanzas: generar cuota del mes en curso para alumnos que no la tengan
-  // y marcar como vencidas las que ya pasaron el día 5
+  // Lógica: la mensualidad de un mes vence el día 5 del mes SIGUIENTE
+  // Ej: Mensualidad Julio → vence el 5 de Agosto
   function actualizarCuotasMensuales() {
     const db = getDB();
     const hoy = new Date(); hoy.setHours(0,0,0,0);
     const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
                    'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    const anio = hoy.getFullYear();
-    const mes  = hoy.getMonth(); // 0-based
-    const fechaLimite = `${anio}-${String(mes + 1).padStart(2,'0')}-05`;
-    const conceptoMes = `Mensualidad ${meses[mes]} ${anio}`;
+
+    // Mes que se cobra = mes anterior (el que ya "corrió")
+    const mesHoy      = hoy.getMonth();
+    const anioHoy     = hoy.getFullYear();
+    const mesAnterior = mesHoy === 0 ? 11 : mesHoy - 1;
+    const anioMesAnt  = mesHoy === 0 ? anioHoy - 1 : anioHoy;
+
+    // Fecha límite = día 5 del mes actual
+    const fechaLimite  = `${anioHoy}-${String(mesHoy + 1).padStart(2,'0')}-05`;
+    const conceptoMes  = `Mensualidad ${meses[mesAnterior]} ${anioMesAnt}`;
+    const limiteDate   = new Date(anioHoy, mesHoy, 5);
+
     let cambios = false;
 
     db.alumnos.filter(a => a.estado === 'activo').forEach(a => {
-      // ¿Ya tiene cuota este mes?
-      const yaTiene = db.finanzas.some(f =>
-        f.alumnoId === a.id && f.concepto === conceptoMes
-      );
+      const yaTiene = db.finanzas.some(f => f.alumnoId === a.id && f.concepto === conceptoMes);
       if (!yaTiene) {
-        const estado = hoy > new Date(anio, mes, 5) ? 'vencido' : 'pendiente';
+        const estado = hoy > limiteDate ? 'vencido' : 'pendiente';
         db.finanzas.push({
           id: genId(db.finanzas),
           alumnoId: a.id,
@@ -258,7 +263,7 @@
       }
     });
 
-    // Marcar vencidas las pendientes cuya fecha ya pasó
+    // Marcar vencidas las pendientes cuya fecha límite ya pasó
     db.finanzas.forEach(f => {
       if (f.estado === 'pendiente' && f.fechaVenc) {
         const venc = new Date(f.fechaVenc + 'T00:00:00');
