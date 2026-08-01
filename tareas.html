@@ -73,8 +73,8 @@
 
       <div class="tabs" id="tabs-principales">
         <button class="tab-btn active" onclick="switchTab('docente',this)" data-role="admin,docente">Gestión de tareas</button>
+        <button class="tab-btn" onclick="switchTab('reporte',this)" data-role="admin,docente">📊 Reporte de notas</button>
         <button class="tab-btn" onclick="switchTab('alumno',this)" data-role="alumno">Mis tareas</button>
-        <button class="tab-btn" onclick="switchTab('docente',this)" data-role="alumno" style="display:none"></button>
       </div>
 
       <!-- ══ TAB DOCENTE: lista de tareas creadas ══ -->
@@ -106,6 +106,39 @@
           <div class="empty-icon">📝</div>
           <h3>Sin tareas</h3>
           <p>No hay tareas que coincidan con los filtros.</p>
+        </div>
+      </div>
+
+      <!-- ══ TAB REPORTE DE NOTAS ══ -->
+      <div id="tab-reporte" style="display:none">
+        <div class="toolbar">
+          <div class="toolbar-start" style="flex-wrap:wrap;gap:10px">
+            <select class="form-control" id="rf-grado" onchange="renderReporteTareas()" style="width:120px">
+              <option value="">Todos los grados</option>
+              <option>1ro</option><option>2do</option><option>3ro</option><option>4to</option><option>5to</option><option>6to</option><option>7mo</option>
+            </select>
+            <select class="form-control" id="rf-materia" onchange="renderReporteTareas()" style="width:160px">
+              <option value="">Todas las materias</option>
+              <option>Matemáticas</option><option>Lenguaje</option><option>Ciencias Naturales</option>
+              <option>Historia</option><option>Inglés</option><option>Arte</option>
+              <option>Educación Física</option><option>Computación</option><option>Otra</option>
+            </select>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <table id="tabla-reporte-tareas">
+              <thead>
+                <tr>
+                  <th>Alumno</th><th>Grado</th><th>Materia</th>
+                  <th>Tarea</th><th>Nota</th><th>Máx</th><th>Estado</th><th>Calificado</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-reporte-tareas">
+                <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted)">Sin notas registradas aún</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -252,8 +285,22 @@
 <script>
 initDB(); requireAuth(); renderUserBar(); applyRoleVisibility();
 
-const USER = JSON.parse(sessionStorage.getItem('user') || '{}');
+const USER = getSession() || {};
 const ROL  = USER.role || '';
+
+// Inicializar tab correcto según rol
+(function initTab() {
+  if (ROL === 'alumno') {
+    document.getElementById('tab-docente').style.display = 'none';
+    document.getElementById('tab-alumno').style.display  = '';
+    document.querySelectorAll('.tabs .tab-btn').forEach(b => b.classList.remove('active'));
+    const btnAl = document.querySelector('.tabs .tab-btn[data-role="alumno"]');
+    if (btnAl) btnAl.classList.add('active');
+    renderTareasAlumno();
+  } else {
+    renderTareas();
+  }
+})();
 
 // ── Drag & drop ──────────────────────────────────────
 ['dz-tarea','dz-entrega'].forEach(id => {
@@ -342,10 +389,55 @@ function chipsArchivos(archivos) {
 function switchTab(tab, btn) {
   document.getElementById('tab-docente').style.display = tab === 'docente' ? '' : 'none';
   document.getElementById('tab-alumno').style.display  = tab === 'alumno'  ? '' : 'none';
+  document.getElementById('tab-reporte').style.display = tab === 'reporte' ? '' : 'none';
   document.querySelectorAll('.tabs .tab-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  if (tab === 'alumno') renderTareasAlumno();
+  if (tab === 'alumno')  renderTareasAlumno();
+  else if (tab === 'reporte') renderReporteTareas();
   else renderTareas();
+}
+
+function renderReporteTareas() {
+  const db      = getDB();
+  const gradoF  = document.getElementById('rf-grado').value;
+  const matF    = document.getElementById('rf-materia').value;
+
+  // Solo entregas calificadas
+  let entregasCalif = (db.entregas||[]).filter(e => e.calificacion != null);
+
+  // Filtros
+  let tareas = db.tareas || [];
+  if (gradoF) tareas = tareas.filter(t => t.grado === gradoF);
+  if (matF)   tareas = tareas.filter(t => t.materia === matF);
+  // Docente solo ve sus tareas
+  if (ROL === 'docente') tareas = tareas.filter(t => t.docenteId === USER.docenteId);
+
+  const tareaIds = new Set(tareas.map(t => t.id));
+  entregasCalif  = entregasCalif.filter(e => tareaIds.has(e.tareaId));
+
+  const tbody = document.getElementById('tbody-reporte-tareas');
+  if (!entregasCalif.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted)">Sin notas registradas aún</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = entregasCalif.map(e => {
+    const alumno = (db.alumnos||[]).find(a => a.id === e.alumnoId);
+    const tarea  = (db.tareas||[]).find(t => t.id === e.tareaId);
+    if (!alumno || !tarea) return '';
+    const aprobado = e.calificacion >= (tarea.notaMax||20) * 0.55;
+    const fecha = e.calificadoEn ? new Date(e.calificadoEn).toLocaleDateString('es-PE') : '—';
+    return `<tr>
+      <td style="font-weight:500">${alumno.nombre}</td>
+      <td>${alumno.grado}° ${alumno.seccion||''}</td>
+      <td>${tarea.materia}</td>
+      <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${tarea.titulo}">${tarea.titulo}</td>
+      <td style="font-weight:700;color:${aprobado?'var(--success)':'var(--danger)'}">${e.calificacion}</td>
+      <td style="color:var(--text-muted)">${tarea.notaMax||20}</td>
+      <td><span class="badge ${aprobado?'badge-green':'badge-red'}">${aprobado?'Aprobado':'Reprobado'}</span></td>
+      <td style="font-size:12px;color:var(--text-muted)">${fecha}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ── Estado de tarea ───────────────────────────────────
@@ -471,8 +563,29 @@ function calificarEntrega(tareaId, alumnoId) {
   if (idx === -1) { showToast('El alumno aún no entregó','error'); return; }
   db.entregas[idx].calificacion = nota;
   db.entregas[idx].calificadoEn = new Date().toISOString();
+
+  // Guardar también en db.calificaciones para el reporte
+  if (!db.calificaciones) db.calificaciones = [];
+  const anio = new Date().getFullYear();
+  const periodo = `Tarea: ${tarea.titulo}`;
+  const objCal = {
+    alumnoId, materia: tarea.materia,
+    periodo, nota: Math.round(nota),
+    anio, docenteId: tarea.docenteId,
+    estado: nota >= 11 ? 'aprobado' : 'desaprobado',
+    tareaId, origenTarea: true
+  };
+  const existIdx = db.calificaciones.findIndex(c =>
+    c.alumnoId === alumnoId && c.tareaId === tareaId
+  );
+  if (existIdx >= 0) {
+    db.calificaciones[existIdx] = { ...db.calificaciones[existIdx], ...objCal };
+  } else {
+    db.calificaciones.push({ id: genId(db.calificaciones), ...objCal });
+  }
+
   saveDB(db);
-  showToast(`Nota ${nota} guardada`);
+  showToast(`Nota ${nota} guardada y registrada en calificaciones`);
   verEntregas(tareaId);
 }
 
