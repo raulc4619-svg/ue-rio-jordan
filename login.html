@@ -10,187 +10,258 @@
 
     body {
       min-height: 100vh;
-      background: #0d1420;
       display: flex;
-      align-items: center;
-      justify-content: center;
       font-family: 'Inter', -apple-system, sans-serif;
       overflow: hidden;
     }
 
-    /* ---- Fondo animado ---- */
-    .bg-scene {
-      position: fixed;
+    /* ============================================================
+       PANEL IZQUIERDO — Galería / Slideshow
+    ============================================================ */
+    .gallery-panel {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      display: none; /* solo desktop */
+    }
+
+    @media (min-width: 900px) {
+      .gallery-panel { display: block; }
+    }
+
+    /* Fotos del slideshow */
+    .slide {
+      position: absolute;
       inset: 0;
-      z-index: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 1.2s ease-in-out;
+    }
+    .slide.active { opacity: 1; }
+
+    /* Overlay encima de las fotos */
+    .gallery-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to right,
+        rgba(10,16,28,.15) 0%,
+        rgba(10,16,28,.05) 50%,
+        rgba(10,16,28,.55) 100%
+      );
+      z-index: 1;
+    }
+
+    /* Contenido textual sobre las fotos */
+    .gallery-content {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 40px 44px;
+    }
+
+    .gallery-badge {
+      display: inline-block;
+      background: rgba(245,158,11,.85);
+      color: #0d1420;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+      width: fit-content;
+    }
+
+    .gallery-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(26px, 3vw, 36px);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+      text-shadow: 0 2px 20px rgba(0,0,0,.5);
+      margin-bottom: 10px;
+    }
+
+    .gallery-sub {
+      font-size: 15px;
+      color: rgba(255,255,255,.7);
+      text-shadow: 0 1px 8px rgba(0,0,0,.5);
+      margin-bottom: 28px;
+    }
+
+    /* Indicadores del slideshow */
+    .slide-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(255,255,255,.35);
+      border: none;
+      cursor: pointer;
+      transition: width .3s, background .3s;
+      padding: 0;
+    }
+    .dot.active {
+      width: 28px;
+      background: #F59E0B;
+    }
+
+    /* Mini galería en la parte superior */
+    .thumb-row {
+      position: absolute;
+      top: 28px;
+      left: 28px;
+      z-index: 2;
+      display: flex;
+      gap: 8px;
+    }
+
+    .thumb {
+      width: 52px;
+      height: 52px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 2px solid rgba(255,255,255,.0);
+      cursor: pointer;
+      transition: border-color .2s, transform .2s;
+      opacity: .65;
+    }
+    .thumb:hover { transform: scale(1.08); opacity: .9; }
+    .thumb.active { border-color: #F59E0B; opacity: 1; }
+
+    /* ============================================================
+       PANEL DERECHO — Formulario
+    ============================================================ */
+    .login-panel {
+      width: 100%;
+      max-width: 480px;
+      flex-shrink: 0;
+      background: #0d1420;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
       overflow: hidden;
     }
 
-    /* Gradiente base */
-    .bg-scene::before {
+    /* En móvil: fondo con foto borrosa */
+    @media (max-width: 899px) {
+      .login-panel {
+        max-width: 100%;
+        min-height: 100vh;
+      }
+      .login-panel-bg {
+        position: absolute;
+        inset: 0;
+        background-image: url('img/555564286_24559917220338537_7291867738354728102_n.jpg');
+        background-size: cover;
+        background-position: center;
+        filter: blur(8px) brightness(.35);
+        transform: scale(1.08);
+        z-index: 0;
+      }
+    }
+
+    .login-panel-bg { display: none; }
+    @media (max-width: 899px) { .login-panel-bg { display: block; } }
+
+    /* Decoración fondo desktop */
+    .login-panel::before {
       content: '';
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 80% 60% at 20% 50%, rgba(245,158,11,.13) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 80% at 80% 30%, rgba(30,41,59,.9) 0%, transparent 70%),
-        linear-gradient(135deg, #0d1420 0%, #192132 50%, #0f172a 100%);
-    }
-
-    /* Partículas decorativas */
-    .bg-scene::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image:
-        radial-gradient(circle 1px at 20% 30%, rgba(245,158,11,.4) 0%, transparent 1px),
-        radial-gradient(circle 1px at 80% 70%, rgba(245,158,11,.3) 0%, transparent 1px),
-        radial-gradient(circle 1px at 50% 15%, rgba(245,158,11,.2) 0%, transparent 1px),
-        radial-gradient(circle 1px at 10% 80%, rgba(245,158,11,.25) 0%, transparent 1px),
-        radial-gradient(circle 1px at 90% 20%, rgba(245,158,11,.2) 0%, transparent 1px),
-        radial-gradient(circle 2px at 65% 85%, rgba(245,158,11,.15) 0%, transparent 2px),
-        radial-gradient(circle 1px at 35% 60%, rgba(245,158,11,.2) 0%, transparent 1px);
-    }
-
-    /* ---- MARCA DE AGUA: logo grande centrado ---- */
-    .logo-watermark {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: min(520px, 85vw);
-      height: min(520px, 85vw);
-      z-index: 1;
-      pointer-events: none;
-      mix-blend-mode: screen;        /* elimina el fondo blanco visualmente */
-      opacity: .07;
-      filter: grayscale(1) brightness(8);
-    }
-
-    /* Anillo decorativo alrededor de la marca de agua */
-    .watermark-ring {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: min(560px, 90vw);
-      height: min(560px, 90vw);
-      border-radius: 50%;
-      border: 1px solid rgba(245,158,11,.06);
-      z-index: 1;
+        radial-gradient(ellipse 120% 60% at 50% 100%, rgba(245,158,11,.08) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 50% at 50% 0%, rgba(245,158,11,.05) 0%, transparent 60%);
       pointer-events: none;
     }
-    .watermark-ring::before {
+
+    /* Logo marca de agua */
+    .login-panel::after {
       content: '';
       position: absolute;
-      inset: 20px;
-      border-radius: 50%;
-      border: 1px solid rgba(245,158,11,.04);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+      width: 340px;
+      height: 340px;
+      background: url('logo.png') center/contain no-repeat;
+      opacity: .04;
+      filter: grayscale(1) brightness(10);
+      pointer-events: none;
     }
 
-    /* ---- Card de login ---- */
-    .login-card {
+    .login-inner {
       position: relative;
-      z-index: 10;
-      width: min(420px, 94vw);
-      background: rgba(255,255,255,.04);
-      backdrop-filter: blur(24px) saturate(1.4);
-      -webkit-backdrop-filter: blur(24px) saturate(1.4);
-      border: 1px solid rgba(255,255,255,.1);
-      border-radius: 24px;
-      padding: 40px 36px 36px;
-      box-shadow:
-        0 0 0 1px rgba(245,158,11,.08),
-        0 32px 80px rgba(0,0,0,.5),
-        0 8px 24px rgba(0,0,0,.3),
-        inset 0 1px 0 rgba(255,255,255,.08);
-      animation: cardIn .6s cubic-bezier(.16,1,.3,1) both;
+      z-index: 2;
+      width: min(380px, 92vw);
+      padding: 16px 0;
     }
 
-    @keyframes cardIn {
-      from { opacity:0; transform: translateY(28px) scale(.97); }
-      to   { opacity:1; transform: translateY(0) scale(1); }
-    }
-
-    /* ---- Logo dentro del card ---- */
+    /* Logo + nombre */
     .card-logo {
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-bottom: 28px;
+      margin-bottom: 32px;
     }
 
     .logo-badge {
-      width: 90px;
-      height: 90px;
+      width: 88px;
+      height: 88px;
       border-radius: 20px;
       background: rgba(245,158,11,.1);
-      border: 1px solid rgba(245,158,11,.2);
+      border: 1px solid rgba(245,158,11,.22);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 14px;
-      box-shadow: 0 0 30px rgba(245,158,11,.12), 0 4px 16px rgba(0,0,0,.3);
+      margin-bottom: 16px;
+      box-shadow: 0 0 40px rgba(245,158,11,.14), 0 4px 20px rgba(0,0,0,.4);
       overflow: hidden;
       position: relative;
     }
-
     .logo-badge::before {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, rgba(245,158,11,.15), transparent);
+      background: linear-gradient(135deg, rgba(245,158,11,.18), transparent);
     }
-
     .logo-badge img {
-      width: 76px;
-      height: 76px;
+      width: 72px; height: 72px;
       object-fit: contain;
-      mix-blend-mode: multiply;
-      position: relative;
-      z-index: 1;
+      position: relative; z-index: 1;
       filter: drop-shadow(0 2px 8px rgba(0,0,0,.3));
     }
 
     .card-school-tag {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: rgba(245,158,11,.7);
-      margin-bottom: 4px;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: rgba(245,158,11,.75); margin-bottom: 4px;
     }
-
     .card-school-name {
       font-family: 'Poppins', sans-serif;
-      font-size: 20px;
-      font-weight: 700;
-      color: #fff;
+      font-size: 22px; font-weight: 800; color: #fff;
       letter-spacing: -.01em;
     }
-
     .card-school-sub {
-      font-size: 12px;
-      color: rgba(255,255,255,.38);
-      margin-top: 2px;
+      font-size: 12px; color: rgba(255,255,255,.36); margin-top: 3px;
     }
 
-    /* ---- Divider ---- */
-    .divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
-      margin: 24px 0;
-    }
-
-    /* ---- Form ---- */
+    /* Formulario */
     .form-label-white {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: rgba(255,255,255,.55);
-      margin-bottom: 6px;
-      letter-spacing: .02em;
-      text-transform: uppercase;
+      display: block; font-size: 12px; font-weight: 600;
+      color: rgba(255,255,255,.5); margin-bottom: 6px;
+      letter-spacing: .03em; text-transform: uppercase;
     }
 
     .input-dark {
@@ -199,180 +270,169 @@
       border: 1px solid rgba(255,255,255,.1);
       border-radius: 12px;
       padding: 13px 16px 13px 44px;
-      font-size: 15px;
-      color: #fff;
+      font-size: 15px; color: #fff;
       font-family: 'Inter', sans-serif;
       transition: border-color .2s, background .2s, box-shadow .2s;
       outline: none;
     }
-
     .input-dark::placeholder { color: rgba(255,255,255,.22); }
-
     .input-dark:focus {
       border-color: rgba(245,158,11,.5);
       background: rgba(255,255,255,.09);
       box-shadow: 0 0 0 3px rgba(245,158,11,.12);
     }
 
-    .input-wrap {
-      position: relative;
-      margin-bottom: 16px;
-    }
-
+    .input-wrap { position: relative; margin-bottom: 16px; }
     .input-icon {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 16px;
-      pointer-events: none;
-      opacity: .5;
+      position: absolute; left: 14px; top: 50%;
+      transform: translateY(-50%); font-size: 16px;
+      pointer-events: none; opacity: .5;
     }
-
     .toggle-pw {
-      position: absolute;
-      right: 12px;
-      top: 50%;
+      position: absolute; right: 12px; top: 50%;
       transform: translateY(-50%);
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 15px;
-      opacity: .45;
-      transition: opacity .2s;
-      color: #fff;
-      padding: 4px;
+      background: none; border: none; cursor: pointer;
+      font-size: 15px; opacity: .45; transition: opacity .2s;
+      color: #fff; padding: 4px;
     }
     .toggle-pw:hover { opacity: .85; }
 
-    /* ---- Error ---- */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+      margin: 24px 0;
+    }
+
     .login-error {
       display: none;
       background: rgba(220,38,38,.15);
       border: 1px solid rgba(220,38,38,.3);
-      color: #fca5a5;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 13px;
-      margin-bottom: 16px;
+      color: #fca5a5; border-radius: 10px;
+      padding: 10px 14px; font-size: 13px; margin-bottom: 16px;
     }
 
-    /* ---- Botón principal ---- */
     .btn-login {
-      width: 100%;
-      padding: 14px;
+      width: 100%; padding: 14px;
       background: linear-gradient(135deg, #F59E0B, #D97706);
-      color: #0d1420;
-      border: none;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 700;
-      font-family: 'Poppins', sans-serif;
-      cursor: pointer;
+      color: #0d1420; border: none; border-radius: 12px;
+      font-size: 15px; font-weight: 700;
+      font-family: 'Poppins', sans-serif; cursor: pointer;
       transition: transform .15s, box-shadow .2s, filter .2s;
-      box-shadow: 0 4px 16px rgba(245,158,11,.35), 0 1px 3px rgba(0,0,0,.2);
-      margin-top: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-height: 50px;
+      box-shadow: 0 4px 20px rgba(245,158,11,.38), 0 1px 3px rgba(0,0,0,.2);
+      margin-top: 4px; display: flex; align-items: center;
+      justify-content: center; gap: 8px; min-height: 50px;
     }
-
     .btn-login:hover:not(:disabled) {
       transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(245,158,11,.45);
+      box-shadow: 0 8px 28px rgba(245,158,11,.48);
       filter: brightness(1.05);
     }
-
     .btn-login:active { transform: translateY(0); }
     .btn-login:disabled { opacity: .7; cursor: not-allowed; transform: none; }
 
-    /* ---- Footer ---- */
     .login-footer {
-      margin-top: 24px;
-      text-align: center;
-      font-size: 11.5px;
-      color: rgba(255,255,255,.22);
-      line-height: 1.6;
+      margin-top: 24px; text-align: center;
+      font-size: 11.5px; color: rgba(255,255,255,.22); line-height: 1.6;
     }
-
-    .login-footer strong { color: rgba(255,255,255,.4); }
-
-    /* ---- Responsive ---- */
-    @media (max-width: 480px) {
-      .login-card { padding: 28px 20px 24px; border-radius: 20px; }
-      .logo-badge { width: 76px; height: 76px; }
-      .logo-badge img { width: 62px; height: 62px; }
-      .card-school-name { font-size: 17px; }
-    }
+    .login-footer strong { color: rgba(255,255,255,.38); }
 
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner {
-      display: inline-block;
-      width: 16px; height: 16px;
+      display: inline-block; width: 16px; height: 16px;
       border: 2px solid rgba(13,20,32,.3);
       border-top-color: #0d1420;
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
+      border-radius: 50%; animation: spin .7s linear infinite;
     }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .login-inner { animation: cardIn .6s cubic-bezier(.16,1,.3,1) both; }
   </style>
 </head>
 <body>
 
-  <!-- Fondo -->
-  <div class="bg-scene"></div>
+  <!-- ====== PANEL IZQUIERDO: GALERÍA ====== -->
+  <div class="gallery-panel">
 
-  <!-- Marca de agua logo grande -->
-  <img src="logo.png" class="logo-watermark" alt="">
-  <div class="watermark-ring"></div>
+    <!-- Miniaturas superiores -->
+    <div class="thumb-row">
+      <img src="img/515146625_23864672653196334_2973300541626837010_n.jpg" class="thumb active" onclick="goSlide(0)" alt="Foto 1">
+      <img src="img/555564286_24559917220338537_7291867738354728102_n.jpg" class="thumb" onclick="goSlide(1)" alt="Foto 2">
+      <img src="img/746484730_27470130199317210_5960281063973936387_n.jpg" class="thumb" onclick="goSlide(2)" alt="Foto 3">
+    </div>
 
-  <!-- Card principal -->
-  <div class="login-card">
+    <!-- Slides -->
+    <div class="slide active" style="background-image:url('img/515146625_23864672653196334_2973300541626837010_n.jpg')"></div>
+    <div class="slide"        style="background-image:url('img/555564286_24559917220338537_7291867738354728102_n.jpg')"></div>
+    <div class="slide"        style="background-image:url('img/746484730_27470130199317210_5960281063973936387_n.jpg')"></div>
 
-    <!-- Logo + nombre -->
-    <div class="card-logo">
-      <div class="logo-badge">
-        <img src="logo.png" alt="Logo U.E. Rio Jordan">
+    <!-- Overlay -->
+    <div class="gallery-overlay"></div>
+
+    <!-- Texto + puntos -->
+    <div class="gallery-content">
+      <span class="gallery-badge">Comunidad Escolar</span>
+      <div class="gallery-title">Formando el futuro<br>de nuestra comunidad</div>
+      <div class="gallery-sub">Unidad Educativa Rio Jordan · Gestión 2024</div>
+      <div class="slide-dots">
+        <button class="dot active" onclick="goSlide(0)"></button>
+        <button class="dot"        onclick="goSlide(1)"></button>
+        <button class="dot"        onclick="goSlide(2)"></button>
       </div>
-      <div class="card-school-tag">Unidad Educativa</div>
-      <div class="card-school-name">Rio Jordan</div>
-      <div class="card-school-sub">Sistema de Gestión Escolar</div>
     </div>
+  </div>
 
-    <div class="divider"></div>
+  <!-- ====== PANEL DERECHO: LOGIN ====== -->
+  <div class="login-panel">
+    <div class="login-panel-bg"></div>
 
-    <!-- Error -->
-    <div class="login-error" id="login-error">⚠ Usuario o contraseña incorrectos.</div>
+    <div class="login-inner">
 
-    <!-- Usuario -->
-    <label class="form-label-white">Usuario</label>
-    <div class="input-wrap">
-      <span class="input-icon">👤</span>
-      <input type="text" id="username" class="input-dark"
-        placeholder="Ingresa tu usuario" autocomplete="username">
+      <!-- Logo + nombre -->
+      <div class="card-logo">
+        <div class="logo-badge">
+          <img src="logo.png" alt="Logo U.E. Rio Jordan">
+        </div>
+        <div class="card-school-tag">Unidad Educativa</div>
+        <div class="card-school-name">Rio Jordan</div>
+        <div class="card-school-sub">Sistema de Gestión Escolar</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Error -->
+      <div class="login-error" id="login-error">⚠ Usuario o contraseña incorrectos.</div>
+
+      <!-- Usuario -->
+      <label class="form-label-white">Usuario</label>
+      <div class="input-wrap">
+        <span class="input-icon">👤</span>
+        <input type="text" id="username" class="input-dark"
+          placeholder="Ingresa tu usuario" autocomplete="username">
+      </div>
+
+      <!-- Contraseña -->
+      <label class="form-label-white">Contraseña</label>
+      <div class="input-wrap">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="password" class="input-dark"
+          placeholder="Ingresa tu contraseña" autocomplete="current-password" style="padding-right:44px">
+        <button class="toggle-pw" onclick="togglePw()" type="button" id="btn-eye">👁</button>
+      </div>
+
+      <!-- Botón -->
+      <button class="btn-login" onclick="doLogin()" id="btn-login">
+        Ingresar al sistema →
+      </button>
+
+      <!-- Footer -->
+      <div class="login-footer">
+        ¿Problemas de acceso? Contacta al área administrativa.<br>
+        <strong>U.E. Rio Jordan</strong> · Sistema Escolar 2024
+      </div>
+
     </div>
-
-    <!-- Contraseña -->
-    <label class="form-label-white">Contraseña</label>
-    <div class="input-wrap">
-      <span class="input-icon">🔒</span>
-      <input type="password" id="password" class="input-dark"
-        placeholder="Ingresa tu contraseña" autocomplete="current-password" style="padding-right:44px">
-      <button class="toggle-pw" onclick="togglePw()" type="button" id="btn-eye">👁</button>
-    </div>
-
-    <!-- Botón -->
-    <button class="btn-login" onclick="doLogin()" id="btn-login">
-      Ingresar al sistema →
-    </button>
-
-    <!-- Footer -->
-    <div class="login-footer">
-      ¿Problemas de acceso? Contacta al área administrativa.<br>
-      <strong>U.E. Rio Jordan</strong> · Sistema Escolar 2024
-    </div>
-
   </div>
 
 <script src="js/data.js"></script>
@@ -381,6 +441,7 @@
   initDB();
   if (getSession()) window.location.href = 'dashboard.html';
 
+  // ── Teclado ──
   document.getElementById('password').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLogin();
   });
@@ -400,18 +461,14 @@
     const password = document.getElementById('password').value;
     const errEl = document.getElementById('login-error');
     const btn = document.getElementById('btn-login');
-
     errEl.style.display = 'none';
-
     if (!username || !password) {
       errEl.style.display = 'block';
       errEl.textContent = '⚠ Completa todos los campos.';
       return;
     }
-
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Verificando...';
-
     setTimeout(() => {
       const result = login(username, password);
       if (result.ok) {
@@ -428,6 +485,24 @@
       }
     }, 700);
   }
+
+  // ── Slideshow ──
+  let current = 0;
+  const slides = document.querySelectorAll('.slide');
+  const dots   = document.querySelectorAll('.dot');
+  const thumbs = document.querySelectorAll('.thumb');
+
+  function goSlide(n) {
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    thumbs[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+    thumbs[current].classList.add('active');
+  }
+
+  setInterval(() => goSlide((current + 1) % slides.length), 4500);
 </script>
 </body>
 </html>
