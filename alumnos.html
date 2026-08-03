@@ -299,12 +299,13 @@
   }
 
   function eliminarAlumno(id) {
-    confirmar('¿Eliminar este alumno? Esta acción no se puede deshacer.', () => {
+    confirmar('¿Eliminar este alumno? También se eliminarán sus credenciales de acceso.', () => {
       const db = getDB();
       db.alumnos = db.alumnos.filter(x => x.id !== id);
+      db.users   = db.users.filter(u => u.alumnoId !== id);
       saveDB(db);
       renderTabla();
-      showToast('Alumno eliminado', 'warning');
+      showToast('Alumno y credenciales eliminados', 'warning');
     });
   }
 

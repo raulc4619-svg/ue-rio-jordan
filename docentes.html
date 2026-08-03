@@ -251,10 +251,11 @@
   }
 
   function eliminarDocente(id) {
-    confirmar('¿Eliminar este docente?', () => {
+    confirmar('¿Eliminar este docente? También se eliminarán sus credenciales de acceso.', () => {
       const db = getDB();
-      db.docentes = db.docentes.filter(x=>x.id!==id);
-      saveDB(db); renderTabla(); showToast('Docente eliminado','warning');
+      db.docentes = db.docentes.filter(x => x.id !== id);
+      db.users    = db.users.filter(u => u.docenteId !== id);
+      saveDB(db); renderTabla(); showToast('Docente y credenciales eliminados','warning');
     });
   }
 
