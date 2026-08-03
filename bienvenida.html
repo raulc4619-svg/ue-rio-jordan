@@ -139,34 +139,82 @@
     .valor-item .vi { font-size: 32px; margin-bottom: 10px; }
     .valor-item p { font-size: 13px; font-weight: 600; color: var(--dark); }
 
-    /* ── GALERÍA ── */
+    /* ── GALERÍA / CARRUSEL ── */
     .galeria { background: var(--dark); }
     .galeria .section-title, .galeria .section-label { color: #fff; }
     .galeria .section-sub { color: rgba(255,255,255,.6); }
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
-      grid-template-rows: 260px 260px;
-      gap: 12px;
-      margin-top: 48px;
+
+    .carousel-wrap { position: relative; margin-top: 48px; border-radius: 20px; overflow: hidden; user-select: none; }
+
+    .carousel-track {
+      display: flex;
+      transition: transform .6s cubic-bezier(.4,0,.2,1);
+      will-change: transform;
     }
-    .gallery-item { border-radius: 14px; overflow: hidden; position: relative; cursor: pointer; }
-    .gallery-item.large { grid-column: 1; grid-row: 1 / 3; }
-    .gallery-item img {
+
+    .carousel-slide {
+      min-width: 100%;
+      position: relative;
+      height: 520px;
+    }
+    @media (max-width: 768px) { .carousel-slide { height: 300px; } }
+
+    .carousel-slide img {
       width: 100%; height: 100%;
       object-fit: cover;
-      transition: transform .5s ease;
       display: block;
     }
-    .gallery-item:hover img { transform: scale(1.06); }
-    .gallery-caption {
-      position: absolute; inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,.65) 0%, transparent 50%);
-      display: flex; align-items: flex-end; padding: 18px;
-      opacity: 0; transition: opacity .3s;
+
+    .carousel-slide .slide-caption {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 60px 32px 28px;
+      background: linear-gradient(to top, rgba(0,0,0,.72) 0%, transparent 100%);
+      color: #fff;
     }
-    .gallery-item:hover .gallery-caption { opacity: 1; }
-    .gallery-caption span { color: #fff; font-size: 13px; font-weight: 600; }
+    .slide-caption .sc-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+      color: var(--primary); text-transform: uppercase; margin-bottom: 6px;
+    }
+    .slide-caption .sc-title { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700; }
+
+    /* Botones prev/next */
+    .carousel-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,.12); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.2);
+      color: #fff; font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, transform .2s;
+      z-index: 10;
+    }
+    .carousel-btn:hover { background: rgba(245,158,11,.7); transform: translateY(-50%) scale(1.08); }
+    .carousel-btn.prev { left: 16px; }
+    .carousel-btn.next { right: 16px; }
+
+    /* Indicadores / dots */
+    .carousel-dots {
+      display: flex; justify-content: center; gap: 8px;
+      margin-top: 20px;
+    }
+    .carousel-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,.25);
+      cursor: pointer; transition: all .3s;
+      border: none; padding: 0;
+    }
+    .carousel-dot.active {
+      background: var(--primary);
+      width: 24px; border-radius: 4px;
+    }
+
+    /* Contador */
+    .carousel-counter {
+      position: absolute; top: 16px; right: 16px;
+      background: rgba(0,0,0,.45); backdrop-filter: blur(6px);
+      color: #fff; font-size: 12px; font-weight: 600;
+      padding: 4px 10px; border-radius: 20px; z-index: 10;
+    }
 
     /* ── ESTADÍSTICAS ── */
     .stats-banner { background: var(--primary); padding: 60px 5%; }
@@ -309,33 +357,66 @@
     <h2 class="section-title section-title-center">Galería</h2>
     <p class="section-sub section-sub-center">Momentos que hacen grande a nuestra comunidad educativa.</p>
   </div>
-  <div class="gallery-grid">
+  <div class="carousel-wrap" id="galeria-carousel">
+    <div class="carousel-track" id="carousel-track">
 
-    <div class="gallery-item large">
-      <img src="img/555564286_24559917220338537_7291867738354728102_n.jpg" alt="Comunidad escolar U.E. Rio Jordan">
-      <div class="gallery-caption"><span>Nuestra comunidad escolar</span></div>
+      <div class="carousel-slide">
+        <img src="img/555564286_24559917220338537_7291867738354728102_n.jpg" alt="Comunidad escolar">
+        <div class="slide-caption">
+          <div class="sc-label">Nuestra comunidad</div>
+          <div class="sc-title">U.E. Rio Jordan — Juntos aprendemos</div>
+        </div>
+      </div>
+
+      <div class="carousel-slide">
+        <img src="img/515146625_23864672653196334_2973300541626837010_n.jpg" alt="Vida escolar">
+        <div class="slide-caption">
+          <div class="sc-label">Vida escolar</div>
+          <div class="sc-title">Formando líderes del mañana</div>
+        </div>
+      </div>
+
+      <div class="carousel-slide">
+        <img src="img/746484730_27470130199317210_5960281063973936387_n.jpg" alt="Actividades">
+        <div class="slide-caption">
+          <div class="sc-label">Actividades</div>
+          <div class="sc-title">Momentos que nos hacen grandes</div>
+        </div>
+      </div>
+
+      <div class="carousel-slide">
+        <img src="img/520493714_24012430335087231_1627993858144786067_n.jpg" alt="Eventos institucionales">
+        <div class="slide-caption">
+          <div class="sc-label">Eventos</div>
+          <div class="sc-title">Celebrando nuestra identidad educativa</div>
+        </div>
+      </div>
+
+      <div class="carousel-slide">
+        <img src="img/604928590_25366785009651750_3945903985429002370_n.jpg" alt="Gestión escolar">
+        <div class="slide-caption">
+          <div class="sc-label">Gestión 2026</div>
+          <div class="sc-title">Compromiso con la excelencia académica</div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="gallery-item">
-      <img src="img/515146625_23864672653196334_2973300541626837010_n.jpg" alt="Actividades U.E. Rio Jordan">
-      <div class="gallery-caption"><span>Vida escolar</span></div>
-    </div>
+    <!-- Contador -->
+    <div class="carousel-counter" id="carousel-counter">1 / 5</div>
 
-    <div class="gallery-item">
-      <img src="img/746484730_27470130199317210_5960281063973936387_n.jpg" alt="Actividades U.E. Rio Jordan">
-      <div class="gallery-caption"><span>Actividades y eventos</span></div>
-    </div>
+    <!-- Flechas -->
+    <button class="carousel-btn prev" onclick="carouselMove(-1)" aria-label="Anterior">&#8592;</button>
+    <button class="carousel-btn next" onclick="carouselMove(1)"  aria-label="Siguiente">&#8594;</button>
+  </div>
 
-    <div class="gallery-item">
-      <img src="img/515146625_23864672653196334_2973300541626837010_n.jpg" alt="U.E. Rio Jordan">
-      <div class="gallery-caption"><span>Formando líderes</span></div>
-    </div>
-
-    <div class="gallery-item">
-      <img src="img/746484730_27470130199317210_5960281063973936387_n.jpg" alt="U.E. Rio Jordan">
-      <div class="gallery-caption"><span>Gestión 2024</span></div>
-    </div>
-
+  <!-- Dots -->
+  <div class="carousel-dots" id="carousel-dots">
+    <button class="carousel-dot active" onclick="carouselGoTo(0)"></button>
+    <button class="carousel-dot"        onclick="carouselGoTo(1)"></button>
+    <button class="carousel-dot"        onclick="carouselGoTo(2)"></button>
+    <button class="carousel-dot"        onclick="carouselGoTo(3)"></button>
+    <button class="carousel-dot"        onclick="carouselGoTo(4)"></button>
   </div>
 </section>
 
@@ -416,12 +497,48 @@
     });
   }, { threshold: 0.1 });
 
-  document.querySelectorAll('.vmo-card, .valor-item, .gallery-item').forEach(el => {
+  document.querySelectorAll('.vmo-card, .valor-item').forEach(el => {
     el.style.opacity = '0';
     el.style.transform = 'translateY(24px)';
     el.style.transition = 'opacity .5s ease, transform .5s ease';
     observer.observe(el);
   });
+
+  // ── CARRUSEL ──
+  let _ci = 0;
+  const _total = 5;
+  let _timer = null;
+
+  function carouselGoTo(idx) {
+    _ci = (idx + _total) % _total;
+    document.getElementById('carousel-track').style.transform = `translateX(-${_ci * 100}%)`;
+    document.getElementById('carousel-counter').textContent = `${_ci + 1} / ${_total}`;
+    document.querySelectorAll('.carousel-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === _ci);
+    });
+    _resetTimer();
+  }
+
+  function carouselMove(dir) { carouselGoTo(_ci + dir); }
+
+  function _resetTimer() {
+    clearInterval(_timer);
+    _timer = setInterval(() => carouselGoTo(_ci + 1), 4000);
+  }
+
+  // Iniciar autoplay
+  _resetTimer();
+
+  // Soporte swipe en móvil
+  (function() {
+    const el = document.getElementById('galeria-carousel');
+    let sx = 0;
+    el.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+    el.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - sx;
+      if (Math.abs(dx) > 40) carouselMove(dx < 0 ? 1 : -1);
+    });
+  })();
 </script>
 </body>
 </html>
