@@ -61,6 +61,7 @@
         <button class="tab-btn" onclick="switchTab('reporte',this)">Reporte general</button>
         <button class="tab-btn" data-role="admin" onclick="switchTab('caja',this)">🗂 Cierre de caja</button>
         <button class="tab-btn" data-role="admin" onclick="switchTab('sueldos',this)">👨‍🏫 Sueldos docentes</button>
+        <button class="tab-btn" id="tab-btn-misueldo" style="display:none" onclick="switchTab('misueldo',this)">💼 Mi sueldo</button>
       </div>
 
       <!-- TAB PAGOS -->
@@ -138,6 +139,22 @@
           </div>
         </div>
         <div id="caja-contenido"></div>
+      </div>
+
+      <!-- TAB MI SUELDO (docente) -->
+      <div id="tab-misueldo" style="display:none">
+        <div class="toolbar">
+          <div class="toolbar-start" style="gap:12px;align-items:center">
+            <select id="misuel-mes" class="form-control" style="width:150px" onchange="renderMiSueldo()">
+              <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
+              <option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option>
+              <option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option>
+              <option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
+            </select>
+            <select id="misuel-anio" class="form-control" style="width:100px" onchange="renderMiSueldo()"></select>
+          </div>
+        </div>
+        <div id="misueldo-content"></div>
       </div>
 
       <!-- TAB SUELDOS -->
@@ -496,17 +513,17 @@
   // Ocultar controles de edición para roles no-admin
   function aplicarModoLectura() {
     if (sesionFin.role !== 'admin') {
-      // Ocultar toolbar de acciones
       document.querySelectorAll('.toolbar-end').forEach(el => el.style.display = 'none');
-      // Ocultar tabs de estado y reporte (solo mostrar lista)
       const tabEstado  = document.querySelector('[onclick*="estado"]');
       const tabReporte = document.querySelector('[onclick*="reporte"]');
       if (tabEstado)  tabEstado.style.display  = 'none';
       if (tabReporte) tabReporte.style.display = 'none';
-      // Título descriptivo
       const titulo = sesionFin.role === 'alumno'
         ? '💰 Mis pagos' : '💰 Pagos de mis alumnos';
       document.querySelector('.topbar-title').textContent = titulo;
+    }
+    if (sesionFin.role === 'docente') {
+      document.getElementById('tab-btn-misueldo').style.display = '';
     }
   }
   aplicarModoLectura();
@@ -628,11 +645,12 @@
   }
 
   function switchTab(tab, btn) {
-    ['pagos','estado','reporte','caja','sueldos'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'':'none');
+    ['pagos','estado','reporte','caja','sueldos','misueldo'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'':'none');
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     if (tab==='reporte') renderReporteFin();
     if (tab==='sueldos') renderSueldos();
+    if (tab==='misueldo') renderMiSueldo();
     if (tab==='caja') {
       const hoy = new Date().toISOString().split('T')[0];
       if (!document.getElementById('caja-fecha').value) document.getElementById('caja-fecha').value = hoy;
@@ -1487,6 +1505,106 @@
       renderSueldos();
       showToast('Sueldo marcado como pagado ✓');
     });
+  }
+
+  // ===== MI SUELDO (docente) =====
+  (function() {
+    const anioActual = new Date().getFullYear();
+    const sel = document.getElementById('misuel-anio');
+    if (!sel) return;
+    for (let y = anioActual; y >= anioActual - 3; y--) {
+      sel.innerHTML += `<option value="${y}">${y}</option>`;
+    }
+    document.getElementById('misuel-mes').value = new Date().getMonth();
+  })();
+
+  function renderMiSueldo() {
+    const mes  = parseInt(document.getElementById('misuel-mes').value);
+    const anio = parseInt(document.getElementById('misuel-anio').value);
+    const db   = getDB();
+    const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const docenteId = sesionFin.docenteId;
+    const docente   = db.docentes.find(d => d.id === docenteId);
+    const nomina    = db.nomina?.find(n => n.docenteId === docenteId && n.mes === mes && n.anio === anio);
+    const sueldoBase = nomina?.sueldoBase ?? (docente?.sueldoBase || 0);
+    const anticipos  = nomina?.anticipos || [];
+    const totalAntic = anticipos.reduce((s, a) => s + (a.monto || 0), 0);
+    const saldo      = Math.max(0, sueldoBase - totalAntic);
+    const estado     = nomina?.estado || 'pendiente';
+    const pct        = sueldoBase > 0 ? Math.min(100, Math.round((totalAntic / sueldoBase) * 100)) : 0;
+
+    const cont = document.getElementById('misueldo-content');
+
+    if (!docente || sueldoBase === 0) {
+      cont.innerHTML = `<div class="empty-state"><div class="empty-icon">💼</div><p>Tu sueldo aún no ha sido configurado por el administrador.</p></div>`;
+      return;
+    }
+
+    cont.innerHTML = `
+      <!-- Resumen principal -->
+      <div class="stats-grid" style="margin-bottom:24px">
+        <div class="stat-card">
+          <div class="stat-icon blue">💼</div>
+          <div><div class="stat-value" style="font-size:20px">${formatMonto(sueldoBase)}</div><div class="stat-label">Sueldo base ${meses[mes]}</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amber">💸</div>
+          <div><div class="stat-value" style="font-size:20px">${formatMonto(totalAntic)}</div><div class="stat-label">Total anticipos</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon ${saldo > 0 ? 'red' : 'green'}">💵</div>
+          <div><div class="stat-value" style="font-size:20px;color:${saldo > 0 ? 'var(--danger)' : 'var(--success)'}">${formatMonto(saldo)}</div><div class="stat-label">Saldo a recibir</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon ${estado === 'pagado' ? 'green' : 'amber'}">
+            ${estado === 'pagado' ? '✅' : '⏳'}
+          </div>
+          <div><div class="stat-value" style="font-size:16px;color:${estado === 'pagado' ? 'var(--success)' : 'var(--warning)'}">${estado === 'pagado' ? 'Pagado' : 'Pendiente'}</div><div class="stat-label">Estado del mes</div></div>
+        </div>
+      </div>
+
+      <!-- Barra de progreso anticipos -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-body">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <span style="font-weight:700;font-size:14px">Anticipos utilizados</span>
+            <span style="font-weight:800;color:var(--warning)">${pct}% del sueldo</span>
+          </div>
+          <div style="background:var(--surface-2);border-radius:8px;height:12px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${pct >= 80 ? 'var(--danger)' : pct >= 50 ? 'var(--warning)' : 'var(--primary)'};border-radius:8px;transition:width .4s ease"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--text-muted)">
+            <span>$ 0.00</span><span>${formatMonto(sueldoBase)}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de anticipos -->
+      <div class="card">
+        <div class="card-header"><h3>Anticipos del mes — ${meses[mes]} ${anio}</h3></div>
+        <div class="card-body" style="padding:0">
+          ${anticipos.length ? `
+          <table>
+            <thead><tr><th>#</th><th>Descripción</th><th>Fecha</th><th>Monto</th></tr></thead>
+            <tbody>
+              ${anticipos.map((a, i) => `<tr>
+                <td style="color:var(--text-muted);font-size:12px">${i + 1}</td>
+                <td>${a.descripcion || 'Anticipo'}</td>
+                <td style="font-size:12px">${formatFecha(a.fecha)}</td>
+                <td style="font-weight:700;color:var(--warning)">${formatMonto(a.monto)}</td>
+              </tr>`).join('')}
+              <tr style="border-top:2px solid var(--border)">
+                <td colspan="3" style="font-weight:800;text-align:right;padding-right:12px">TOTAL ANTICIPOS</td>
+                <td style="font-weight:800;color:var(--warning)">${formatMonto(totalAntic)}</td>
+              </tr>
+              <tr>
+                <td colspan="3" style="font-weight:800;text-align:right;padding-right:12px">SALDO A RECIBIR</td>
+                <td style="font-weight:800;font-size:16px;color:${saldo > 0 ? 'var(--danger)' : 'var(--success)'}">${formatMonto(saldo)}</td>
+              </tr>
+            </tbody>
+          </table>` : `<div class="empty-state" style="padding:32px 0"><div class="empty-icon">✅</div><p>Sin anticipos este mes — recibirás tu sueldo completo</p></div>`}
+        </div>
+      </div>`;
   }
 
   function exportarNominaCSV() {
