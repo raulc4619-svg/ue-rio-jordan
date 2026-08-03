@@ -400,10 +400,18 @@
         </div>
       </div>
 
+      <div class="carousel-slide">
+        <img src="img/608988575_25387885797541671_7510751037493212784_n.jpg" alt="Institución educativa">
+        <div class="slide-caption">
+          <div class="sc-label">Institución</div>
+          <div class="sc-title">U.E. Rio Jordan — Orgullo de nuestra comunidad</div>
+        </div>
+      </div>
+
     </div>
 
     <!-- Contador -->
-    <div class="carousel-counter" id="carousel-counter">1 / 5</div>
+    <div class="carousel-counter" id="carousel-counter">1 / 6</div>
 
     <!-- Flechas -->
     <button class="carousel-btn prev" onclick="carouselMove(-1)" aria-label="Anterior">&#8592;</button>
@@ -417,6 +425,7 @@
     <button class="carousel-dot"        onclick="carouselGoTo(2)"></button>
     <button class="carousel-dot"        onclick="carouselGoTo(3)"></button>
     <button class="carousel-dot"        onclick="carouselGoTo(4)"></button>
+    <button class="carousel-dot"        onclick="carouselGoTo(5)"></button>
   </div>
 </section>
 
@@ -506,7 +515,7 @@
 
   // ── CARRUSEL ──
   let _ci = 0;
-  const _total = 5;
+  const _total = 6;
   let _timer = null;
 
   function carouselGoTo(idx) {
