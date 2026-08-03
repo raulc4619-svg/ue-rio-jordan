@@ -68,9 +68,9 @@ function getDB() {
 }
 
 function saveDB(db) {
-  _db = db;
-  // JSON round-trip elimina valores undefined que Firebase rechaza
+  // JSON round-trip elimina undefined (Firebase los rechaza) y sincroniza _db con lo que se guarda
   const clean = JSON.parse(JSON.stringify(db, (k, v) => v === undefined ? null : v));
+  _db = clean;
   localStorage.setItem('escuela_db', JSON.stringify(clean));
   if (window._fbDB) {
     window._fbDB.ref('data').set(clean)
@@ -94,7 +94,6 @@ async function _fbSyncBackground() {
     if (JSON.stringify(fbData) !== JSON.stringify(_db)) {
       _db = _normalizeDB(fbData);
       localStorage.setItem('escuela_db', JSON.stringify(_db));
-      _showSyncBanner();
     }
   } catch (e) { /* sin conexión — ignorar */ }
 }
