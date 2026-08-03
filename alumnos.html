@@ -72,9 +72,7 @@
         </div>
         <div class="toolbar-end" data-role="admin,docente">
           <button class="btn btn-secondary" onclick="exportCSV('tabla-alumnos','alumnos')">⬇ Exportar CSV</button>
-          <button class="btn btn-primary" onclick="openModal('modal-alumno'); modoEdicion=false; limpiarForm()">
-            + Nuevo alumno
-          </button>
+          <a href="matriculas.html" class="btn btn-primary" data-role="admin">+ Matricular alumno</a>
         </div>
       </div>
 
@@ -103,11 +101,11 @@
   </main>
 </div>
 
-<!-- MODAL ALUMNO -->
+<!-- MODAL ALUMNO (solo edición) -->
 <div class="modal-overlay" id="modal-alumno" style="display:none">
   <div class="modal">
     <div class="modal-header">
-      <h2 id="modal-titulo">Nuevo alumno</h2>
+      <h2 id="modal-titulo">Editar alumno</h2>
       <button class="btn-icon" onclick="closeModal('modal-alumno')">✕</button>
     </div>
     <div class="modal-body">
@@ -212,8 +210,6 @@
     }
   })();
 
-  let modoEdicion = false;
-
   function renderTabla() {
     const db = getDB();
     const gradoFiltro = document.getElementById('filtro-grado').value;
@@ -257,21 +253,10 @@
     applyRoleVisibility();
   }
 
-  function limpiarForm() {
-    ['f-id','f-nombre','f-dni','f-fechaNac','f-anioIngreso','f-apoderado','f-telefono','f-direccion','f-email'].forEach(id => {
-      document.getElementById(id).value = '';
-    });
-    document.getElementById('f-grado').value = '1ro';
-    document.getElementById('f-seccion').value = 'A';
-    document.getElementById('f-estado').value = 'activo';
-  }
-
   function editarAlumno(id) {
     const db = getDB();
     const a = db.alumnos.find(x => x.id === id);
     if (!a) return;
-    modoEdicion = true;
-    document.getElementById('modal-titulo').textContent = 'Editar alumno';
     document.getElementById('f-id').value = a.id;
     document.getElementById('f-nombre').value = a.nombre;
     document.getElementById('f-dni').value = a.dni;
@@ -289,68 +274,27 @@
 
   function guardarAlumno() {
     const nombre = document.getElementById('f-nombre').value.trim();
-    const dni = document.getElementById('f-dni').value.trim();
+    const dni    = document.getElementById('f-dni').value.trim();
     if (!nombre || !dni) { showToast('Nombre y Cédula son obligatorios', 'error'); return; }
-
-    const db = getDB();
-    const obj = {
+    const db  = getDB();
+    const id  = parseInt(document.getElementById('f-id').value);
+    const idx = db.alumnos.findIndex(x => x.id === id);
+    if (idx < 0) return;
+    db.alumnos[idx] = {
+      ...db.alumnos[idx],
       nombre, dni,
-      fechaNac: document.getElementById('f-fechaNac').value,
-      anioIngreso: parseInt(document.getElementById('f-anioIngreso').value) || 2024,
-      grado: document.getElementById('f-grado').value,
-      seccion: document.getElementById('f-seccion').value,
-      estado: document.getElementById('f-estado').value,
-      apoderado: document.getElementById('f-apoderado').value,
+      fechaNac:     document.getElementById('f-fechaNac').value,
+      anioIngreso:  parseInt(document.getElementById('f-anioIngreso').value) || db.alumnos[idx].anioIngreso,
+      grado:        document.getElementById('f-grado').value,
+      seccion:      document.getElementById('f-seccion').value,
+      estado:       document.getElementById('f-estado').value,
+      apoderado:    document.getElementById('f-apoderado').value,
       telefonoApod: document.getElementById('f-telefono').value,
-      direccion: document.getElementById('f-direccion').value,
-      email: document.getElementById('f-email').value,
+      direccion:    document.getElementById('f-direccion').value,
+      email:        document.getElementById('f-email').value,
     };
-
-    if (modoEdicion) {
-      const id = parseInt(document.getElementById('f-id').value);
-      const idx = db.alumnos.findIndex(x => x.id === id);
-      db.alumnos[idx] = { ...db.alumnos[idx], ...obj };
-      showToast('Alumno actualizado correctamente');
-    } else {
-      const newId = genId(db.alumnos);
-      const codigo = 'ALU-' + String(newId).padStart(3, '0');
-      db.alumnos.push({ id: newId, codigo, ...obj });
-
-      // La mensualidad de un mes vence el día 5 del mes SIGUIENTE
-      // Ej: mensualidad de Julio vence el 5 de Agosto
-      const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
-                     'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-      const hoy = new Date();
-      // Mes que se cobra = mes anterior al actual (el que "ya corrió")
-      const mesAnterior = hoy.getMonth() === 0 ? 11 : hoy.getMonth() - 1;
-      const anioMesAnterior = hoy.getMonth() === 0 ? hoy.getFullYear() - 1 : hoy.getFullYear();
-      // Fecha límite = día 5 del mes actual
-      const anioLimite = hoy.getFullYear();
-      const mesLimite  = hoy.getMonth(); // mes actual (0-based)
-      const fechaLimite = `${anioLimite}-${String(mesLimite + 1).padStart(2,'0')}-05`;
-      const conceptoCuota = `Mensualidad ${meses[mesAnterior]} ${anioMesAnterior}`;
-      // ¿Ya existe esta cuota para este alumno?
-      const yaExiste = db.finanzas.some(f => f.alumnoId === newId && f.concepto === conceptoCuota);
-      if (!yaExiste) {
-        const limiteDate = new Date(anioLimite, mesLimite, 5);
-        const estado = hoy > limiteDate ? 'vencido' : 'pendiente';
-        db.finanzas.push({
-          id: genId(db.finanzas),
-          alumnoId: newId,
-          concepto: conceptoCuota,
-          monto: 0,
-          fechaVenc: fechaLimite,
-          fechaPago: '', metodoPago: '', estado,
-          recibo: '',
-          registradoEn: new Date().toISOString(),
-          registradoPor: getSession()?.name || 'Sistema',
-          autogenerado: true
-        });
-      }
-      showToast('Alumno registrado. Se generó la cuota del mes en curso.');
-    }
-
     saveDB(db);
+    showToast('Alumno actualizado correctamente');
     closeModal('modal-alumno');
     renderTabla();
   }

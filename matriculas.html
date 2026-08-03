@@ -93,24 +93,79 @@
 
       <!-- TAB NUEVA MATRICULA -->
       <div id="tab-nueva" style="display:none" data-role="admin">
-        <div class="card" style="max-width:640px">
-          <div class="card-header"><h3>Registrar nueva matrícula</h3></div>
+        <div class="card" style="max-width:700px">
+          <div class="card-header"><h3>📋 Nueva matrícula</h3></div>
           <div class="card-body">
-            <div class="alert alert-info">
-              <span>ℹ</span>
-              <span>Al registrar la matrícula el alumno queda oficialmente inscrito en el grado y sección seleccionados para el año escolar.</span>
+
+            <!-- Toggle tipo -->
+            <div style="display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:28px;width:fit-content">
+              <button id="btn-tipo-nuevo"     onclick="setTipoMat('nuevo')"     style="padding:9px 20px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:var(--primary);color:#fff">👤 Alumno nuevo</button>
+              <button id="btn-tipo-existente" onclick="setTipoMat('existente')" style="padding:9px 20px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:var(--surface);color:var(--text-secondary)">🔄 Alumno existente</button>
             </div>
-            <div class="form-group">
-              <label class="form-label">Alumno *</label>
-              <select id="nm-alumno" class="form-control">
-                <option value="">— Seleccionar alumno —</option>
-              </select>
+
+            <!-- DATOS DEL ESTUDIANTE (solo alumno nuevo) -->
+            <div id="sec-nuevo">
+              <p style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px">Datos del estudiante</p>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Nombre completo *</label>
+                  <input type="text" id="nm-nombre" class="form-control" placeholder="Apellidos y nombres">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Cédula *</label>
+                  <input type="text" id="nm-cedula" class="form-control" maxlength="10" placeholder="1234567890">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Fecha de nacimiento</label>
+                  <input type="date" id="nm-fechaNac" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Año de ingreso</label>
+                  <input type="number" id="nm-anioIngreso" class="form-control" min="2000" max="2035" placeholder="2026">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Apoderado / Representante *</label>
+                  <input type="text" id="nm-apoderado" class="form-control" placeholder="Nombre del representante">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Teléfono del representante</label>
+                  <input type="text" id="nm-telApod" class="form-control" placeholder="0414-1234567">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Dirección</label>
+                  <input type="text" id="nm-direccion" class="form-control" placeholder="Dirección del domicilio">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Correo electrónico</label>
+                  <input type="email" id="nm-email" class="form-control" placeholder="alumno@correo.com">
+                </div>
+              </div>
+              <div class="divider" style="margin:20px 0"></div>
             </div>
+
+            <!-- ALUMNO EXISTENTE -->
+            <div id="sec-existente" style="display:none">
+              <div class="form-group" style="margin-bottom:20px">
+                <label class="form-label">Seleccionar alumno *</label>
+                <select id="nm-alumno" class="form-control">
+                  <option value="">— Seleccionar alumno —</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- DATOS DE MATRÍCULA (siempre visible) -->
+            <p style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px">Datos de matrícula</p>
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Año escolar *</label>
                 <select id="nm-anio" class="form-control">
-                  <option>2024</option><option>2025</option><option>2023</option>
+                  <option>2026</option><option>2025</option><option>2024</option><option>2023</option>
                 </select>
               </div>
               <div class="form-group">
@@ -142,9 +197,9 @@
               <label class="form-label">Observaciones</label>
               <textarea id="nm-obs" class="form-control" rows="3" placeholder="Becas, condiciones especiales, traslados, etc."></textarea>
             </div>
-            <div style="margin-top:8px">
+            <div style="margin-top:16px;display:flex;gap:8px">
               <button class="btn btn-primary" onclick="guardarMatricula()">📋 Registrar matrícula</button>
-              <button class="btn btn-secondary" style="margin-left:8px" onclick="limpiarNuevaMatricula()">Limpiar</button>
+              <button class="btn btn-secondary" onclick="limpiarNuevaMatricula()">Limpiar</button>
             </div>
           </div>
         </div>
@@ -168,11 +223,26 @@
 <script>
   initDB(); requireAuth(); renderUserBar(); applyRoleVisibility();
 
+  let _tipoMat = 'nuevo';
+
+  function setTipoMat(tipo) {
+    _tipoMat = tipo;
+    document.getElementById('sec-nuevo').style.display     = tipo === 'nuevo'     ? '' : 'none';
+    document.getElementById('sec-existente').style.display = tipo === 'existente' ? '' : 'none';
+    const bnuevo = document.getElementById('btn-tipo-nuevo');
+    const bexist = document.getElementById('btn-tipo-existente');
+    bnuevo.style.background      = tipo === 'nuevo'     ? 'var(--primary)' : 'var(--surface)';
+    bnuevo.style.color           = tipo === 'nuevo'     ? '#fff'           : 'var(--text-secondary)';
+    bexist.style.background      = tipo === 'existente' ? 'var(--primary)' : 'var(--surface)';
+    bexist.style.color           = tipo === 'existente' ? '#fff'           : 'var(--text-secondary)';
+  }
+
   function refrescarSelects() {
     poblarSelectAlumnos('nm-alumno');
   }
   refrescarSelects();
   document.getElementById('nm-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('nm-anioIngreso').value = new Date().getFullYear();
 
   function renderStats() {
     const db = getDB();
@@ -233,36 +303,91 @@
   }
 
   function guardarMatricula() {
-    const alumnoId = parseInt(document.getElementById('nm-alumno').value);
-    if (!alumnoId) { showToast('Selecciona un alumno','error'); return; }
-    const db = getDB();
-    const anio = parseInt(document.getElementById('nm-anio').value);
-    const yaExiste = db.matriculas.find(m=>m.alumnoId===alumnoId && m.anio===anio);
-    if (yaExiste) { showToast('Este alumno ya tiene matrícula en '+anio,'error'); return; }
-    const obj = {
+    const db  = getDB();
+    const anio    = parseInt(document.getElementById('nm-anio').value);
+    const grado   = document.getElementById('nm-grado').value;
+    const seccion = document.getElementById('nm-seccion').value;
+    const turno   = document.getElementById('nm-turno').value;
+    const fecha   = document.getElementById('nm-fecha').value;
+    const obs     = document.getElementById('nm-obs').value;
+    let alumnoId;
+
+    if (_tipoMat === 'nuevo') {
+      const nombre = document.getElementById('nm-nombre').value.trim();
+      const dni    = document.getElementById('nm-cedula').value.trim();
+      if (!nombre) { showToast('El nombre del alumno es obligatorio','error'); return; }
+      if (!dni)    { showToast('La cédula es obligatoria','error'); return; }
+      if (db.alumnos.find(a => a.dni === dni)) { showToast('Ya existe un alumno con esa cédula','error'); return; }
+
+      const newId  = genId(db.alumnos);
+      const codigo = 'ALU-' + String(newId).padStart(3,'0');
+      const apod   = document.getElementById('nm-apoderado').value.trim();
+      if (!apod) { showToast('El nombre del representante es obligatorio','error'); return; }
+
+      const nuevoAlumno = {
+        id: newId, codigo, nombre, dni,
+        fechaNac:     document.getElementById('nm-fechaNac').value,
+        anioIngreso:  parseInt(document.getElementById('nm-anioIngreso').value) || anio,
+        grado, seccion, estado: 'activo',
+        apoderado:    apod,
+        telefonoApod: document.getElementById('nm-telApod').value,
+        direccion:    document.getElementById('nm-direccion').value,
+        email:        document.getElementById('nm-email').value,
+      };
+      db.alumnos.push(nuevoAlumno);
+      alumnoId = newId;
+
+      // Generar cuotas mensuales del año de ingreso
+      const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                     'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      meses.forEach((mes, idx) => {
+        db.finanzas.push({
+          id: genId(db.finanzas),
+          alumnoId: newId,
+          concepto: 'Mensualidad ' + mes,
+          monto: 50,
+          fechaVencimiento: anio + '-' + String(idx+1).padStart(2,'0') + '-05',
+          fechaPago: null,
+          estado: 'pendiente',
+          tipo: 'mensualidad',
+        });
+      });
+
+    } else {
+      alumnoId = parseInt(document.getElementById('nm-alumno').value);
+      if (!alumnoId) { showToast('Selecciona un alumno','error'); return; }
+    }
+
+    const yaExiste = db.matriculas.find(m => m.alumnoId === alumnoId && m.anio === anio);
+    if (yaExiste) { showToast('Este alumno ya tiene matrícula en ' + anio,'error'); return; }
+
+    const mat = {
       id: genId(db.matriculas),
-      alumnoId, anio,
-      grado: document.getElementById('nm-grado').value,
-      seccion: document.getElementById('nm-seccion').value,
-      turno: document.getElementById('nm-turno').value,
-      fechaMatricula: document.getElementById('nm-fecha').value,
-      observaciones: document.getElementById('nm-obs').value,
+      alumnoId, anio, grado, seccion, turno,
+      fechaMatricula: fecha,
+      observaciones: obs,
       estado: 'activo',
     };
-    db.matriculas.push(obj);
-    // Actualizar grado del alumno
-    const ai = db.alumnos.findIndex(a=>a.id===alumnoId);
-    if (ai>=0) { db.alumnos[ai].grado=obj.grado; db.alumnos[ai].seccion=obj.seccion; db.alumnos[ai].estado='activo'; }
+    db.matriculas.push(mat);
+
+    // Actualizar grado/sección/estado del alumno
+    const ai = db.alumnos.findIndex(a => a.id === alumnoId);
+    if (ai >= 0) { db.alumnos[ai].grado = grado; db.alumnos[ai].seccion = seccion; db.alumnos[ai].estado = 'activo'; }
+
     saveDB(db);
-    showToast('Matrícula registrada correctamente');
+    showToast(_tipoMat === 'nuevo' ? 'Alumno registrado y matriculado correctamente 🎉' : 'Matrícula registrada correctamente');
     limpiarNuevaMatricula();
     renderMatriculas();
   }
 
   function limpiarNuevaMatricula() {
+    ['nm-nombre','nm-cedula','nm-fechaNac','nm-apoderado','nm-telApod','nm-direccion','nm-email','nm-obs'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    document.getElementById('nm-anioIngreso').value = new Date().getFullYear();
+    document.getElementById('nm-fecha').value = new Date().toISOString().split('T')[0];
     refrescarSelects();
-    document.getElementById('nm-alumno').value='';
-    document.getElementById('nm-obs').value='';
+    document.getElementById('nm-alumno').value = '';
   }
 
   function editarMatricula(id) {
