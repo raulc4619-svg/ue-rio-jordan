@@ -94,23 +94,6 @@
         </div>
       </div>
 
-      <!-- ALUMNOS RECIENTES -->
-      <div class="card" style="animation-delay:.3s">
-        <div class="card-header">
-          <h3>👨‍🎓 Alumnos registrados</h3>
-          <a href="alumnos.html" class="btn btn-primary btn-sm">+ Nuevo alumno</a>
-        </div>
-        <div class="card-body" style="padding:0">
-          <div class="table-container">
-            <table id="tabla-alumnos-recientes">
-              <thead>
-                <tr><th>Alumno</th><th>Grado</th><th>Sección</th><th>Estado</th></tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
 
     </div><!-- /page-content -->
   </main>
@@ -314,26 +297,6 @@
       </div>`;
   }
 
-  /* ---- TABLA ALUMNOS ---- */
-  const tbody = document.querySelector('#tabla-alumnos-recientes tbody');
-  db.alumnos.slice(0, 7).forEach((a, i) => {
-    const ini = a.nombre.split(' ').map(w=>w[0]).join('').slice(0,2);
-    tbody.innerHTML += `
-      <tr style="animation-delay:${i*0.04}s">
-        <td>
-          <div style="display:flex;align-items:center;gap:10px">
-            <div class="avatar">${ini}</div>
-            <div>
-              <div style="font-weight:600">${a.nombre}</div>
-              <div style="font-size:11px;color:var(--text-muted)">${a.codigo}</div>
-            </div>
-          </div>
-        </td>
-        <td>${a.grado} grado</td>
-        <td>Sección ${a.seccion}</td>
-        <td><span class="badge ${badgeEstado(a.estado)}">${a.estado}</span></td>
-      </tr>`;
-  });
 </script>
 </body>
 </html>
