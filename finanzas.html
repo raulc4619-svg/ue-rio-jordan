@@ -361,6 +361,7 @@
 <script src="js/app.js"></script>
 <script>
   initDB();
+  autoGenerarCuotaMes();   // genera cuota del mes en curso para alumnos activos
   const sesionFin = requireAuth(['admin','docente','alumno']);
   renderUserBar(); applyRoleVisibility();
 

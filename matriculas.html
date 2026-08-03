@@ -337,20 +337,28 @@
       db.alumnos.push(nuevoAlumno);
       alumnoId = newId;
 
-      // Generar cuotas mensuales del año de ingreso
-      const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
-                     'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-      meses.forEach((mes, idx) => {
-        db.finanzas.push({
-          id: genId(db.finanzas),
-          alumnoId: newId,
-          concepto: 'Mensualidad ' + mes,
-          monto: 50,
-          fechaVencimiento: anio + '-' + String(idx+1).padStart(2,'0') + '-05',
-          fechaPago: null,
-          estado: 'pendiente',
-          tipo: 'mensualidad',
-        });
+      // Solo generar la cuota del mes en curso
+      const _hoy = new Date();
+      const _meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                      'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      const _mes = _hoy.getMonth();
+      const _anio = _hoy.getFullYear();
+      const _concepto = 'Mensualidad ' + _meses[_mes] + ' ' + _anio;
+      const _fechaVenc = _anio + '-' + String(_mes + 1).padStart(2,'0') + '-05';
+      const _nuevoId = genId(db.finanzas);
+      db.finanzas.push({
+        id: _nuevoId,
+        alumnoId: newId,
+        concepto: _concepto,
+        monto: 50, abono: 0, saldo: 50,
+        fechaVenc: _fechaVenc,
+        fechaPago: null, metodoPago: null,
+        estado: _hoy.getDate() > 5 ? 'vencido' : 'pendiente',
+        tipo: 'mensualidad',
+        recibo: 'REC-' + String(_nuevoId).padStart(4,'0'),
+        registradoEn: _hoy.toISOString(),
+        registradoPor: 'Sistema',
+        autogenerado: true,
       });
 
     } else {

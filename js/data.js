@@ -167,6 +167,46 @@ function _showSyncBanner() {
 // ==========================================
 // Utilidades (sin cambios)
 // ==========================================
+// Genera la cuota del mes en curso para cada alumno activo que no la tenga.
+// Llamar al cargar Finanzas y Dashboard.
+function autoGenerarCuotaMes() {
+  const db = getDB();
+  const hoy  = new Date();
+  const anio = hoy.getFullYear();
+  const mes  = hoy.getMonth();           // 0-based
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                 'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const concepto   = 'Mensualidad ' + meses[mes] + ' ' + anio;
+  const fechaVenc  = anio + '-' + String(mes + 1).padStart(2, '0') + '-05';
+  const estadoInic = hoy.getDate() > 5 ? 'vencido' : 'pendiente';
+
+  let cambio = false;
+  db.alumnos.filter(a => a.estado === 'activo').forEach(a => {
+    const existe = db.finanzas.some(f => f.alumnoId === a.id && f.concepto === concepto);
+    if (!existe) {
+      db.finanzas.push({
+        id: genId(db.finanzas),
+        alumnoId:  a.id,
+        concepto,
+        monto:     50,
+        abono:     0,
+        saldo:     50,
+        fechaVenc,
+        fechaPago: null,
+        metodoPago: null,
+        estado:    estadoInic,
+        tipo:      'mensualidad',
+        recibo:    'REC-' + String(genId(db.finanzas)).padStart(4, '0'),
+        registradoEn:  hoy.toISOString(),
+        registradoPor: 'Sistema',
+        autogenerado:  true,
+      });
+      cambio = true;
+    }
+  });
+  if (cambio) saveDB(db);
+}
+
 function getAlumnoNombre(id) {
   const db = getDB();
   const a = db.alumnos.find(x => x.id === id);
