@@ -890,7 +890,7 @@
     document.getElementById('txt-estado-calc').style.color  = estadoColor;
   }
 
-  function guardarPago() {
+  function guardarPago() { try {
     const concepto  = document.getElementById('p-concepto').value.trim();
     const monto     = parseFloat(document.getElementById('p-monto').value) || 0;
     const abono     = parseFloat(document.getElementById('p-abono').value) || 0;
@@ -931,7 +931,7 @@
     closeModal('modal-pago');
     renderPagos(); renderStats();
     showToast(estado === 'pagado' ? 'Pago completo registrado ✓' : estado === 'parcial' ? `Abono registrado. Saldo pendiente: $ ${saldo.toFixed(2)}` : 'Registro guardado');
-  }
+  } catch(e) { alert('Error al guardar pago: ' + e.message); } }
 
   function eliminarPago(id) {
     confirmar('¿Eliminar este registro de pago?', () => {

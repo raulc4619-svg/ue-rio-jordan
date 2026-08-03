@@ -501,7 +501,7 @@ function editarActividad(id) {
   openModal('modal-act');
 }
 
-function guardarActividad() {
+function guardarActividad() { try {
   const titulo=document.getElementById('a-titulo').value.trim();
   const fecha=document.getElementById('a-fecha').value;
   if(!titulo||!fecha){showToast('Título y fecha son obligatorios','error');return;}
@@ -513,7 +513,7 @@ function guardarActividad() {
   if(existId){const idx=db.actividades.findIndex(x=>x.id===existId);db.actividades[idx]={...db.actividades[idx],...obj};showToast('Actividad actualizada');}
   else{db.actividades.push({id:genId(db.actividades),...obj});showToast('Actividad registrada');}
   saveDB(db);closeModal('modal-act');renderActividades();
-}
+} catch(e) { alert('Error al guardar actividad: ' + e.message); } }
 
 function eliminarActividad(id){
   confirmar('¿Eliminar esta actividad?',()=>{const db=getDB();db.actividades=db.actividades.filter(x=>x.id!==id);saveDB(db);renderActividades();showToast('Eliminada','warning');});
@@ -731,7 +731,7 @@ function editarTarea(id){
   openModal('modal-tarea');
 }
 
-function guardarTarea(){
+function guardarTarea(){ try {
   const titulo=document.getElementById('t-titulo').value.trim();
   const entrega=document.getElementById('t-entrega').value;
   if(!titulo||!entrega){showToast('Título y fecha de entrega son obligatorios','error');return;}
@@ -744,7 +744,7 @@ function guardarTarea(){
   if(existId){const idx=(db.tareas||[]).findIndex(x=>x.id===existId);db.tareas[idx]={...db.tareas[idx],...obj};showToast('Tarea actualizada');}
   else{obj.id=genId(db.tareas||[]);obj.fechaCreacion=new Date().toISOString();(db.tareas=db.tareas||[]).push(obj);showToast('Tarea publicada');}
   saveDB(db);closeModal('modal-tarea');renderTareas();
-}
+} catch(e) { alert('Error al guardar tarea: ' + e.message); } }
 
 function cerrarTarea(id){
   confirmar('¿Cerrar esta tarea? Ya no se aceptarán nuevas entregas.',()=>{

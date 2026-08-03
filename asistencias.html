@@ -209,7 +209,7 @@
     });
   }
 
-  function guardarAsistDiaria() {
+  function guardarAsistDiaria() { try {
     const fecha = document.getElementById('fecha-diaria').value;
     const gradoF = document.getElementById('filtro-grado-asist').value;
     const secF = document.getElementById('filtro-sec-asist').value;
@@ -232,7 +232,7 @@
     });
     saveDB(db);
     showToast('Asistencia guardada correctamente');
-  }
+  } catch(e) { alert('Error al guardar asistencia: ' + e.message); } }
 
   function renderHistorial() {
     const alumnoId = parseInt(document.getElementById('h-alumno').value);

@@ -302,7 +302,7 @@
     applyRoleVisibility();
   }
 
-  function guardarMatricula() {
+  function guardarMatricula() { try {
     const db  = getDB();
     const anio    = parseInt(document.getElementById('nm-anio').value);
     const grado   = document.getElementById('nm-grado').value;
@@ -378,7 +378,7 @@
     showToast(_tipoMat === 'nuevo' ? 'Alumno registrado y matriculado correctamente 🎉' : 'Matrícula registrada correctamente');
     limpiarNuevaMatricula();
     renderMatriculas();
-  }
+  } catch(e) { alert('Error al guardar matrícula: ' + e.message); } }
 
   function limpiarNuevaMatricula() {
     ['nm-nombre','nm-cedula','nm-fechaNac','nm-apoderado','nm-telApod','nm-direccion','nm-email','nm-obs'].forEach(id => {

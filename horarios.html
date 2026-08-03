@@ -334,7 +334,7 @@
     openModal('modal-horario');
   }
 
-  function guardarHorario() {
+  function guardarHorario() { try {
     const db=getDB();
     const obj = {
       grado:document.getElementById('h-grado').value,
@@ -355,7 +355,7 @@
       showToast('Clase agregada al horario');
     }
     saveDB(db); closeModal('modal-horario'); renderGestion();
-  }
+  } catch(e) { alert('Error al guardar horario: ' + e.message); } }
 
   function eliminarHorario(id) {
     confirmar('¿Eliminar esta clase del horario?',()=>{

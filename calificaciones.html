@@ -416,7 +416,7 @@
     openModal('modal-calif');
   }
 
-  function guardarCalif() {
+  function guardarCalif() { try {
     const nota = parseInt(document.getElementById('c-nota').value);
     if (isNaN(nota) || nota < 0 || nota > 20) { showToast('La nota debe ser entre 0 y 20','error'); return; }
     const db = getDB();
@@ -438,7 +438,7 @@
       showToast('Calificación registrada');
     }
     saveDB(db); closeModal('modal-calif'); renderCalif();
-  }
+  } catch(e) { alert('Error al guardar calificación: ' + e.message); } }
 
   function eliminarCalif(id) {
     confirmar('¿Eliminar esta calificación?', () => {

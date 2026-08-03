@@ -63,6 +63,7 @@ function initDB() {
 }
 
 function getDB() {
+  if (_db) _normalizeDB(_db);   // garantiza arrays reales en cada llamada
   return _db;
 }
 

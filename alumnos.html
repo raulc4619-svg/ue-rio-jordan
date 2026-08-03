@@ -271,7 +271,7 @@
     openModal('modal-alumno');
   }
 
-  function guardarAlumno() {
+  function guardarAlumno() { try {
     const nombre = document.getElementById('f-nombre').value.trim();
     const dni    = document.getElementById('f-dni').value.trim();
     if (!nombre || !dni) { showToast('Nombre y Cédula son obligatorios', 'error'); return; }
@@ -296,7 +296,7 @@
     showToast('Alumno actualizado correctamente');
     closeModal('modal-alumno');
     renderTabla();
-  }
+  } catch(e) { alert('Error al guardar alumno: ' + e.message); } }
 
   function eliminarAlumno(id) {
     confirmar('¿Eliminar este alumno? También se eliminarán sus credenciales de acceso.', () => {

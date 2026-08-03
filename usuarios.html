@@ -334,7 +334,7 @@
     openModal('modal-usuario');
   }
 
-  function guardarUsuario() {
+  function guardarUsuario() { try {
     const username = document.getElementById('f-username').value.trim();
     const name     = document.getElementById('f-name').value.trim();
     const role     = document.getElementById('f-role').value;
@@ -383,7 +383,7 @@
     saveDB(db);
     closeModal('modal-usuario');
     renderTabla(); renderStats();
-  }
+  } catch(e) { alert('Error al guardar usuario: ' + e.message); } }
 
   function mostrarError(msg) {
     const el = document.getElementById('form-error');
