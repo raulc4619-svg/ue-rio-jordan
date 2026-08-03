@@ -496,7 +496,7 @@
         const deuda   = pagos.filter(f => f.estado !== 'pagado').reduce((s, f) => s + f.monto, 0);
         info.style.display = '';
         info.innerHTML = `👤 <b>${a.nombre}</b> &nbsp;|&nbsp; Grado: <b>${a.grado}° ${a.seccion}</b>`
-          + (a.dni ? ` &nbsp;|&nbsp; DNI: <b>${a.dni}</b>` : '')
+          + (a.dni ? ` &nbsp;|&nbsp; Cédula: <b>${a.dni}</b>` : '')
           + (deuda > 0 ? ` &nbsp;|&nbsp; <span style="color:var(--danger)">Deuda pendiente: <b>${formatMonto(deuda)}</b></span>` : ` &nbsp;|&nbsp; <span style="color:var(--secondary)">Al día ✓</span>`);
       } else {
         info.style.display = 'none';
@@ -1007,7 +1007,7 @@
           ${fila('Fecha de registro', fechaHoraReg)}
           ${fila('Alumno', alumno ? alumno.nombre : '—')}
           ${alumno ? fila('Grado / Sección', alumno.grado + '° ' + alumno.seccion) : ''}
-          ${alumno && alumno.dni ? fila('DNI Alumno', alumno.dni) : ''}
+          ${alumno && alumno.dni ? fila('Cédula Alumno', alumno.dni) : ''}
           ${fila('Concepto', f.concepto)}
           ${fila('Fecha de vencimiento', formatFecha(f.fechaVenc))}
           ${fila('Fecha de pago', formatFecha(f.fechaPago))}
