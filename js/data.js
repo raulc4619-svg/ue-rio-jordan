@@ -69,9 +69,11 @@ function getDB() {
 
 function saveDB(db) {
   _db = db;
-  localStorage.setItem('escuela_db', JSON.stringify(db));
+  // JSON round-trip elimina valores undefined que Firebase rechaza
+  const clean = JSON.parse(JSON.stringify(db, (k, v) => v === undefined ? null : v));
+  localStorage.setItem('escuela_db', JSON.stringify(clean));
   if (window._fbDB) {
-    window._fbDB.ref('data').set(db)
+    window._fbDB.ref('data').set(clean)
       .catch(e => console.warn('[Firebase] Error al guardar:', e.message));
   }
 }
