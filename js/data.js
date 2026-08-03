@@ -28,13 +28,21 @@ function _defaultDB() {
   return JSON.parse(JSON.stringify(DB));
 }
 
+// Firebase convierte arrays vacíos a null; esto los restaura
+function _normalizeDB(db) {
+  const arrays = ['users','docentes','alumnos','calificaciones','asistencias',
+                  'horarios','finanzas','matriculas','actividades','tareas','entregas'];
+  arrays.forEach(k => { if (!Array.isArray(db[k])) db[k] = []; });
+  return db;
+}
+
 // ==========================================
 // initDB  — síncrono para las páginas
 // ==========================================
 function initDB() {
   const raw = localStorage.getItem('escuela_db');
   if (raw) {
-    try { _db = JSON.parse(raw); } catch (e) { _db = _defaultDB(); }
+    try { _db = _normalizeDB(JSON.parse(raw)); } catch (e) { _db = _defaultDB(); }
     // Sincronizar Firebase en background (no bloquea)
     _fbSyncBackground();
   } else {
@@ -74,7 +82,7 @@ async function _fbSyncBackground() {
       return;
     }
     if (JSON.stringify(fbData) !== JSON.stringify(_db)) {
-      _db = fbData;
+      _db = _normalizeDB(fbData);
       localStorage.setItem('escuela_db', JSON.stringify(_db));
       _showSyncBanner();
     }
@@ -107,7 +115,7 @@ function _fbSyncBlocking() {
     .then(snap => {
       const fbData = snap.val();
       if (fbData) {
-        _db = fbData;
+        _db = _normalizeDB(fbData);
         localStorage.setItem('escuela_db', JSON.stringify(_db));
       } else {
         // Firebase vacío → subir defaults
