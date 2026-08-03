@@ -28,11 +28,18 @@ function _defaultDB() {
   return JSON.parse(JSON.stringify(DB));
 }
 
-// Firebase convierte arrays vacíos a null; esto los restaura
+// Firebase convierte arrays vacíos a null y arrays no-vacíos a objetos {0:{…},1:{…}}
+// Esta función restaura todos los campos de array a arrays reales de JS
 function _normalizeDB(db) {
   const arrays = ['users','docentes','alumnos','calificaciones','asistencias',
                   'horarios','finanzas','matriculas','actividades','tareas','entregas'];
-  arrays.forEach(k => { if (!Array.isArray(db[k])) db[k] = []; });
+  arrays.forEach(k => {
+    if (!db[k]) {
+      db[k] = [];                               // null / undefined → []
+    } else if (!Array.isArray(db[k])) {
+      db[k] = Object.values(db[k]);             // objeto Firebase → array real
+    }
+  });
   return db;
 }
 
@@ -187,7 +194,8 @@ function formatMonto(n) {
 }
 
 function genId(arr) {
-  return arr.length > 0 ? Math.max(...arr.map(x => x.id)) + 1 : 1;
+  if (!Array.isArray(arr) || arr.length === 0) return 1;
+  return Math.max(...arr.map(x => x.id)) + 1;
 }
 
 function poblarSelectAlumnos(...selectIds) {
