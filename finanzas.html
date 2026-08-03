@@ -60,6 +60,7 @@
         <button class="tab-btn" onclick="switchTab('estado',this)">Estado por alumno</button>
         <button class="tab-btn" onclick="switchTab('reporte',this)">Reporte general</button>
         <button class="tab-btn" data-role="admin" onclick="switchTab('caja',this)">🗂 Cierre de caja</button>
+        <button class="tab-btn" data-role="admin" onclick="switchTab('sueldos',this)">👨‍🏫 Sueldos docentes</button>
       </div>
 
       <!-- TAB PAGOS -->
@@ -137,6 +138,36 @@
           </div>
         </div>
         <div id="caja-contenido"></div>
+      </div>
+
+      <!-- TAB SUELDOS -->
+      <div id="tab-sueldos" style="display:none" data-role="admin">
+        <div class="toolbar">
+          <div class="toolbar-start" style="gap:12px;align-items:center;flex-wrap:wrap">
+            <select id="suel-mes" class="form-control" style="width:150px" onchange="renderSueldos()">
+              <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
+              <option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option>
+              <option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option>
+              <option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
+            </select>
+            <select id="suel-anio" class="form-control" style="width:100px" onchange="renderSueldos()">
+            </select>
+          </div>
+          <div class="toolbar-end">
+            <button class="btn btn-secondary" onclick="exportarNominaCSV()">⬇ Exportar CSV</button>
+          </div>
+        </div>
+        <div id="sueldos-stats" class="stats-grid" style="margin-bottom:24px"></div>
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <table id="tabla-sueldos">
+              <thead>
+                <tr><th>Docente</th><th>Especialidad</th><th>Sueldo base</th><th>Total anticipos</th><th>Saldo a pagar</th><th>Estado</th><th>Acciones</th></tr>
+              </thead>
+              <tbody id="tbody-sueldos"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <!-- TAB REPORTE -->
@@ -260,6 +291,81 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-recibo')">Cerrar</button>
       <button class="btn btn-primary" onclick="imprimirRecibo()">🖨 Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIGURAR SUELDO -->
+<div class="modal-overlay" id="modal-sueldo" style="display:none">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h2>💼 Configurar sueldo</h2>
+      <button class="btn-icon" onclick="closeModal('modal-sueldo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="suel-docente-id">
+      <div class="form-group">
+        <label class="form-label">Docente</label>
+        <input type="text" id="suel-docente-nombre" class="form-control" readonly style="background:var(--surface-1);color:var(--text-muted)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Sueldo base mensual (USD) *</label>
+        <input type="number" id="suel-monto-base" class="form-control" min="0" step="0.01" placeholder="0.00">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-sueldo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarSueldoBase()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ANTICIPO -->
+<div class="modal-overlay" id="modal-anticipo" style="display:none">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <h2>💸 Registrar anticipo</h2>
+      <button class="btn-icon" onclick="closeModal('modal-anticipo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="antic-nomina-id">
+      <div class="form-group">
+        <label class="form-label">Docente</label>
+        <input type="text" id="antic-docente-nombre" class="form-control" readonly style="background:var(--surface-1);color:var(--text-muted)">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Monto anticipo (USD) *</label>
+          <input type="number" id="antic-monto" class="form-control" min="0" step="0.01" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha *</label>
+          <input type="date" id="antic-fecha" class="form-control">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción</label>
+        <input type="text" id="antic-desc" class="form-control" placeholder="Ej: Anticipo quincena agosto">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-anticipo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarAnticipo()">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE NOMINA -->
+<div class="modal-overlay" id="modal-detalle-nomina" style="display:none">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h2>📋 Detalle de nómina</h2>
+      <button class="btn-icon" onclick="closeModal('modal-detalle-nomina')">✕</button>
+    </div>
+    <div class="modal-body" id="detalle-nomina-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-detalle-nomina')">Cerrar</button>
+      <button class="btn btn-success" id="btn-marcar-pagado-nomina">✓ Marcar como pagado</button>
     </div>
   </div>
 </div>
@@ -522,10 +628,11 @@
   }
 
   function switchTab(tab, btn) {
-    ['pagos','estado','reporte','caja'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'':'none');
+    ['pagos','estado','reporte','caja','sueldos'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'':'none');
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     if (tab==='reporte') renderReporteFin();
+    if (tab==='sueldos') renderSueldos();
     if (tab==='caja') {
       const hoy = new Date().toISOString().split('T')[0];
       if (!document.getElementById('caja-fecha').value) document.getElementById('caja-fecha').value = hoy;
@@ -1153,6 +1260,254 @@
 
   renderStats();
   renderPagos();
+
+  // ===== MÓDULO SUELDOS DOCENTES =====
+
+  // Poblar selector de años
+  (function() {
+    const anioActual = new Date().getFullYear();
+    const sel = document.getElementById('suel-anio');
+    for (let y = anioActual; y >= anioActual - 3; y--) {
+      sel.innerHTML += `<option value="${y}">${y}</option>`;
+    }
+    document.getElementById('suel-mes').value = new Date().getMonth();
+  })();
+
+  function getNominaDocente(db, docenteId, mes, anio) {
+    return db.nomina.find(n => n.docenteId === docenteId && n.mes === mes && n.anio === anio);
+  }
+
+  function getOrCreateNomina(db, docenteId, mes, anio) {
+    let n = getNominaDocente(db, docenteId, mes, anio);
+    if (!n) {
+      const d = db.docentes.find(x => x.id === docenteId);
+      n = {
+        id: genId(db.nomina),
+        docenteId,
+        mes, anio,
+        sueldoBase: d?.sueldoBase || 0,
+        anticipos: [],
+        estado: 'pendiente',
+        fechaPago: null,
+      };
+      db.nomina.push(n);
+    }
+    return n;
+  }
+
+  function renderSueldos() {
+    const mes  = parseInt(document.getElementById('suel-mes').value);
+    const anio = parseInt(document.getElementById('suel-anio').value);
+    const db   = getDB();
+    const tbody = document.getElementById('tbody-sueldos');
+    tbody.innerHTML = '';
+
+    let totalSueldos = 0, totalAnticipos = 0, totalPagado = 0;
+
+    if (!db.docentes.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">No hay docentes registrados</td></tr>`;
+      return;
+    }
+
+    db.docentes.forEach(d => {
+      const nomina = getNominaDocente(db, d.id, mes, anio);
+      const sueldoBase = nomina?.sueldoBase ?? (d.sueldoBase || 0);
+      const anticipos  = nomina?.anticipos || [];
+      const totalAntic = anticipos.reduce((s, a) => s + (a.monto || 0), 0);
+      const saldo      = Math.max(0, sueldoBase - totalAntic);
+      const estado     = nomina?.estado || 'pendiente';
+
+      totalSueldos  += sueldoBase;
+      totalAnticipos += totalAntic;
+      if (estado === 'pagado') totalPagado += sueldoBase;
+
+      const badgeCls = estado === 'pagado' ? 'badge-green' : sueldoBase === 0 ? 'badge-amber' : 'badge-blue';
+      const badgeTxt = estado === 'pagado' ? 'Pagado' : sueldoBase === 0 ? 'Sin configurar' : 'Pendiente';
+
+      tbody.innerHTML += `<tr>
+        <td style="font-weight:600">${d.nombre}</td>
+        <td style="font-size:12px;color:var(--text-muted)">${d.especialidad || '—'}</td>
+        <td style="font-weight:700">${sueldoBase > 0 ? formatMonto(sueldoBase) : '<span style="color:var(--text-muted)">—</span>'}</td>
+        <td style="color:var(--warning);font-weight:600">${totalAntic > 0 ? formatMonto(totalAntic) : '—'}</td>
+        <td style="font-weight:800;color:${saldo > 0 ? 'var(--danger)' : 'var(--success)'}">${sueldoBase > 0 ? formatMonto(saldo) : '—'}</td>
+        <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
+        <td><div style="display:flex;gap:4px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="abrirModalSueldo(${d.id},'${d.nombre.replace(/'/g,"\\'")}',${sueldoBase})">✏️ Sueldo</button>
+          <button class="btn btn-primary btn-sm" onclick="abrirModalAnticipo(${d.id},'${d.nombre.replace(/'/g,"\\'")}',${mes},${anio})" ${sueldoBase===0?'disabled title="Configura el sueldo primero"':''}>💸 Anticipo</button>
+          <button class="btn btn-secondary btn-sm" onclick="verDetalleNomina(${d.id},${mes},${anio})">📋 Detalle</button>
+        </div></td>
+      </tr>`;
+    });
+
+    // Stats
+    document.getElementById('sueldos-stats').innerHTML = `
+      <div class="stat-card"><div class="stat-icon blue">💼</div><div><div class="stat-value" style="font-size:18px">${formatMonto(totalSueldos)}</div><div class="stat-label">Total nómina</div></div></div>
+      <div class="stat-card"><div class="stat-icon amber">💸</div><div><div class="stat-value" style="font-size:18px">${formatMonto(totalAnticipos)}</div><div class="stat-label">Total anticipos</div></div></div>
+      <div class="stat-card"><div class="stat-icon red">⏳</div><div><div class="stat-value" style="font-size:18px">${formatMonto(totalSueldos - totalAnticipos - totalPagado < 0 ? 0 : totalSueldos - totalPagado)}</div><div class="stat-label">Por pagar</div></div></div>
+      <div class="stat-card"><div class="stat-icon green">✓</div><div><div class="stat-value" style="font-size:18px">${formatMonto(totalPagado)}</div><div class="stat-label">Pagado este mes</div></div></div>`;
+  }
+
+  function abrirModalSueldo(docenteId, nombre, sueldoActual) {
+    document.getElementById('suel-docente-id').value    = docenteId;
+    document.getElementById('suel-docente-nombre').value = nombre;
+    document.getElementById('suel-monto-base').value    = sueldoActual || '';
+    openModal('modal-sueldo');
+  }
+
+  function guardarSueldoBase() {
+    const docenteId = parseInt(document.getElementById('suel-docente-id').value);
+    const monto     = parseFloat(document.getElementById('suel-monto-base').value);
+    if (!docenteId || isNaN(monto) || monto < 0) {
+      showToast('Ingresa un monto válido', 'error'); return;
+    }
+    const mes  = parseInt(document.getElementById('suel-mes').value);
+    const anio = parseInt(document.getElementById('suel-anio').value);
+    const db   = getDB();
+
+    // Guardar en el docente como sueldo base general
+    const idxD = db.docentes.findIndex(x => x.id === docenteId);
+    if (idxD >= 0) db.docentes[idxD].sueldoBase = monto;
+
+    // Actualizar o crear registro de nómina del mes
+    const n = getOrCreateNomina(db, docenteId, mes, anio);
+    n.sueldoBase = monto;
+    saveDB(db);
+    closeModal('modal-sueldo');
+    renderSueldos();
+    showToast('Sueldo configurado ✓');
+  }
+
+  function abrirModalAnticipo(docenteId, nombre, mes, anio) {
+    const db = getDB();
+    const n  = getOrCreateNomina(db, docenteId, mes, anio);
+    saveDB(db);
+    document.getElementById('antic-nomina-id').value      = n.id;
+    document.getElementById('antic-docente-nombre').value = nombre;
+    document.getElementById('antic-monto').value  = '';
+    document.getElementById('antic-fecha').value  = new Date().toISOString().split('T')[0];
+    document.getElementById('antic-desc').value   = '';
+    openModal('modal-anticipo');
+  }
+
+  function guardarAnticipo() {
+    const nominaId = parseInt(document.getElementById('antic-nomina-id').value);
+    const monto    = parseFloat(document.getElementById('antic-monto').value);
+    const fecha    = document.getElementById('antic-fecha').value;
+    const desc     = document.getElementById('antic-desc').value.trim();
+    if (isNaN(monto) || monto <= 0) { showToast('Ingresa un monto válido', 'error'); return; }
+    if (!fecha) { showToast('Selecciona una fecha', 'error'); return; }
+
+    const db  = getDB();
+    const idx = db.nomina.findIndex(x => x.id === nominaId);
+    if (idx < 0) { showToast('Error: nómina no encontrada', 'error'); return; }
+    if (!Array.isArray(db.nomina[idx].anticipos)) db.nomina[idx].anticipos = [];
+
+    const anticipos = db.nomina[idx].anticipos;
+    anticipos.push({
+      id: anticipos.length ? Math.max(...anticipos.map(a => a.id)) + 1 : 1,
+      monto, fecha, descripcion: desc || 'Anticipo',
+      registradoEn: new Date().toISOString(),
+      registradoPor: getSession()?.name || '—',
+    });
+    saveDB(db);
+    closeModal('modal-anticipo');
+    renderSueldos();
+    showToast('Anticipo registrado ✓');
+  }
+
+  function verDetalleNomina(docenteId, mes, anio) {
+    const db     = getDB();
+    const d      = db.docentes.find(x => x.id === docenteId);
+    const nomina = getNominaDocente(db, docenteId, mes, anio);
+    const meses  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const sueldoBase = nomina?.sueldoBase ?? (d?.sueldoBase || 0);
+    const anticipos  = nomina?.anticipos  || [];
+    const totalAntic = anticipos.reduce((s, a) => s + (a.monto || 0), 0);
+    const saldo      = Math.max(0, sueldoBase - totalAntic);
+    const estado     = nomina?.estado || 'pendiente';
+
+    document.getElementById('detalle-nomina-body').innerHTML = `
+      <div style="background:var(--surface-1);border-radius:10px;padding:14px 16px;margin-bottom:16px;border:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text-muted);font-size:12px">Docente</span><span style="font-weight:700">${d?.nombre || '—'}</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text-muted);font-size:12px">Período</span><span style="font-weight:600">${meses[mes]} ${anio}</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text-muted);font-size:12px">Sueldo base</span><span style="font-weight:700;font-size:16px">${formatMonto(sueldoBase)}</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text-muted);font-size:12px">Total anticipos</span><span style="font-weight:700;color:var(--warning)">${formatMonto(totalAntic)}</span></div>
+        <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border)"><span style="font-weight:800">Saldo a pagar</span><span style="font-weight:800;font-size:20px;color:${saldo>0?'var(--danger)':'var(--success)'}">${formatMonto(saldo)}</span></div>
+      </div>
+      ${anticipos.length ? `
+      <div style="font-weight:700;margin-bottom:8px;font-size:13px">Anticipos registrados</div>
+      <div class="card"><div class="card-body" style="padding:0"><table>
+        <thead><tr><th>#</th><th>Descripción</th><th>Fecha</th><th>Monto</th><th></th></tr></thead>
+        <tbody>
+          ${anticipos.map((a,i) => `<tr>
+            <td style="color:var(--text-muted);font-size:12px">${i+1}</td>
+            <td>${a.descripcion || 'Anticipo'}</td>
+            <td style="font-size:12px">${formatFecha(a.fecha)}</td>
+            <td style="font-weight:700;color:var(--warning)">${formatMonto(a.monto)}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="eliminarAnticipo(${nomina.id},${a.id})">✕</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div></div>` : `<div class="empty-state" style="padding:24px 0"><div class="empty-icon">💸</div><p>Sin anticipos registrados este mes</p></div>`}`;
+
+    const btnPagar = document.getElementById('btn-marcar-pagado-nomina');
+    if (estado === 'pagado') {
+      btnPagar.textContent = '✓ Ya pagado';
+      btnPagar.disabled = true;
+      btnPagar.className = 'btn btn-secondary';
+    } else {
+      btnPagar.textContent = '✓ Marcar como pagado';
+      btnPagar.disabled = false;
+      btnPagar.className = 'btn btn-success';
+      btnPagar.onclick = () => marcarNominaPagada(docenteId, mes, anio);
+    }
+    openModal('modal-detalle-nomina');
+  }
+
+  function eliminarAnticipo(nominaId, anticipoId) {
+    confirmar('¿Eliminar este anticipo?', () => {
+      const db  = getDB();
+      const idx = db.nomina.findIndex(x => x.id === nominaId);
+      if (idx < 0) return;
+      db.nomina[idx].anticipos = (db.nomina[idx].anticipos || []).filter(a => a.id !== anticipoId);
+      saveDB(db);
+      closeModal('modal-detalle-nomina');
+      renderSueldos();
+      showToast('Anticipo eliminado', 'warning');
+    });
+  }
+
+  function marcarNominaPagada(docenteId, mes, anio) {
+    confirmar('¿Marcar el sueldo de este docente como pagado?', () => {
+      const db = getDB();
+      const n  = getOrCreateNomina(db, docenteId, mes, anio);
+      n.estado    = 'pagado';
+      n.fechaPago = new Date().toISOString().split('T')[0];
+      saveDB(db);
+      closeModal('modal-detalle-nomina');
+      renderSueldos();
+      showToast('Sueldo marcado como pagado ✓');
+    });
+  }
+
+  function exportarNominaCSV() {
+    const mes  = parseInt(document.getElementById('suel-mes').value);
+    const anio = parseInt(document.getElementById('suel-anio').value);
+    const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const db   = getDB();
+    let csv = 'Docente,Especialidad,Sueldo Base,Total Anticipos,Saldo a Pagar,Estado\n';
+    db.docentes.forEach(d => {
+      const n     = getNominaDocente(db, d.id, mes, anio);
+      const base  = n?.sueldoBase ?? (d.sueldoBase || 0);
+      const antic = (n?.anticipos || []).reduce((s, a) => s + a.monto, 0);
+      const saldo = Math.max(0, base - antic);
+      csv += `"${d.nombre}","${d.especialidad||''}",${base.toFixed(2)},${antic.toFixed(2)},${saldo.toFixed(2)},"${n?.estado||'pendiente'}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `nomina_${meses[mes]}_${anio}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  }
 </script>
 </body>
 </html>

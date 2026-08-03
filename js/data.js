@@ -19,6 +19,7 @@ const DB = {
   actividades:   [],
   tareas:        [],
   entregas:      [],
+  nomina:        [],
 };
 
 // ---- Módulo de BD en memoria ----
@@ -32,7 +33,7 @@ function _defaultDB() {
 // Esta función restaura todos los campos de array a arrays reales de JS
 function _normalizeDB(db) {
   const arrays = ['users','docentes','alumnos','calificaciones','asistencias',
-                  'horarios','finanzas','matriculas','actividades','tareas','entregas'];
+                  'horarios','finanzas','matriculas','actividades','tareas','entregas','nomina'];
   arrays.forEach(k => {
     if (!db[k]) {
       db[k] = [];                               // null / undefined → []
