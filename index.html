@@ -2,10 +2,820 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=bienvenida.html">
-  <title>U.E. Rio Jordan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>U.E. Rio Jordan – Bienvenidos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:   #F59E0B;
+      --primary-dk:#D97706;
+      --dark:      #1E293B;
+      --dark-2:    #0F172A;
+      --text:      #1E293B;
+      --text-muted:#64748B;
+      --surface:   #ffffff;
+      --border:    #E2E8F0;
+      --radius:    12px;
+      --shadow:    0 4px 24px rgba(0,0,0,.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      background: #fff;
+      overflow-x: hidden;
+    }
+
+    h1,h2,h3 { font-family: 'Poppins', sans-serif; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 5%;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-brand .brand-icon { width: 38px; height: 38px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .nav-brand .brand-name { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 15px; color: var(--dark); line-height: 1.2; }
+    .nav-brand .brand-name small { display: block; font-family: 'Inter', sans-serif; font-weight: 400; font-size: 11px; color: var(--text-muted); }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a { text-decoration: none; font-size: 14px; font-weight: 500; color: var(--text-muted); transition: color .2s; }
+    .nav-links a:hover { color: var(--primary-dk); }
+    .nav-cta { background: var(--primary); color: #fff; border: none; padding: 9px 22px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration: none; transition: background .2s; }
+    .nav-cta:hover { background: var(--primary-dk); }
+    .nav-menu-btn { display: none; background: none; border: none; font-size: 22px; cursor: pointer; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 80px 5% 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Foto de fondo del hero */
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: url('img/555564286_24559917220338537_7291867738354728102_n.jpg') center/cover no-repeat;
+      z-index: 0;
+    }
+    /* Overlay oscuro sobre la foto */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(
+        135deg,
+        rgba(10,16,28,.82) 0%,
+        rgba(15,23,42,.72) 55%,
+        rgba(10,16,28,.55) 100%
+      );
+    }
+    /* Logo marca de agua centrado sobre el hero */
+    .hero-logo-watermark {
+      position: absolute; inset: 0; z-index: 2;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .hero-logo-watermark img {
+      width: min(420px, 70vw);
+      opacity: .07;
+      filter: grayscale(1) brightness(12);
+    }
+    .hero-content { position: relative; z-index: 3; max-width: 600px; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(245,158,11,.15); border: 1px solid rgba(245,158,11,.3); color: var(--primary); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: .5px; margin-bottom: 24px; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800; color: #fff; line-height: 1.15; margin-bottom: 20px; }
+    .hero h1 span { color: var(--primary); }
+    .hero p { font-size: 16px; color: rgba(255,255,255,.7); line-height: 1.7; margin-bottom: 36px; max-width: 480px; }
+    .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn-primary { background: var(--primary); color: #fff; padding: 13px 28px; border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; transition: all .2s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary:hover { background: var(--primary-dk); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,158,11,.35); }
+    .btn-outline { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.3); padding: 13px 28px; border-radius: 10px; font-weight: 600; font-size: 15px; text-decoration: none; transition: all .2s; }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .hero-image { position: absolute; right: 5%; top: 50%; transform: translateY(-50%); width: 420px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; opacity: .9; z-index: 3; }
+    .hero-card { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 20px; backdrop-filter: blur(8px); animation: fadeInUp .6s ease both; }
+    .hero-card:nth-child(2) { animation-delay: .1s; margin-top: 20px; }
+    .hero-card:nth-child(3) { animation-delay: .2s; }
+    .hero-card:nth-child(4) { animation-delay: .3s; margin-top: -20px; }
+    .hero-card .icon { font-size: 26px; margin-bottom: 8px; }
+    .hero-card .num { font-family: 'Poppins', sans-serif; font-size: 26px; font-weight: 800; color: var(--primary); }
+    .hero-card .lbl { font-size: 12px; color: rgba(255,255,255,.6); margin-top: 2px; }
+
+    /* ── SECCIÓN GENÉRICA ── */
+    section { padding: 80px 5%; }
+    .section-label { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: var(--primary); text-transform: uppercase; margin-bottom: 10px; }
+    .section-title { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 800; color: var(--dark); margin-bottom: 16px; }
+    .section-sub { font-size: 16px; color: var(--text-muted); line-height: 1.7; max-width: 580px; }
+    .section-title-center { text-align: center; }
+    .section-sub-center { text-align: center; margin: 0 auto; }
+
+    /* ── VMO (Visión Misión Objetivo) ── */
+    .vmo { background: #F8FAFC; }
+    .vmo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 48px; }
+    .vmo-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; position: relative; overflow: hidden; transition: box-shadow .2s, transform .2s; animation: fadeInUp .5s ease both; }
+    .vmo-card:hover { box-shadow: 0 12px 40px rgba(0,0,0,.1); transform: translateY(-4px); }
+    .vmo-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--primary); }
+    .vmo-card:nth-child(2)::before { background: #3B82F6; }
+    .vmo-card:nth-child(3)::before { background: #10B981; }
+    .vmo-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; }
+    .vmo-icon.amber { background: rgba(245,158,11,.12); }
+    .vmo-icon.blue  { background: rgba(59,130,246,.12); }
+    .vmo-icon.green { background: rgba(16,185,129,.12); }
+    .vmo-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: var(--dark); }
+    .vmo-card p { font-size: 14px; color: var(--text-muted); line-height: 1.75; }
+
+    /* ── VALORES ── */
+    .valores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-top: 48px; }
+    .valor-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 16px; text-align: center; transition: all .2s; animation: fadeInUp .5s ease both; }
+    .valor-item:hover { border-color: var(--primary); box-shadow: 0 4px 20px rgba(245,158,11,.15); }
+    .valor-item .vi { font-size: 32px; margin-bottom: 10px; }
+    .valor-item p { font-size: 13px; font-weight: 600; color: var(--dark); }
+
+    /* ── GALERÍA / CARRUSEL ── */
+    .galeria { background: var(--dark); }
+    .galeria .section-title, .galeria .section-label { color: #fff; }
+    .galeria .section-sub { color: rgba(255,255,255,.6); }
+
+    .carousel-wrap { position: relative; margin-top: 48px; border-radius: 20px; overflow: hidden; user-select: none; }
+
+    .carousel-track {
+      display: flex;
+      transition: transform .6s cubic-bezier(.4,0,.2,1);
+      will-change: transform;
+    }
+
+    .carousel-slide {
+      min-width: 100%;
+      position: relative;
+      height: 520px;
+    }
+    @media (max-width: 768px) { .carousel-slide { height: 300px; } }
+
+    .carousel-slide img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .carousel-slide .slide-caption {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 60px 32px 28px;
+      background: linear-gradient(to top, rgba(0,0,0,.72) 0%, transparent 100%);
+      color: #fff;
+    }
+    .slide-caption .sc-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+      color: var(--primary); text-transform: uppercase; margin-bottom: 6px;
+    }
+    .slide-caption .sc-title { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700; }
+
+    /* Botones prev/next */
+    .carousel-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,.12); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.2);
+      color: #fff; font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, transform .2s;
+      z-index: 10;
+    }
+    .carousel-btn:hover { background: rgba(245,158,11,.7); transform: translateY(-50%) scale(1.08); }
+    .carousel-btn.prev { left: 16px; }
+    .carousel-btn.next { right: 16px; }
+
+    /* Indicadores / dots */
+    .carousel-dots {
+      display: flex; justify-content: center; gap: 8px;
+      margin-top: 20px;
+    }
+    .carousel-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,.25);
+      cursor: pointer; transition: all .3s;
+      border: none; padding: 0;
+    }
+    .carousel-dot.active {
+      background: var(--primary);
+      width: 24px; border-radius: 4px;
+    }
+
+    /* Contador */
+    .carousel-counter {
+      position: absolute; top: 16px; right: 16px;
+      background: rgba(0,0,0,.45); backdrop-filter: blur(6px);
+      color: #fff; font-size: 12px; font-weight: 600;
+      padding: 4px 10px; border-radius: 20px; z-index: 10;
+    }
+
+    /* ── ESTADÍSTICAS ── */
+    .stats-banner { background: var(--primary); padding: 60px 5%; }
+    .stats-inner { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 32px; max-width: 900px; margin: 0 auto; text-align: center; }
+    .stat-b .num { font-family: 'Poppins', sans-serif; font-size: 42px; font-weight: 800; color: #fff; }
+    .stat-b .lbl { font-size: 13px; color: rgba(255,255,255,.8); margin-top: 4px; font-weight: 500; }
+
+    /* ── ADMISIONES ── */
+    .admisiones { background: #F8FAFC; }
+    .adm-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      margin-top: 52px;
+      align-items: start;
+    }
+    @media (max-width: 820px) { .adm-grid { grid-template-columns: 1fr; gap: 36px; } }
+
+    /* Requisitos */
+    .req-list { list-style: none; display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+    .req-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      background: #fff; border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px 18px;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .req-item:hover { box-shadow: 0 4px 18px rgba(0,0,0,.07); transform: translateX(4px); }
+    .req-icon {
+      width: 36px; height: 36px; min-width: 36px;
+      background: rgba(245,158,11,.12);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .req-text strong { display: block; font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 2px; }
+    .req-text span { font-size: 12px; color: var(--text-muted); }
+
+    /* Formulario */
+    .adm-form-card {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 20px; padding: 36px 32px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.07);
+    }
+    .adm-form-card h3 {
+      font-size: 20px; font-weight: 700; color: var(--dark);
+      margin-bottom: 6px;
+    }
+    .adm-form-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: var(--dark); letter-spacing: .03em;
+      text-transform: uppercase; margin-bottom: 7px;
+    }
+    .form-input {
+      width: 100%; padding: 12px 14px;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 14px; font-family: 'Inter', sans-serif;
+      color: var(--dark); background: #fff;
+      transition: border-color .2s, box-shadow .2s; outline: none;
+    }
+    .form-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(245,158,11,.12);
+    }
+    .form-input::placeholder { color: #b0bec5; }
+    select.form-input { cursor: pointer; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center;
+      padding-right: 36px;
+    }
+    .btn-adm {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 700; font-family: 'Poppins', sans-serif;
+      cursor: pointer; transition: all .2s; margin-top: 6px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-adm:hover { filter: brightness(1.06); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,158,11,.35); }
+    .btn-adm:disabled { opacity: .65; cursor: not-allowed; transform: none; }
+
+    /* Estado éxito */
+    .adm-success {
+      display: none; text-align: center; padding: 24px 0;
+    }
+    .adm-success .success-icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(16,185,129,.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; margin: 0 auto 16px;
+    }
+    .adm-success h4 { font-size: 18px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+    .adm-success p  { font-size: 13px; color: var(--text-muted); }
+
+    /* ── CTA FINAL ── */
+    .cta-final { background: var(--dark-2); padding: 80px 5%; text-align: center; }
+    .cta-final h2 { color: #fff; font-size: clamp(1.6rem, 3vw, 2.4rem); margin-bottom: 16px; }
+    .cta-final p { color: rgba(255,255,255,.6); font-size: 16px; margin-bottom: 36px; }
+
+    /* ── FOOTER ── */
+    footer { background: #0a0f1a; padding: 32px 5%; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    footer p { font-size: 13px; color: rgba(255,255,255,.4); }
+    footer a { color: var(--primary); text-decoration: none; font-size: 13px; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .hero-image { display: none; }
+      .gallery-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto;
+      }
+      .gallery-item.large { grid-column: span 2; grid-row: span 1; }
+      .nav-links { display: none; }
+      .nav-menu-btn { display: block; }
+    }
+    @media (max-width: 520px) {
+      .gallery-grid { grid-template-columns: 1fr; }
+      .gallery-item.large { grid-column: span 1; }
+      nav { padding: 0 4%; }
+    }
+  </style>
 </head>
 <body>
-  <script>window.location.replace('bienvenida.html');</script>
+
+<!-- ══════════════ NAV ══════════════ -->
+<nav>
+  <a href="#" class="nav-brand">
+    <img src="logo.png" alt="Logo Rio Jordan" style="width:38px;height:38px;object-fit:contain;">
+    <div class="brand-name">U.E. Rio Jordan <small>Formando líderes del mañana</small></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#mision">Misión & Visión</a></li>
+    <li><a href="#valores">Valores</a></li>
+    <li><a href="#admisiones">Admisiones</a></li>
+    <li><a href="#galeria">Galería</a></li>
+    <li><a href="#contacto">Contacto</a></li>
+  </ul>
+  <a href="login.html" class="nav-cta">Acceso al Sistema →</a>
+  <button class="nav-menu-btn" onclick="toggleMobileNav()">☰</button>
+</nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-badge">🎓 Año Escolar 2026</div>
+    <h1>Bienvenidos a<br><span>U.E. Rio Jordan</span></h1>
+    <p>"Será como árbol plantado junto a corrientes de aguas,que da su fruto en su tiempo, y su hoja no cae; y todo lo que hace, prosperará".</p>
+    <div class="hero-btns">
+      <a href="#mision" class="btn-primary">Conocer más ↓</a>
+      <a href="login.html" class="btn-outline">Acceso docentes / alumnos</a>
+    </div>
+  </div>
+  <div class="hero-image">
+    <div class="hero-card"><div class="icon">👨‍🎓</div><div class="num" id="cnt-alumnos">—</div><div class="lbl">Estudiantes</div></div>
+    <div class="hero-card"><div class="icon">👨‍🏫</div><div class="num" id="cnt-docentes">—</div><div class="lbl">Docentes</div></div>
+    <div class="hero-card"><div class="icon">📚</div><div class="num">7</div><div class="lbl">Grados</div></div>
+    <div class="hero-card"><div class="icon">🏆</div><div class="num">+10</div><div class="lbl">Años educando</div></div>
+  </div>
+</section>
+
+<!-- ══════════════ VISIÓN MISIÓN OBJETIVO ══════════════ -->
+<section class="vmo" id="mision">
+  <div style="text-align:center">
+    <div class="section-label">Nuestra identidad</div>
+    <h2 class="section-title section-title-center">Visión, Misión y Objetivo</h2>
+    <p class="section-sub section-sub-center">Los pilares que guían cada acción y decisión dentro de nuestra comunidad educativa.</p>
+  </div>
+  <div class="vmo-grid">
+
+    <div class="vmo-card" style="animation-delay:.05s">
+      <div class="vmo-icon amber">🔭</div>
+      <h3>Visión</h3>
+      <p>Ser una institución educativa líder y de referencia regional, reconocida por la excelencia académica, la formación en valores y el compromiso con el desarrollo integral de cada estudiante. Aspiramos a que nuestros egresados sean ciudadanos críticos, creativos y con plena capacidad de transformar su entorno social y profesional.</p>
+    </div>
+
+    <div class="vmo-card" style="animation-delay:.15s">
+      <div class="vmo-icon blue">🎯</div>
+      <h3>Misión</h3>
+      <p>Brindar una educación de calidad, inclusiva y humanista, que desarrolle las competencias cognitivas, sociales y emocionales de nuestros estudiantes. Trabajamos con docentes altamente capacitados, metodologías innovadoras y un ambiente escolar seguro y motivador, en alianza permanente con las familias y la comunidad.</p>
+    </div>
+
+    <div class="vmo-card" style="animation-delay:.25s">
+      <div class="vmo-icon green">✅</div>
+      <h3>Objetivo General</h3>
+      <p>Garantizar el aprendizaje significativo de todos los estudiantes desde 1ro hasta 7mo grado, fortaleciendo su identidad cultural, pensamiento crítico y habilidades para la vida. Promovemos una formación integral que combina la excelencia académica con el desarrollo personal, ético y ciudadano de cada alumno.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════ ESTADÍSTICAS ══════════════ -->
+<div class="stats-banner">
+  <div class="stats-inner">
+    <div class="stat-b"><div class="num">7</div><div class="lbl">Grados educativos</div></div>
+    <div class="stat-b"><div class="num">3</div><div class="lbl">Secciones por grado</div></div>
+    <div class="stat-b"><div class="num">100%</div><div class="lbl">Compromiso docente</div></div>
+    <div class="stat-b"><div class="num">+10</div><div class="lbl">Años formando líderes</div></div>
+  </div>
+</div>
+
+<!-- ══════════════ VALORES ══════════════ -->
+<section id="valores">
+  <div style="text-align:center">
+    <div class="section-label">Lo que nos define</div>
+    <h2 class="section-title section-title-center">Nuestros Valores</h2>
+    <p class="section-sub section-sub-center">Los valores que cultivamos cada día en el aula, en el recreo y en la vida.</p>
+  </div>
+  <div class="valores-grid">
+    <div class="valor-item" style="animation-delay:.05s"><div class="vi">🤝</div><p>Respeto</p></div>
+    <div class="valor-item" style="animation-delay:.1s"><div class="vi">💡</div><p>Innovación</p></div>
+    <div class="valor-item" style="animation-delay:.15s"><div class="vi">⚖️</div><p>Honestidad</p></div>
+    <div class="valor-item" style="animation-delay:.2s"><div class="vi">🌱</div><p>Responsabilidad</p></div>
+    <div class="valor-item" style="animation-delay:.25s"><div class="vi">🤲</div><p>Solidaridad</p></div>
+    <div class="valor-item" style="animation-delay:.3s"><div class="vi">🏅</div><p>Excelencia</p></div>
+    <div class="valor-item" style="animation-delay:.35s"><div class="vi">🌍</div><p>Inclusión</p></div>
+    <div class="valor-item" style="animation-delay:.4s"><div class="vi">❤️</div><p>Vocación</p></div>
+  </div>
+</section>
+
+<!-- ══════════════ ADMISIONES ══════════════ -->
+<section class="admisiones" id="admisiones">
+  <div style="text-align:center">
+    <div class="section-label">Únete a nuestra familia</div>
+    <h2 class="section-title section-title-center">Proceso de Admisiones</h2>
+    <p class="section-sub section-sub-center">Te explicamos los requisitos para inscribir a tu hijo/a y cómo ponerte en contacto con nosotros.</p>
+  </div>
+
+  <div class="adm-grid">
+
+    <!-- REQUISITOS -->
+    <div>
+      <h3 style="font-size:18px;font-weight:700;color:var(--dark);margin-bottom:20px">📋 Requisitos de inscripción</h3>
+      <ul class="req-list">
+        <li class="req-item">
+          <div class="req-icon">📄</div>
+          <div class="req-text">
+            <strong>Partida de nacimiento</strong>
+            <span>Original y copia del estudiante</span>
+          </div>
+        </li>
+        <li class="req-item">
+          <div class="req-icon">🪪</div>
+          <div class="req-text">
+            <strong>Cédula del representante</strong>
+            <span>Original y copia legible</span>
+          </div>
+        </li>
+        <li class="req-item">
+          <div class="req-icon">📊</div>
+          <div class="req-text">
+            <strong>Boletín o constancia de notas</strong>
+            <span>Del año escolar anterior (si aplica)</span>
+          </div>
+        </li>
+        <li class="req-item">
+          <div class="req-icon">📸</div>
+          <div class="req-text">
+            <strong>2 fotografías tipo carnet</strong>
+            <span>Recientes, fondo blanco, del estudiante</span>
+          </div>
+        </li>
+        <li class="req-item">
+          <div class="req-icon">🏠</div>
+          <div class="req-text">
+            <strong>Constancia de residencia</strong>
+            <span>Emitida por la autoridad competente</span>
+          </div>
+        </li>
+        <li class="req-item">
+          <div class="req-icon">💉</div>
+          <div class="req-text">
+            <strong>Carnet de vacunación</strong>
+            <span>Vacunas al día del estudiante</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="adm-form-card">
+      <h3>¿Interesado en inscribirse?</h3>
+      <p>Déjanos tus datos y un representante te contactará a la brevedad.</p>
+
+      <div id="adm-form-area">
+        <div class="form-group">
+          <label>Nombre completo del representante</label>
+          <input type="text" id="adm-nombre" class="form-input" placeholder="Ej: María González">
+        </div>
+        <div class="form-group">
+          <label>Teléfono de contacto</label>
+          <input type="tel" id="adm-telefono" class="form-input" placeholder="Ej: 0414-1234567">
+        </div>
+        <div class="form-group">
+          <label>Correo electrónico</label>
+          <input type="email" id="adm-correo" class="form-input" placeholder="correo@ejemplo.com">
+        </div>
+        <div class="form-group">
+          <label>Grado al que aspira</label>
+          <select id="adm-grado" class="form-input">
+            <option value="">— Seleccionar grado —</option>
+            <option>1er Grado</option>
+            <option>2do Grado</option>
+            <option>3er Grado</option>
+            <option>4to Grado</option>
+            <option>5to Grado</option>
+            <option>6to Grado</option>
+            <option>7mo Grado</option>
+          </select>
+        </div>
+        <div id="adm-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px"></div>
+        <button class="btn-adm" id="adm-btn" onclick="enviarSolicitud()">
+          Enviar solicitud →
+        </button>
+      </div>
+
+      <div class="adm-success" id="adm-success">
+        <div class="success-icon">✅</div>
+        <h4>¡Solicitud recibida!</h4>
+        <p>Gracias por tu interés en U.E. Rio Jordan.<br>Nos pondremos en contacto contigo pronto.</p>
+        <button onclick="resetFormAdm()" style="margin-top:16px;background:none;border:1.5px solid var(--border);color:var(--text-muted);padding:8px 20px;border-radius:8px;font-size:13px;cursor:pointer">Enviar otra solicitud</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════ GALERÍA ══════════════ -->
+<section class="galeria" id="galeria">
+  <div style="text-align:center">
+    <div class="section-label">Nuestra vida escolar</div>
+    <h2 class="section-title section-title-center">Galería</h2>
+    <p class="section-sub section-sub-center">Momentos que hacen grande a nuestra comunidad educativa.</p>
+  </div>
+  <div class="carousel-wrap" id="galeria-carousel">
+    <div class="carousel-track" id="carousel-track">
+
+      <div class="carousel-slide">
+        <img src="img/555564286_24559917220338537_7291867738354728102_n.jpg" alt="Comunidad escolar">
+        <div class="slide-caption">
+          <div class="sc-label">Nuestra comunidad</div>
+          <div class="sc-title">U.E. Rio Jordan — Juntos aprendemos</div>
+        </div>
+      </div>
+
+      <div class="carousel-slide">
+        <img src="img/515146625_23864672653196334_2973300541626837010_n.jpg" alt="Vida escolar">
+        <div class="slide-caption">
+          <div class="sc-label">Vida escolar</div>
+          <div class="sc-title">Formando líderes del mañana</div>
+        </div>
+      </div>
+
+      <div class="carousel-slide">
+        <img src="img/746484730_27470130199317210_5960281063973936387_n.jpg" alt="Actividades">
+        <div class="slide-caption">
+          <div class="sc-label">Actividades</div>
+          <div class="sc-title">Momentos que nos hacen grandes</div>
+        </div>
+      </div>
+
+      <div class="carousel-slide">
+        <img src="img/520493714_24012430335087231_1627993858144786067_n.jpg" alt="Eventos institucionales">
+        <div class="slide-caption">
+          <div class="sc-label">Eventos</div>
+          <div class="sc-title">Celebrando nuestra identidad educativa</div>
+        </div>
+      </div>
+
+      <div class="carousel-slide">
+        <img src="img/604928590_25366785009651750_3945903985429002370_n.jpg" alt="Gestión escolar">
+        <div class="slide-caption">
+          <div class="sc-label">Gestión 2026</div>
+          <div class="sc-title">Compromiso con la excelencia académica</div>
+        </div>
+      </div>
+
+      <div class="carousel-slide">
+        <img src="img/608988575_25387885797541671_7510751037493212784_n.jpg" alt="Institución educativa">
+        <div class="slide-caption">
+          <div class="sc-label">Institución</div>
+          <div class="sc-title">U.E. Rio Jordan — Orgullo de nuestra comunidad</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Contador -->
+    <div class="carousel-counter" id="carousel-counter">1 / 6</div>
+
+    <!-- Flechas -->
+    <button class="carousel-btn prev" onclick="carouselMove(-1)" aria-label="Anterior">&#8592;</button>
+    <button class="carousel-btn next" onclick="carouselMove(1)"  aria-label="Siguiente">&#8594;</button>
+  </div>
+
+  <!-- Dots -->
+  <div class="carousel-dots" id="carousel-dots">
+    <button class="carousel-dot active" onclick="carouselGoTo(0)"></button>
+    <button class="carousel-dot"        onclick="carouselGoTo(1)"></button>
+    <button class="carousel-dot"        onclick="carouselGoTo(2)"></button>
+    <button class="carousel-dot"        onclick="carouselGoTo(3)"></button>
+    <button class="carousel-dot"        onclick="carouselGoTo(4)"></button>
+    <button class="carousel-dot"        onclick="carouselGoTo(5)"></button>
+  </div>
+</section>
+
+<!-- ══════════════ CTA ══════════════ -->
+<section class="cta-final" id="contacto">
+  <h2>¿Listo para ser parte de<br>nuestra comunidad?</h2>
+  <p>Accede al sistema escolar para consultar calificaciones,<br>asistencias, horarios y más.</p>
+  <a href="login.html" class="btn-primary" style="display:inline-flex;margin:0 auto">
+    Ingresar al sistema escolar →
+  </a>
+  <div style="margin-top:48px;display:flex;gap:32px;justify-content:center;flex-wrap:wrap">
+    <div style="text-align:center;color:rgba(255,255,255,.5)">
+      <div style="font-size:20px;margin-bottom:4px">📍</div>
+      <div style="font-size:13px">Dirección institucional</div>
+    </div>
+    <div style="text-align:center;color:rgba(255,255,255,.5)">
+      <div style="font-size:20px;margin-bottom:4px">📞</div>
+      <div style="font-size:13px">Teléfono de contacto</div>
+    </div>
+    <div style="text-align:center;color:rgba(255,255,255,.5)">
+      <div style="font-size:20px;margin-bottom:4px">✉️</div>
+      <div style="font-size:13px">correo@ueriojordan.edu</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer>
+  <p>© 2024 U.E. Rio Jordan — Todos los derechos reservados.</p>
+  <a href="login.html">Acceso al sistema escolar →</a>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+  // Leer datos del sistema escolar desde localStorage
+  (function cargarContadores() {
+    try {
+      const db = JSON.parse(localStorage.getItem('escuela_db'));
+      if (!db) return;
+      const alumnos  = (db.alumnos  || []).filter(a => a.estado === 'activo').length;
+      const docentes = (db.docentes || []).filter(d => d.estado === 'activo').length;
+
+      function animarNum(el, target) {
+        if (!el || target === 0) return;
+        let start = 0;
+        const dur = 900;
+        const t0 = performance.now();
+        function step(now) {
+          const p = Math.min((now - t0) / dur, 1);
+          const ease = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(ease * target);
+          if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+
+      animarNum(document.getElementById('cnt-alumnos'),  alumnos);
+      animarNum(document.getElementById('cnt-docentes'), docentes);
+    } catch(e) {}
+  })();
+
+  function toggleMobileNav() {
+    const links = document.querySelector('.nav-links');
+    if (!links) return;
+    if (links.style.display === 'flex') {
+      links.style.display = 'none';
+    } else {
+      links.style.cssText = 'display:flex;flex-direction:column;position:fixed;top:64px;left:0;right:0;background:#fff;padding:20px 5%;border-bottom:1px solid #E2E8F0;gap:16px;z-index:99';
+    }
+  }
+
+  // ── FORMULARIO ADMISIONES ──
+  function enviarSolicitud() {
+    const nombre   = document.getElementById('adm-nombre').value.trim();
+    const telefono = document.getElementById('adm-telefono').value.trim();
+    const correo   = document.getElementById('adm-correo').value.trim();
+    const grado    = document.getElementById('adm-grado').value;
+    const errEl    = document.getElementById('adm-error');
+    const btn      = document.getElementById('adm-btn');
+
+    errEl.style.display = 'none';
+
+    if (!nombre || !telefono || !correo) {
+      errEl.textContent = '⚠ Por favor completa todos los campos obligatorios.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+      errEl.textContent = '⚠ Ingresa un correo electrónico válido.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span style="width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:_fbSpin .7s linear infinite;display:inline-block"></span> Enviando...';
+
+    const solicitud = {
+      nombre, telefono, correo, grado,
+      fecha: new Date().toISOString(),
+      estado: 'pendiente'
+    };
+
+    // Guardar en Firebase
+    const guardar = () => {
+      if (window._fbDB) {
+        const ref = window._fbDB.ref('admisiones').push();
+        return ref.set(solicitud);
+      }
+      // Fallback localStorage
+      const lista = JSON.parse(localStorage.getItem('admisiones') || '[]');
+      lista.push({ id: Date.now(), ...solicitud });
+      localStorage.setItem('admisiones', JSON.stringify(lista));
+      return Promise.resolve();
+    };
+
+    guardar()
+      .then(() => {
+        document.getElementById('adm-form-area').style.display = 'none';
+        document.getElementById('adm-success').style.display   = 'block';
+      })
+      .catch(() => {
+        // Si falla Firebase igual guardamos en localStorage
+        const lista = JSON.parse(localStorage.getItem('admisiones') || '[]');
+        lista.push({ id: Date.now(), ...solicitud });
+        localStorage.setItem('admisiones', JSON.stringify(lista));
+        document.getElementById('adm-form-area').style.display = 'none';
+        document.getElementById('adm-success').style.display   = 'block';
+      });
+  }
+
+  function resetFormAdm() {
+    ['adm-nombre','adm-telefono','adm-correo'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('adm-grado').value = '';
+    document.getElementById('adm-error').style.display    = 'none';
+    document.getElementById('adm-btn').disabled           = false;
+    document.getElementById('adm-btn').innerHTML          = 'Enviar solicitud →';
+    document.getElementById('adm-form-area').style.display = '';
+    document.getElementById('adm-success').style.display  = 'none';
+  }
+
+  // Intersection Observer para animar cards al hacer scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.vmo-card, .valor-item').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(24px)';
+    el.style.transition = 'opacity .5s ease, transform .5s ease';
+    observer.observe(el);
+  });
+
+  // ── CARRUSEL ──
+  let _ci = 0;
+  const _total = 6;
+  let _timer = null;
+
+  function carouselGoTo(idx) {
+    _ci = (idx + _total) % _total;
+    document.getElementById('carousel-track').style.transform = `translateX(-${_ci * 100}%)`;
+    document.getElementById('carousel-counter').textContent = `${_ci + 1} / ${_total}`;
+    document.querySelectorAll('.carousel-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === _ci);
+    });
+    _resetTimer();
+  }
+
+  function carouselMove(dir) { carouselGoTo(_ci + dir); }
+
+  function _resetTimer() {
+    clearInterval(_timer);
+    _timer = setInterval(() => carouselGoTo(_ci + 1), 4000);
+  }
+
+  // Iniciar autoplay
+  _resetTimer();
+
+  // Soporte swipe en móvil
+  (function() {
+    const el = document.getElementById('galeria-carousel');
+    let sx = 0;
+    el.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+    el.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - sx;
+      if (Math.abs(dx) > 40) carouselMove(dx < 0 ? 1 : -1);
+    });
+  })();
+</script>
 </body>
 </html>
