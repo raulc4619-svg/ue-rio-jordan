@@ -421,31 +421,33 @@
     const grados = ['1ro','2do','3ro','4to','5to','6to','7mo'];
     const container = document.getElementById('resumen-grados');
     container.innerHTML = '';
+    // Usar alumnos activos directamente (no depende del año de matrícula)
+    const activos = db.alumnos.filter(a => a.estado === 'activo');
+    if (!activos.length) {
+      container.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📋</div><p>No hay alumnos activos registrados</p></div>`;
+      return;
+    }
     grados.forEach(g => {
-      const anioActual = new Date().getFullYear();
-      const mats = db.matriculas.filter(m=>m.grado===g && m.anio===anioActual && m.estado==='activo');
-      const secA = mats.filter(m=>m.seccion==='A').length;
-      const secB = mats.filter(m=>m.seccion==='B').length;
-      const secC = mats.filter(m=>m.seccion==='C').length;
+      const alGrado = activos.filter(a => a.grado === g);
+      if (!alGrado.length) return;
+      const secA = alGrado.filter(a => a.seccion === 'A').length;
+      const secB = alGrado.filter(a => a.seccion === 'B').length;
+      const secC = alGrado.filter(a => a.seccion === 'C').length;
+      const maxN  = Math.max(secA, secB, secC, 1);
       container.innerHTML += `<div class="card">
         <div class="card-header">
           <h3>${g} Grado</h3>
-          <span class="badge badge-blue">${mats.length} alumnos</span>
+          <span class="badge badge-blue">${alGrado.length} alumnos</span>
         </div>
         <div class="card-body">
           ${[['A',secA],['B',secB],['C',secC]].map(([sec,n])=>`
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
               <span style="font-size:13px;font-weight:500">Sección ${sec}</span>
               <div style="display:flex;align-items:center;gap:8px;flex:1;margin:0 12px">
-                <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:${n?Math.min(n*4,100):0}%"></div></div>
+                <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:${Math.round((n/maxN)*100)}%"></div></div>
               </div>
               <span style="font-size:13px;font-weight:600;min-width:24px;text-align:right">${n}</span>
             </div>`).join('')}
-          <div class="divider"></div>
-          <div style="font-size:12px;color:var(--text-muted);display:flex;justify-content:space-between">
-            <span>Turno mañana: ${mats.filter(m=>m.turno==='mañana').length}</span>
-            <span>Turno tarde: ${mats.filter(m=>m.turno==='tarde').length}</span>
-          </div>
         </div>
       </div>`;
     });
