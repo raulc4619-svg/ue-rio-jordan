@@ -40,6 +40,7 @@ function _normalizeDB(db) {
     } else if (!Array.isArray(db[k])) {
       db[k] = Object.values(db[k]);             // objeto Firebase → array real
     }
+    db[k] = db[k].filter(x => x != null);      // eliminar entradas null/undefined
   });
   return db;
 }
