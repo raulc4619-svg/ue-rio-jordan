@@ -370,6 +370,7 @@
       if (!alumnoId) { showToast('Selecciona un alumno','error'); return; }
     }
 
+    db.matriculas = (db.matriculas || []).filter(m => m != null);
     const yaExiste = db.matriculas.find(m => m.alumnoId === alumnoId && m.anio === anio);
     if (yaExiste) { showToast('Este alumno ya tiene matrícula en ' + anio,'error'); return; }
 
