@@ -422,7 +422,8 @@
     const container = document.getElementById('resumen-grados');
     container.innerHTML = '';
     grados.forEach(g => {
-      const mats = db.matriculas.filter(m=>m.grado===g && m.anio===2024 && m.estado==='activo');
+      const anioActual = new Date().getFullYear();
+      const mats = db.matriculas.filter(m=>m.grado===g && m.anio===anioActual && m.estado==='activo');
       const secA = mats.filter(m=>m.seccion==='A').length;
       const secB = mats.filter(m=>m.seccion==='B').length;
       const secC = mats.filter(m=>m.seccion==='C').length;
